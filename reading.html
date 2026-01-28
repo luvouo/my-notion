@@ -3,49 +3,62 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Minimal Calendar Widget</title>
+  <title>Calendar Widget</title>
+
   <style>
-    :root{
-      --text: rgba(20, 20, 22, .92);
-      --muted: rgba(20, 20, 22, .55);
-      --line: rgba(20, 20, 22, .10);
-
-      /* accent (필요하면 바꿔도 됨) */
-      --accent: #f3b6c6;      /* soft pink */
-      --accent2: #ffd7e2;     /* lighter */
-      --todayRing: rgba(243, 182, 198, .55);
-
-      --cell: clamp(38px, 7.2vw, 48px); /* 반응형 셀 크기 */
-      --radius: 18px;
-      --shadow: 0 10px 30px rgba(0,0,0,.06);
-
-     /* ✅ Custom Font (place the .ttf next to this HTML) */
-    /* FONT_FILE_NAME: 화이트데이.ttf */
+    /* 1) 폰트 로드: calendar.html과 같은 폴더에 "화이트데이.ttf" 업로드 */
     @font-face{
-      font-family: "WHiTEDAY";
+      font-family: "WhiteDay";
       src: url("./화이트데이.ttf") format("truetype");
       font-weight: 400;
       font-style: normal;
       font-display: swap;
     }
 
-    /* 노션 임베드: 배경 투명 유지 */
-    html, body {
+    :root{
+      --text: rgba(20, 20, 22, .92);
+      --muted: rgba(20, 20, 22, .55);
+      --line: rgba(20, 20, 22, .10);
+
+      --accent: #f3b6c6;
+      --accent2: #ffd7e2;
+      --todayRing: rgba(243, 182, 198, .55);
+
+      /* 셀/레이아웃(스크롤 방지 위해 6행 고정) */
+      --gap: 6px;
+      --cell: clamp(22px, 5.2vw, 28px); /* 이전보다 작게 */
+      --radius: 18px;
+      --shadow: 0 10px 30px rgba(0,0,0,.06);
+
+      /* 챔퍼(사선 코너) 강도 */
+      --chamfer: 7px;
+
+      /* 폰트: 위젯 전반 적용 */
+      --font: "WhiteDay", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+              Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Noto Sans", Arial, sans-serif;
+
+      /* 카드 높이 고정(노션 임베드에서 내부 스크롤 방지) */
+      --cardH: 320px;
+    }
+
+    html, body{
       height: 100%;
       margin: 0;
       background: transparent;
       font-family: var(--font);
       color: var(--text);
+      overflow: hidden; /* 내부 스크롤 방지 */
     }
 
     .wrap{
       width: min(520px, 100%);
       margin: 0 auto;
-      padding: clamp(10px, 2.5vw, 14px);
+      padding: 12px;
       box-sizing: border-box;
     }
 
     .card{
+      height: var(--cardH);
       background: rgba(255,255,255,.55);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -53,9 +66,10 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* 다크모드(사용자 시스템)에서도 과하게 튀지 않게 */
     @media (prefers-color-scheme: dark){
       :root{
         --text: rgba(245, 245, 248, .92);
@@ -70,6 +84,7 @@
     }
 
     .header{
+      flex: 0 0 auto;
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -81,25 +96,28 @@
     .title{
       display:flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
       min-width: 0;
     }
 
     .month{
       font-size: 14px;
       font-weight: 700;
-      letter-spacing: .2px;
+      letter-spacing: .3px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: 1.1;
     }
 
+    /* 상단 두번째 줄: Today is MM/DD/WEEKDAY */
     .subtitle{
       font-size: 12px;
       color: var(--muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      letter-spacing: .2px;
     }
 
     .nav{
@@ -110,8 +128,8 @@
     }
 
     .btn{
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border-radius: 12px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.55);
@@ -122,24 +140,32 @@
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      flex: 0 0 auto;
     }
-    @media (prefers-color-scheme: dark){
-      .btn{ background: rgba(18,18,20,.45); }
-    }
+    @media (prefers-color-scheme: dark){ .btn{ background: rgba(18,18,20,.45); } }
     .btn:active{ transform: scale(.97); }
     .btn:hover{ background: rgba(255,255,255,.72); border-color: rgba(0,0,0,.14); }
     @media (prefers-color-scheme: dark){
       .btn:hover{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); }
     }
+    .btn:focus-visible{
+      outline: 2px solid rgba(243, 182, 198, .85);
+      outline-offset: 2px;
+    }
 
     .grid{
+      flex: 1 1 auto;
       padding: 12px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
     .dow{
+      flex: 0 0 auto;
       display:grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
+      gap: var(--gap);
       margin-bottom: 8px;
     }
     .dow div{
@@ -147,29 +173,47 @@
       color: var(--muted);
       text-align:center;
       letter-spacing: .3px;
-      padding: 4px 0;
+      padding: 2px 0;
       user-select:none;
     }
 
+    /* 6행 고정: 높이 안정 + 스크롤 방지 */
     .days{
+      flex: 1 1 auto;
       display:grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 6px;
+      grid-template-rows: repeat(6, var(--cell));
+      gap: var(--gap);
+      align-content: start;
+      min-height: 0;
     }
 
     .day{
       height: var(--cell);
-      border-radius: 14px;
-      border: 1px solid transparent;
-      background: transparent;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: 13px;
+      font-size: 12px;            /* 셀과 비슷한 크기 */
+      line-height: 1;
       color: var(--text);
-      cursor: default;
-      position: relative;
       user-select: none;
+      position: relative;
+
+      /* "경사지게" (챔퍼 코너) */
+      clip-path: polygon(
+        var(--chamfer) 0%,
+        calc(100% - var(--chamfer)) 0%,
+        100% var(--chamfer),
+        100% calc(100% - var(--chamfer)),
+        calc(100% - var(--chamfer)) 100%,
+        var(--chamfer) 100%,
+        0% calc(100% - var(--chamfer)),
+        0% var(--chamfer)
+      );
+
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: default;
     }
 
     .day.muted{
@@ -184,37 +228,36 @@
     }
 
     .day.selected{
-      background: linear-gradient(180deg, var(--accent2), rgba(255,255,255,.0));
+      background: linear-gradient(180deg, var(--accent2), rgba(255,255,255,0));
       border-color: rgba(243, 182, 198, .55);
       font-weight: 700;
     }
 
-    /* 아주 작은 폭(모바일)에서는 카드 내부 여백 최소화 */
+    /* 초소형 폭에서 카드 높이 조금만 낮춤(노션 모바일에서 안정) */
     @media (max-width: 360px){
+      :root{ --cardH: 300px; --chamfer: 6px; }
+      .wrap{ padding: 10px; }
       .header{ padding: 10px 12px; }
       .grid{ padding: 10px 12px 12px; }
-      .btn{ width: 32px; height: 32px; border-radius: 11px; }
-    }
-
-    /* 접근성: 포커스 */
-    .btn:focus-visible{
-      outline: 2px solid rgba(243, 182, 198, .85);
-      outline-offset: 2px;
+      .btn{ width: 30px; height: 30px; border-radius: 11px; }
+      .month{ font-size: 13px; }
+      .subtitle{ font-size: 11px; }
+      .day{ font-size: 11px; }
     }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="card" role="group" aria-label="calendar widget">
       <div class="header">
         <div class="title">
           <div class="month" id="monthLabel">—</div>
-          <div class="subtitle" id="subLabel">tap a date</div>
+          <div class="subtitle" id="subLabel">Today is —</div>
         </div>
 
         <div class="nav">
           <button class="btn" id="prevBtn" aria-label="previous month" title="Previous">
-            <!-- chevron left -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -228,7 +271,6 @@
           </button>
 
           <button class="btn" id="nextBtn" aria-label="next month" title="Next">
-            <!-- chevron right -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -255,14 +297,22 @@
       const nextBtn  = document.getElementById('nextBtn');
       const todayBtn = document.getElementById('todayBtn');
 
-      // 상태
       const now = new Date();
       let viewYear  = now.getFullYear();
-      let viewMonth = now.getMonth(); // 0-11
-      let selected  = null; // Date
+      let viewMonth = now.getMonth();
+      let selected  = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
       const fmtMonth = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'long' });
-      const fmtFull  = new Intl.DateTimeFormat('en', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+      const fmtWeekday = new Intl.DateTimeFormat('en', { weekday: 'long' });
+
+      function pad2(n){ return String(n).padStart(2,'0'); }
+
+      function formatTopLine(d){
+        const mm = pad2(d.getMonth() + 1);
+        const dd = pad2(d.getDate());
+        const weekday = fmtWeekday.format(d).toUpperCase(); // MONDAY
+        return `Today is ${mm}/${dd}/${weekday}`;
+      }
 
       function isSameDay(a,b){
         return a && b &&
@@ -276,51 +326,45 @@
       }
 
       function startDow(y,m){
-        return new Date(y, m, 1).getDay(); // 0=Sun
+        return new Date(y, m, 1).getDay();
       }
 
       function render(){
-        // Header
         const viewDate = new Date(viewYear, viewMonth, 1);
         monthLabel.textContent = fmtMonth.format(viewDate);
 
-        // Grid 생성
+        // 상단 두번째 줄 고정 포맷
+        subLabel.textContent = formatTopLine(selected || now);
+
         grid.innerHTML = '';
 
         const total = daysInMonth(viewYear, viewMonth);
         const padL  = startDow(viewYear, viewMonth);
 
-        // 이전 달 trailing
         const prevY = viewMonth === 0 ? viewYear - 1 : viewYear;
         const prevM = viewMonth === 0 ? 11 : viewMonth - 1;
         const prevTotal = daysInMonth(prevY, prevM);
 
-        // 보통 6주(42칸)로 고정하면 높이가 안정적이라 노션에서 깔끔함
-        const cells = 42;
+        const cells = 42; // 6행 고정
 
         for(let i=0;i<cells;i++){
           const cell = document.createElement('div');
           cell.className = 'day';
 
-          let d, inMonth = true;
+          let d;
           const dayNum = i - padL + 1;
 
           if(dayNum <= 0){
-            // prev month
-            inMonth = false;
             d = new Date(prevY, prevM, prevTotal + dayNum);
             cell.classList.add('muted');
             cell.textContent = d.getDate();
           } else if(dayNum > total){
-            // next month
-            inMonth = false;
             const nextY = viewMonth === 11 ? viewYear + 1 : viewYear;
             const nextM = viewMonth === 11 ? 0 : viewMonth + 1;
             d = new Date(nextY, nextM, dayNum - total);
             cell.classList.add('muted');
             cell.textContent = d.getDate();
           } else {
-            // current month
             d = new Date(viewYear, viewMonth, dayNum);
             cell.textContent = dayNum;
           }
@@ -328,17 +372,15 @@
           if(isSameDay(d, now)) cell.classList.add('today');
           if(selected && isSameDay(d, selected)) cell.classList.add('selected');
 
-          // 클릭: 선택 날짜 표시(노션 내에서 상태만 보여주는 용도)
-          cell.addEventListener('click', () => {
-            selected = d;
-            subLabel.textContent = fmtFull.format(d);
-            render();
-          });
-
-          // 접근성 힌트
           cell.setAttribute('role', 'button');
           cell.setAttribute('tabindex', '0');
-          cell.setAttribute('aria-label', fmtFull.format(d));
+          cell.setAttribute('aria-label', `${pad2(d.getMonth()+1)}/${pad2(d.getDate())}/${fmtWeekday.format(d)}`);
+
+          cell.addEventListener('click', () => {
+            selected = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            subLabel.textContent = formatTopLine(selected);
+            render();
+          });
 
           cell.addEventListener('keydown', (e) => {
             if(e.key === 'Enter' || e.key === ' '){
@@ -348,11 +390,6 @@
           });
 
           grid.appendChild(cell);
-        }
-
-        // 선택이 없으면 기본 문구
-        if(!selected){
-          subLabel.textContent = 'tap a date';
         }
       }
 
@@ -369,7 +406,6 @@
         viewYear = now.getFullYear();
         viewMonth = now.getMonth();
         selected = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        subLabel.textContent = fmtFull.format(selected);
         render();
       });
 
