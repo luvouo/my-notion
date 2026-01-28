@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Soft Schedule</title>
-
   <style>
     :root{
       --blue-main: rgba(218, 239, 251, 0.9);   /* #daeffb */
@@ -26,41 +25,35 @@
       color: var(--text-main);
     }
 
+    /* ✅ 섹션이 어떤 환경에서도 가로로 나열되지 않게 grid 1열 고정 */
     .page{
       width: min(720px, 100%);
       margin: 0 auto;
       padding: clamp(16px, 4vw, 28px);
       box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
+
+      display: grid;
+      grid-template-columns: 1fr; /* 무조건 1열 */
       gap: 28px;
+      align-items: start;
     }
 
-    /* ---------- HEADER ---------- */
     .header{
-      display: flex;
-      flex-direction: column;
+      display: grid;
       gap: 6px;
     }
-
     .header h1{
       font-size: clamp(20px, 5vw, 24px);
       margin: 0;
       letter-spacing: -0.4px;
     }
+    .header .date{ font-size: 13px; color: var(--text-muted); }
+    .header .subtitle{ font-size: 14px; color: var(--text-muted); }
 
-    .header .date{
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .header .subtitle{
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
-    /* ---------- SECTION CARD ---------- */
     .section{
+      width: 100%;
+      box-sizing: border-box;
+
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: clamp(14px, 3.6vw, 20px);
@@ -71,7 +64,6 @@
       position: relative;
       overflow: hidden;
     }
-
     .section::before{
       content:"";
       position:absolute;
@@ -81,23 +73,20 @@
         radial-gradient(80% 80% at 100% 20%, rgba(218,239,251,0.18), transparent 55%);
       pointer-events:none;
     }
-
     .section-inner{
       position: relative;
       z-index: 1;
-      display: flex;
-      flex-direction: column;
+      display: grid;
       gap: 12px;
     }
 
     .section-title{
       font-size: 15px;
       font-weight: 600;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 8px;
     }
-
     .dot{
       width: 8px;
       height: 8px;
@@ -106,16 +95,13 @@
       box-shadow: 0 0 0 5px rgba(218,239,251,0.25);
     }
 
-    /* ---------- LIST ---------- */
     ul{
       margin:0;
       padding:0;
       list-style:none;
-      display:flex;
-      flex-direction:column;
+      display:grid;
       gap:8px;
     }
-
     li{
       display:flex;
       align-items:center;
@@ -125,8 +111,8 @@
       background: rgba(255,255,255,0.08);
       border:1px solid rgba(218,239,251,0.35);
       font-size:14px;
+      min-width: 0;
     }
-
     .checkbox{
       width:16px;
       height:16px;
@@ -134,13 +120,8 @@
       border:1.5px solid rgba(218,239,251,0.8);
       flex:0 0 auto;
     }
+    .muted{ color: var(--text-muted); font-size: 13px; }
 
-    .muted{
-      color: var(--text-muted);
-      font-size: 13px;
-    }
-
-    /* ---------- NOTES ---------- */
     textarea{
       width:100%;
       min-height:80px;
@@ -155,16 +136,10 @@
       outline:none;
       box-sizing:border-box;
     }
+    textarea::placeholder{ color: rgba(30,30,30,0.45); }
 
-    textarea::placeholder{
-      color: rgba(30,30,30,0.45);
-    }
-
-    /* ---------- MOBILE ---------- */
     @media (max-width: 420px){
-      .page{
-        gap: 22px;
-      }
+      .page{ gap: 22px; }
     }
   </style>
 </head>
@@ -172,19 +147,15 @@
 <body>
   <div class="page">
 
-    <!-- HEADER -->
     <header class="header">
       <h1>Soft Schedule</h1>
-      <div class="date">2026.01.28</div>
+      <div class="date" id="todayDate"></div>
       <div class="subtitle">오늘의 리듬을 정리하는 공간</div>
     </header>
 
-    <!-- TODAY -->
     <section class="section">
       <div class="section-inner">
-        <div class="section-title">
-          <span class="dot"></span> Today
-        </div>
+        <div class="section-title"><span class="dot"></span> Today</div>
         <ul>
           <li><span class="checkbox"></span> 병원 예약</li>
           <li><span class="checkbox"></span> 문서 제출</li>
@@ -193,12 +164,9 @@
       </div>
     </section>
 
-    <!-- UPCOMING -->
     <section class="section">
       <div class="section-inner">
-        <div class="section-title">
-          <span class="dot"></span> Upcoming
-        </div>
+        <div class="section-title"><span class="dot"></span> Upcoming</div>
         <ul>
           <li>01.30 <span class="muted">세탁기 수리</span></li>
           <li>02.01 <span class="muted">가족 모임</span></li>
@@ -207,12 +175,9 @@
       </div>
     </section>
 
-    <!-- FLEXIBLE -->
     <section class="section">
       <div class="section-inner">
-        <div class="section-title">
-          <span class="dot"></span> Flexible Tasks
-        </div>
+        <div class="section-title"><span class="dot"></span> Flexible Tasks</div>
         <ul>
           <li><span class="checkbox"></span> 옷 정리</li>
           <li><span class="checkbox"></span> 파일 백업</li>
@@ -221,16 +186,22 @@
       </div>
     </section>
 
-    <!-- NOTES -->
     <section class="section">
       <div class="section-inner">
-        <div class="section-title">
-          <span class="dot"></span> Notes
-        </div>
+        <div class="section-title"><span class="dot"></span> Notes</div>
         <textarea placeholder="일정과 관련된 메모, 컨디션, 주의사항…"></textarea>
       </div>
     </section>
 
   </div>
+
+  <script>
+    // 날짜 자동 표기 (로컬 기준)
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    document.getElementById("todayDate").textContent = `${y}.${m}.${day}`;
+  </script>
 </body>
 </html>
