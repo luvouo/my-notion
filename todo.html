@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Soft Schedule</title>
+
+  <style>
+    :root{
+      --blue-main: rgba(218, 239, 251, 0.9);   /* #daeffb */
+      --blue-soft: rgba(218, 239, 251, 0.45);
+      --text-main: rgba(30,30,30,0.92);
+      --text-muted: rgba(30,30,30,0.55);
+      --glass: rgba(255,255,255,0.10);
+      --border: rgba(218,239,251,0.6);
+      --radius: 20px;
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      background: transparent;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: var(--text-main);
+    }
+
+    .page{
+      width: min(720px, 100%);
+      margin: 0 auto;
+      padding: clamp(16px, 4vw, 28px);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ---------- HEADER ---------- */
+    .header{
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .header h1{
+      font-size: clamp(20px, 5vw, 24px);
+      margin: 0;
+      letter-spacing: -0.4px;
+    }
+
+    .header .date{
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .header .subtitle{
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ---------- SECTION CARD ---------- */
+    .section{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(14px, 3.6vw, 20px);
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(120% 80% at 0% 0%, rgba(218,239,251,0.25), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(218,239,251,0.18), transparent 55%);
+      pointer-events:none;
+    }
+
+    .section-inner{
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .section-title{
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot{
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--blue-main);
+      box-shadow: 0 0 0 5px rgba(218,239,251,0.25);
+    }
+
+    /* ---------- LIST ---------- */
+    ul{
+      margin:0;
+      padding:0;
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    li{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      background: rgba(255,255,255,0.08);
+      border:1px solid rgba(218,239,251,0.35);
+      font-size:14px;
+    }
+
+    .checkbox{
+      width:16px;
+      height:16px;
+      border-radius:5px;
+      border:1.5px solid rgba(218,239,251,0.8);
+      flex:0 0 auto;
+    }
+
+    .muted{
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ---------- NOTES ---------- */
+    textarea{
+      width:100%;
+      min-height:80px;
+      resize:none;
+      border-radius:14px;
+      border:1px solid rgba(218,239,251,0.4);
+      background: rgba(255,255,255,0.12);
+      padding:12px;
+      font-size:14px;
+      color: var(--text-main);
+      font-family: inherit;
+      outline:none;
+      box-sizing:border-box;
+    }
+
+    textarea::placeholder{
+      color: rgba(30,30,30,0.45);
+    }
+
+    /* ---------- MOBILE ---------- */
+    @media (max-width: 420px){
+      .page{
+        gap: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- HEADER -->
+    <header class="header">
+      <h1>Soft Schedule</h1>
+      <div class="date">2026.01.28</div>
+      <div class="subtitle">오늘의 리듬을 정리하는 공간</div>
+    </header>
+
+    <!-- TODAY -->
+    <section class="section">
+      <div class="section-inner">
+        <div class="section-title">
+          <span class="dot"></span> Today
+        </div>
+        <ul>
+          <li><span class="checkbox"></span> 병원 예약</li>
+          <li><span class="checkbox"></span> 문서 제출</li>
+          <li><span class="checkbox"></span> 연락해야 할 사람</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- UPCOMING -->
+    <section class="section">
+      <div class="section-inner">
+        <div class="section-title">
+          <span class="dot"></span> Upcoming
+        </div>
+        <ul>
+          <li>01.30 <span class="muted">세탁기 수리</span></li>
+          <li>02.01 <span class="muted">가족 모임</span></li>
+          <li>02.03 <span class="muted">은행 방문</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- FLEXIBLE -->
+    <section class="section">
+      <div class="section-inner">
+        <div class="section-title">
+          <span class="dot"></span> Flexible Tasks
+        </div>
+        <ul>
+          <li><span class="checkbox"></span> 옷 정리</li>
+          <li><span class="checkbox"></span> 파일 백업</li>
+          <li><span class="checkbox"></span> 병원 정보 정리</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- NOTES -->
+    <section class="section">
+      <div class="section-inner">
+        <div class="section-title">
+          <span class="dot"></span> Notes
+        </div>
+        <textarea placeholder="일정과 관련된 메모, 컨디션, 주의사항…"></textarea>
+      </div>
+    </section>
+
+  </div>
+</body>
+</html>
