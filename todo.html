@@ -1,17 +1,29 @@
+<!-- =========================
+  1) TEMPLATE PAGE (FULL)
+  Soft Schedule — Pastel Blue (#daeffb)
+  Desktop: sections laid out horizontally
+  Mobile: wraps to vertical naturally
+  Background: transparent (Notion embed friendly)
+========================= -->
 <!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Soft Schedule</title>
+
   <style>
     :root{
-      --blue-main: rgba(218, 239, 251, 0.9);   /* #daeffb */
-      --blue-soft: rgba(218, 239, 251, 0.45);
+      --blue-main: rgba(218, 239, 251, 0.92);   /* #daeffb */
+      --blue-soft: rgba(218, 239, 251, 0.55);
+      --border: rgba(218,239,251,0.62);
+
       --text-main: rgba(30,30,30,0.92);
       --text-muted: rgba(30,30,30,0.55);
+
       --glass: rgba(255,255,255,0.10);
-      --border: rgba(218,239,251,0.6);
+      --glass-2: rgba(255,255,255,0.06);
+
       --radius: 20px;
       --shadow: 0 10px 30px rgba(0,0,0,0.06);
     }
@@ -19,44 +31,59 @@
     html, body{
       margin:0;
       padding:0;
-      background: transparent;
+      background: transparent; /* ✅ Notion embed: transparent */
       font-family: ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
       color: var(--text-main);
     }
 
-    /* ✅ 섹션이 어떤 환경에서도 가로로 나열되지 않게 grid 1열 고정 */
-    .page{
-      width: min(720px, 100%);
+    /* ---------- PAGE LAYOUT (HORIZONTAL + WRAP) ---------- */
+    .shell{
+      width: min(1200px, 100%);
       margin: 0 auto;
       padding: clamp(16px, 4vw, 28px);
       box-sizing: border-box;
-
-      display: grid;
-      grid-template-columns: 1fr; /* 무조건 1열 */
-      gap: 28px;
-      align-items: start;
     }
 
     .header{
       display: grid;
       gap: 6px;
+      margin-bottom: 18px;
     }
+
     .header h1{
-      font-size: clamp(20px, 5vw, 24px);
+      font-size: clamp(20px, 5vw, 26px);
       margin: 0;
       letter-spacing: -0.4px;
     }
-    .header .date{ font-size: 13px; color: var(--text-muted); }
-    .header .subtitle{ font-size: 14px; color: var(--text-muted); }
 
+    .header .date{
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .header .subtitle{
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ✅ Sections are horizontal cards; wrap naturally on narrow widths */
+    .grid{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    /* ---------- SECTION CARD ---------- */
     .section{
-      width: 100%;
+      flex: 1 1 260px;     /* base width */
+      max-width: 100%;
       box-sizing: border-box;
 
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: clamp(14px, 3.6vw, 20px);
+      padding: clamp(14px, 2.8vw, 18px);
       background: var(--glass);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -64,6 +91,11 @@
       position: relative;
       overflow: hidden;
     }
+
+    /* Optional weighting: Today bigger, Notes wide */
+    .section.today{ flex: 2 1 360px; }
+    .section.notes{ flex: 2 1 520px; }
+
     .section::before{
       content:"";
       position:absolute;
@@ -73,6 +105,7 @@
         radial-gradient(80% 80% at 100% 20%, rgba(218,239,251,0.18), transparent 55%);
       pointer-events:none;
     }
+
     .section-inner{
       position: relative;
       z-index: 1;
@@ -82,19 +115,22 @@
 
     .section-title{
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 650;
       display: inline-flex;
       align-items: center;
       gap: 8px;
     }
+
     .dot{
       width: 8px;
       height: 8px;
       border-radius: 999px;
       background: var(--blue-main);
       box-shadow: 0 0 0 5px rgba(218,239,251,0.25);
+      flex: 0 0 auto;
     }
 
+    /* ---------- LIST ---------- */
     ul{
       margin:0;
       padding:0;
@@ -102,32 +138,40 @@
       display:grid;
       gap:8px;
     }
+
     li{
       display:flex;
       align-items:center;
       gap:10px;
       padding:10px 12px;
       border-radius:14px;
-      background: rgba(255,255,255,0.08);
+      background: var(--glass-2);
       border:1px solid rgba(218,239,251,0.35);
       font-size:14px;
-      min-width: 0;
+      min-width:0;
     }
+
     .checkbox{
       width:16px;
       height:16px;
       border-radius:5px;
-      border:1.5px solid rgba(218,239,251,0.8);
+      border:1.6px solid rgba(218,239,251,0.90);
       flex:0 0 auto;
+      background: transparent;
     }
-    .muted{ color: var(--text-muted); font-size: 13px; }
 
+    .muted{
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ---------- NOTES ---------- */
     textarea{
       width:100%;
-      min-height:80px;
+      min-height:120px;
       resize:none;
       border-radius:14px;
-      border:1px solid rgba(218,239,251,0.4);
+      border:1px solid rgba(218,239,251,0.45);
       background: rgba(255,255,255,0.12);
       padding:12px;
       font-size:14px;
@@ -136,72 +180,87 @@
       outline:none;
       box-sizing:border-box;
     }
-    textarea::placeholder{ color: rgba(30,30,30,0.45); }
 
+    textarea::placeholder{
+      color: rgba(30,30,30,0.45);
+    }
+
+    /* ---------- MOBILE TWEAKS ---------- */
     @media (max-width: 420px){
-      .page{ gap: 22px; }
+      .grid{ gap: 14px; }
+      .section{ padding: 14px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="page">
-
+  <div class="shell">
     <header class="header">
       <h1>Soft Schedule</h1>
       <div class="date" id="todayDate"></div>
       <div class="subtitle">오늘의 리듬을 정리하는 공간</div>
     </header>
 
-    <section class="section">
-      <div class="section-inner">
-        <div class="section-title"><span class="dot"></span> Today</div>
-        <ul>
-          <li><span class="checkbox"></span> 병원 예약</li>
-          <li><span class="checkbox"></span> 문서 제출</li>
-          <li><span class="checkbox"></span> 연락해야 할 사람</li>
-        </ul>
-      </div>
-    </section>
+    <main class="grid">
+      <!-- TODAY (bigger) -->
+      <section class="section today">
+        <div class="section-inner">
+          <div class="section-title"><span class="dot"></span> Today</div>
+          <ul>
+            <li><span class="checkbox"></span> 병원 예약</li>
+            <li><span class="checkbox"></span> 문서 제출</li>
+            <li><span class="checkbox"></span> 연락해야 할 사람</li>
+          </ul>
+          <div class="muted">핵심만 3~5개</div>
+        </div>
+      </section>
 
-    <section class="section">
-      <div class="section-inner">
-        <div class="section-title"><span class="dot"></span> Upcoming</div>
-        <ul>
-          <li>01.30 <span class="muted">세탁기 수리</span></li>
-          <li>02.01 <span class="muted">가족 모임</span></li>
-          <li>02.03 <span class="muted">은행 방문</span></li>
-        </ul>
-      </div>
-    </section>
+      <!-- UPCOMING -->
+      <section class="section">
+        <div class="section-inner">
+          <div class="section-title"><span class="dot"></span> Upcoming</div>
+          <ul>
+            <li>01.30 <span class="muted">세탁기 수리</span></li>
+            <li>02.01 <span class="muted">가족 모임</span></li>
+            <li>02.03 <span class="muted">은행 방문</span></li>
+          </ul>
+          <div class="muted">가까운 예정만</div>
+        </div>
+      </section>
 
-    <section class="section">
-      <div class="section-inner">
-        <div class="section-title"><span class="dot"></span> Flexible Tasks</div>
-        <ul>
-          <li><span class="checkbox"></span> 옷 정리</li>
-          <li><span class="checkbox"></span> 파일 백업</li>
-          <li><span class="checkbox"></span> 병원 정보 정리</li>
-        </ul>
-      </div>
-    </section>
+      <!-- FLEXIBLE -->
+      <section class="section">
+        <div class="section-inner">
+          <div class="section-title"><span class="dot"></span> Flexible Tasks</div>
+          <ul>
+            <li><span class="checkbox"></span> 옷 정리</li>
+            <li><span class="checkbox"></span> 파일 백업</li>
+            <li><span class="checkbox"></span> 병원 정보 정리</li>
+          </ul>
+          <div class="muted">날짜 없는 일정 보관</div>
+        </div>
+      </section>
 
-    <section class="section">
-      <div class="section-inner">
-        <div class="section-title"><span class="dot"></span> Notes</div>
-        <textarea placeholder="일정과 관련된 메모, 컨디션, 주의사항…"></textarea>
-      </div>
-    </section>
-
+      <!-- NOTES (wide) -->
+      <section class="section notes">
+        <div class="section-inner">
+          <div class="section-title"><span class="dot"></span> Notes</div>
+          <textarea placeholder="일정과 관련된 메모, 컨디션, 주의사항…"></textarea>
+          <div class="muted">짧게라도 남기기</div>
+        </div>
+      </section>
+    </main>
   </div>
 
   <script>
-    // 날짜 자동 표기 (로컬 기준)
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    document.getElementById("todayDate").textContent = `${y}.${m}.${day}`;
+    // Local date
+    (function(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      document.getElementById("todayDate").textContent = `${y}.${m}.${day}`;
+    })();
   </script>
 </body>
 </html>
