@@ -3,13 +3,430 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reading Room</title>
-  <link rel="stylesheet" href="reading.css" />
+  <title>Minimal Todo Widget</title>
+  <style>
+    :root{
+      --pink-1: rgba(255, 192, 203, 0.85);
+      --pink-2: rgba(255, 170, 190, 0.55);
+      --text: rgba(30, 30, 30, 0.92);
+      --muted: rgba(30, 30, 30, 0.55);
+      --glass: rgba(255, 255, 255, 0.10);
+      --glass-2: rgba(255, 255, 255, 0.06);
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
+      --radius: 18px;
+    }
+
+    /* 노션 임베드: 바깥 배경은 투명 */
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+      color: var(--text);
+    }
+
+    .wrap{
+      width: min(520px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2.6vw, 16px);
+      box-sizing: border-box;
+    }
+
+    .card{
+      background: transparent; /* 카드 자체도 투명 기반 */
+      border: 1px solid var(--pink-2);
+      border-radius: var(--radius);
+      padding: clamp(14px, 3.2vw, 18px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 핑크 테두리 감성 + 아주 은은한 하이라이트 */
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius: calc(var(--radius) + 2px);
+      background: radial-gradient(120% 80% at 0% 0%, rgba(255, 192, 203, 0.22), transparent 55%),
+                  radial-gradient(80% 80% at 100% 20%, rgba(255, 170, 190, 0.18), transparent 55%);
+      pointer-events:none;
+      z-index:0;
+    }
+
+    .inner{
+      position: relative;
+      z-index: 1;
+    }
+
+    .top{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--pink-1);
+      box-shadow: 0 0 0 6px rgba(255, 192, 203, 0.18);
+      flex: 0 0 auto;
+    }
+
+    h1{
+      font-size: clamp(14px, 3.6vw, 16px);
+      margin: 0;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .inputRow{
+      display:flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap; /* 모바일에서 줄바꿈 */
+    }
+
+    .input{
+      flex: 1 1 220px;
+      min-width: 0;
+      border: 1px solid rgba(255, 170, 190, 0.35);
+      background: rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 12px 12px;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .input::placeholder{ color: rgba(30,30,30,0.45); }
+
+    .btn{
+      flex: 0 0 auto;
+      border: 1px solid rgba(255, 170, 190, 0.5);
+      background: rgba(255, 192, 203, 0.18);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(30,30,30,0.85);
+      cursor: pointer;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active{ transform: scale(0.98); }
+    .btn:hover{ background: rgba(255, 192, 203, 0.26); border-color: rgba(255, 170, 190, 0.75); }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .item{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 170, 190, 0.20);
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .check{
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1.6px solid rgba(255, 170, 190, 0.65);
+      display:grid;
+      place-items:center;
+      flex: 0 0 auto;
+      cursor:pointer;
+      transition: background .2s ease, border-color .2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .check svg{
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .text{
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 14px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .del{
+      flex: 0 0 auto;
+      border: none;
+      background: transparent;
+      color: rgba(30,30,30,0.55);
+      cursor:pointer;
+      font-size: 14px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      transition: background .2s ease, color .2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .del:hover{ background: rgba(0,0,0,0.05); color: rgba(30,30,30,0.75); }
+
+    .item.done{
+      opacity: 0.78;
+    }
+    .item.done .text{
+      text-decoration: line-through;
+      color: rgba(30,30,30,0.50);
+    }
+    .item.done .check{
+      background: rgba(255, 192, 203, 0.25);
+      border-color: rgba(255, 170, 190, 0.85);
+    }
+    .item.done .check svg{
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      flex-wrap: wrap;
+    }
+
+    .linkBtn{
+      border: 1px solid rgba(255, 170, 190, 0.35);
+      background: rgba(255,255,255,0.08);
+      padding: 8px 10px;
+      border-radius: 12px;
+      cursor:pointer;
+      transition: background .2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .linkBtn:hover{ background: rgba(255,255,255,0.14); }
+
+    /* 아주 작은 화면 대응 */
+    @media (max-width: 360px){
+      .meta{ display:none; }
+      .btn{ width: 100%; }
+      .input{ flex-basis: 100%; }
+    }
+  </style>
 </head>
 <body>
-  <!-- 여기부터 Reading 전용 템플릿 -->
-  <h1>READING ROOM</h1>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="Todo Widget">
+      <div class="inner">
+        <div class="top">
+          <div class="title">
+            <span class="dot" aria-hidden="true"></span>
+            <h1 id="titleText">Today</h1>
+          </div>
+          <div class="meta" id="metaText"></div>
+        </div>
 
-  <script src="reading.js"></script>
+        <div class="inputRow">
+          <input id="todoInput" class="input" type="text" placeholder="할 일을 입력하고 Enter…" maxlength="80" />
+          <button class="btn" id="addBtn" type="button">추가</button>
+        </div>
+
+        <ul class="list" id="list"></ul>
+
+        <div class="footer">
+          <span id="countText">0 items</span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="linkBtn" id="clearDoneBtn" type="button">완료 삭제</button>
+            <button class="linkBtn" id="resetBtn" type="button">전체 초기화</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Minimal Todo Widget (Notion embed friendly) ---
+    // 저장: localStorage 사용 (같은 도메인/호스팅 내에서 유지)
+    const STORAGE_KEY = "notion_minimal_todo_v1";
+
+    const $ = (sel) => document.querySelector(sel);
+    const listEl = $("#list");
+    const inputEl = $("#todoInput");
+    const addBtn = $("#addBtn");
+    const countText = $("#countText");
+    const metaText = $("#metaText");
+    const clearDoneBtn = $("#clearDoneBtn");
+    const resetBtn = $("#resetBtn");
+
+    function formatDateKR(d = new Date()){
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}.${m}.${day}`;
+    }
+
+    metaText.textContent = formatDateKR();
+
+    let state = loadState();
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      }catch(e){
+        return [];
+      }
+    }
+
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function addItem(text){
+      const trimmed = text.trim();
+      if(!trimmed) return;
+      state.unshift({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        text: trimmed,
+        done: false,
+        createdAt: Date.now()
+      });
+      saveState();
+      render();
+    }
+
+    function toggleItem(id){
+      state = state.map(it => it.id === id ? { ...it, done: !it.done } : it);
+      saveState();
+      render();
+    }
+
+    function deleteItem(id){
+      state = state.filter(it => it.id !== id);
+      saveState();
+      render();
+    }
+
+    function clearDone(){
+      state = state.filter(it => !it.done);
+      saveState();
+      render();
+    }
+
+    function resetAll(){
+      state = [];
+      saveState();
+      render();
+    }
+
+    function render(){
+      listEl.innerHTML = "";
+      for(const it of state){
+        const li = document.createElement("li");
+        li.className = "item" + (it.done ? " done" : "");
+        li.innerHTML = `
+          <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+          <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
+        `;
+        listEl.appendChild(li);
+      }
+
+      const total = state.length;
+      const done = state.filter(x => x.done).length;
+      countText.textContent = `${done}/${total} done`;
+    }
+
+    function escapeHtml(str){
+      return str.replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+    }
+
+    // Events
+    addBtn.addEventListener("click", () => {
+      addItem(inputEl.value);
+      inputEl.value = "";
+      inputEl.focus();
+    });
+
+    inputEl.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        addItem(inputEl.value);
+        inputEl.value = "";
+      }
+    });
+
+    listEl.addEventListener("click", (e) => {
+      const check = e.target.closest(".check");
+      const del = e.target.closest("[data-del]");
+      if(check){
+        toggleItem(check.dataset.id);
+      }else if(del){
+        deleteItem(del.dataset.del);
+      }
+    });
+
+    // 키보드 접근성: 체크박스 Enter/Space 토글
+    listEl.addEventListener("keydown", (e) => {
+      const check = e.target.closest(".check");
+      if(!check) return;
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        toggleItem(check.dataset.id);
+      }
+    });
+
+    clearDoneBtn.addEventListener("click", clearDone);
+    resetBtn.addEventListener("click", resetAll);
+
+    render();
+  </script>
 </body>
 </html>
