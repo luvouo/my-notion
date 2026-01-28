@@ -1,1 +1,422 @@
+<!-- =========================
+  4) FLEXIBLE TASKS WIDGET (FULL)
+  - Pastel Blue (#daeffb)
+  - Transparent background
+  - Responsive
+  - Checkbox + add/delete
+  - Stores in localStorage
+========================= -->
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flexible Tasks — Soft Schedule</title>
+
+  <style>
+    :root{
+      --blue: rgba(218,239,251,0.92);     /* #daeffb */
+      --border: rgba(218,239,251,0.62);
+      --text: rgba(30,30,30,0.92);
+      --muted: rgba(30,30,30,0.55);
+      --glass: rgba(255,255,255,0.10);
+      --glass-2: rgba(255,255,255,0.06);
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --radius: 20px;
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      background: transparent;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: var(--text);
+    }
+
+    .wrap{
+      width: min(520px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2.6vw, 16px);
+      box-sizing: border-box;
+    }
+
+    .card{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(14px, 2.8vw, 18px);
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(120% 80% at 0% 0%, rgba(218,239,251,0.25), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(218,239,251,0.18), transparent 55%);
+      pointer-events:none;
+    }
+
+    .inner{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+    }
+
+    .top{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--blue);
+      box-shadow: 0 0 0 6px rgba(218,239,251,0.22);
+      flex: 0 0 auto;
+    }
+
+    h1{
+      margin:0;
+      font-size: clamp(14px, 3.6vw, 16px);
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .inputRow{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .input{
+      flex: 1 1 220px;
+      min-width: 0;
+      border: 1px solid rgba(218,239,251,0.45);
+      background: rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 12px 12px;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .input::placeholder{ color: rgba(30,30,30,0.45); }
+
+    .btn{
+      flex: 0 0 auto;
+      border: 1px solid rgba(218,239,251,0.70);
+      background: rgba(218,239,251,0.22);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(30,30,30,0.85);
+      cursor: pointer;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .btn:active{ transform: scale(0.98); }
+    .btn:hover{ background: rgba(218,239,251,0.30); border-color: rgba(218,239,251,0.90); }
+
+    .list{
+      margin:0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap: 8px;
+    }
+
+    .item{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(218,239,251,0.30);
+      background: var(--glass-2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      min-width: 0;
+    }
+
+    .check{
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1.6px solid rgba(218,239,251,0.95);
+      display:grid;
+      place-items:center;
+      flex: 0 0 auto;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .check svg{
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .text{
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .del{
+      flex: 0 0 auto;
+      border: none;
+      background: transparent;
+      color: rgba(30,30,30,0.55);
+      cursor:pointer;
+      font-size: 14px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      transition: background .2s ease, color .2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .del:hover{ background: rgba(0,0,0,0.05); color: rgba(30,30,30,0.75); }
+
+    .item.done{ opacity: 0.78; }
+    .item.done .text{ text-decoration: line-through; color: rgba(30,30,30,0.50); }
+    .item.done .check{
+      background: rgba(218,239,251,0.25);
+      border-color: rgba(218,239,251,1);
+    }
+    .item.done .check svg{ opacity: 1; transform: scale(1); }
+
+    .footer{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .linkBtn{
+      border: 1px solid rgba(218,239,251,0.45);
+      background: rgba(255,255,255,0.08);
+      padding: 8px 10px;
+      border-radius: 12px;
+      cursor:pointer;
+      transition: background .2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .linkBtn:hover{ background: rgba(255,255,255,0.14); }
+
+    @media (max-width: 360px){
+      .meta{ display:none; }
+      .btn{ width: 100%; }
+      .input{ flex-basis: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="Flexible Tasks Widget">
+      <div class="inner">
+        <div class="top">
+          <div class="title">
+            <span class="dot" aria-hidden="true"></span>
+            <h1>Flexible Tasks</h1>
+          </div>
+          <div class="meta" id="metaText"></div>
+        </div>
+
+        <div class="inputRow">
+          <input id="taskInput" class="input" type="text" placeholder="날짜 없는 일정 (Enter)…" maxlength="80" />
+          <button class="btn" id="addBtn" type="button">추가</button>
+        </div>
+
+        <ul class="list" id="list"></ul>
+
+        <div class="footer">
+          <span id="countText">0/0 done</span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="linkBtn" id="clearDoneBtn" type="button">완료 삭제</button>
+            <button class="linkBtn" id="resetBtn" type="button">전체 초기화</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function ymd(d=new Date()){
+      const y=d.getFullYear();
+      const m=String(d.getMonth()+1).padStart(2,"0");
+      const day=String(d.getDate()).padStart(2,"0");
+      return `${y}.${m}.${day}`;
+    }
+    document.getElementById("metaText").textContent = ymd();
+
+    const STORAGE_KEY = "soft_schedule_flexible_v1";
+
+    const listEl = document.getElementById("list");
+    const inputEl = document.getElementById("taskInput");
+    const addBtn = document.getElementById("addBtn");
+    const countText = document.getElementById("countText");
+    const clearDoneBtn = document.getElementById("clearDoneBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let state = loadState();
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      }catch(e){ return []; }
+    }
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+    }
+
+    function addItem(text){
+      const t = (text || "").trim();
+      if(!t) return;
+      state.unshift({
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+        text: t,
+        done: false
+      });
+      saveState();
+      render();
+    }
+
+    function toggleItem(id){
+      state = state.map(it => it.id === id ? { ...it, done: !it.done } : it);
+      saveState();
+      render();
+    }
+
+    function deleteItem(id){
+      state = state.filter(it => it.id !== id);
+      saveState();
+      render();
+    }
+
+    function clearDone(){
+      state = state.filter(it => !it.done);
+      saveState();
+      render();
+    }
+
+    function resetAll(){
+      state = [];
+      saveState();
+      render();
+    }
+
+    function render(){
+      listEl.innerHTML = "";
+      for(const it of state){
+        const li = document.createElement("li");
+        li.className = "item" + (it.done ? " done" : "");
+        li.innerHTML = `
+          <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+          <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
+        `;
+        listEl.appendChild(li);
+      }
+      const total = state.length;
+      const done = state.filter(x => x.done).length;
+      countText.textContent = `${done}/${total} done`;
+    }
+
+    function submit(){
+      addItem(inputEl.value);
+      inputEl.value = "";
+      inputEl.focus();
+    }
+
+    addBtn.addEventListener("click", submit);
+    inputEl.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") submit();
+    });
+
+    listEl.addEventListener("click", (e) => {
+      const check = e.target.closest(".check");
+      const del = e.target.closest("[data-del]");
+      if(check) toggleItem(check.dataset.id);
+      else if(del) deleteItem(del.dataset.del);
+    });
+
+    listEl.addEventListener("keydown", (e) => {
+      const check = e.target.closest(".check");
+      if(!check) return;
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        toggleItem(check.dataset.id);
+      }
+    });
+
+    clearDoneBtn.addEventListener("click", clearDone);
+    resetBtn.addEventListener("click", resetAll);
+
+    // Seed once if empty
+    if(state.length === 0){
+      state = [
+        { id: "f1", text: "옷 정리", done: false },
+        { id: "f2", text: "파일 백업", done: false },
+        { id: "f3", text: "병원 정보 정리", done: false },
+      ];
+      saveState();
+    }
+
+    render();
+  </script>
+</body>
+</html>
 
