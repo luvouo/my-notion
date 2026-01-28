@@ -1,73 +1,126 @@
-* {
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+body { margin: 0; background: #f3fbff; }
+
+.page { max-width: 1100px; margin: 0 auto; padding: 28px 18px 18px; }
+
+.topbar { margin-bottom: 16px; }
+.brand { display:flex; align-items:center; gap:10px; }
+.brand h1 { margin:0; letter-spacing: .5px; font-size: 36px; }
+.brand .icon { font-size: 22px; }
+.sub { margin-top: 6px; opacity:.6; }
+
+.grid{
+  display:grid;
+  gap:14px;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  grid-auto-rows: minmax(160px, auto);
 }
 
-body {
-  margin: 0;
-  background: transparent; /* 노션 배경 */
-}
-
-.widget {
-  width: 300px;
-  padding: 14px;
+.card{
+  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(0,0,0,.08);
   border-radius: 14px;
-  background: #fff5f8;
-  border: 2px solid #f5b7c7;
+  padding: 12px 12px 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.04);
 }
 
-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
+.card-title{
+  font-size: 13px;
+  opacity: .6;
   margin-bottom: 10px;
+  display:flex;
+  align-items:center;
+  gap:6px;
 }
 
-.input-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 10px;
+.wide{ grid-column: 1 / -1; }
+
+.btn{
+  border: none;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
 }
 
-input {
-  flex: 1;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #f1c3d1;
+.ghost{
+  border:none; background: transparent; cursor:pointer;
+  font-size: 18px; opacity:.6;
+}
+
+input{
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.12);
+  padding: 10px 10px;
+  outline: none;
   background: #fff;
 }
 
-button {
-  border: none;
-  border-radius: 6px;
-  background: #f5b7c7;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
+.input-row{ display:flex; gap:8px; }
+.input-row input{ flex:1; }
 
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.list{ list-style:none; margin:10px 0 0; padding:0; }
+.list li{
+  display:flex; align-items:center; gap:10px;
+  padding: 8px 6px; border-bottom: 1px solid rgba(0,0,0,.05);
+  font-size: 13px;
 }
+.list li:last-child{ border-bottom:none; }
+.list li.done{ opacity:.45; text-decoration: line-through; }
 
-li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 0;
+.timer{ display:flex; flex-direction:column; gap:10px; }
+.time{ font-size: 44px; font-weight:700; letter-spacing:1px; }
+.timer-controls{ display:flex; gap:8px; }
+
+.calendar{ display:flex; flex-direction:column; gap:10px; }
+.cal-head{ display:flex; align-items:center; justify-content:space-between; }
+.cal-month{ font-weight:700; }
+.cal-grid{
+  display:grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap:6px;
+}
+.day, .dow{
+  border-radius: 10px;
+  padding: 10px 0;
+  text-align:center;
+  font-size: 12px;
+}
+.dow{ opacity:.45; font-weight:600; }
+.day{ background: rgba(0,0,0,.03); }
+.day.today{ background: rgba(17,17,17,.12); font-weight:700; }
+.day.muted{ opacity:.25; }
+
+.search{ display:flex; gap:8px; }
+.search input{ flex:1; }
+.chips{ margin-top: 10px; display:flex; gap:8px; flex-wrap:wrap; }
+.chip{
+  border: 1px solid rgba(0,0,0,.12);
+  background: #fff;
+  border-radius: 999px;
+  padding: 7px 10px;
+  cursor:pointer;
+  font-size: 12px;
+}
+.hint{ margin-top: 10px; font-size: 11px; opacity:.5; }
+
+.dash{ display:grid; gap:10px; grid-template-columns: repeat(4, 1fr); }
+.dash-box{
+  border-radius: 12px;
+  padding: 14px;
+  background: rgba(0,0,0,.03);
+  min-height: 70px;
   font-size: 13px;
 }
 
-li.done {
-  opacity: 0.5;
-  text-decoration: line-through;
-}
+.footer{ margin-top: 14px; text-align:center; font-size: 11px; opacity:.35; }
 
-footer {
-  margin-top: 8px;
-  font-size: 10px;
-  text-align: center;
-  opacity: 0.4;
+/* 노션 임베드에서 폭이 좁을 때 */
+@media (max-width: 900px){
+  .grid{ grid-template-columns: 1fr; }
+  .wide{ grid-column: auto; }
+  .dash{ grid-template-columns: 1fr 1fr; }
 }
