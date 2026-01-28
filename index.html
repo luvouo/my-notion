@@ -2,27 +2,82 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notion Planner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Notion Template</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="widget">
-    <header>
-      <span class="title">오늘 to do list</span>
-      <span class="date">9월</span>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <span class="icon">📖</span>
+        <h1>READING ROOM</h1>
+      </div>
+      <div class="sub">나만의 노션 임베드 템플릿</div>
     </header>
 
-    <div class="input-row">
-      <input type="text" placeholder="할 일 추가..." id="todo-input" />
-      <button id="add-btn">＋</button>
-    </div>
+    <main class="grid">
+      <!-- LEFT -->
+      <section class="card" id="timer-card">
+        <div class="card-title">⏱ timer</div>
+        <div class="timer">
+          <div class="time" id="timer-display">10:00</div>
+          <div class="timer-controls">
+            <button class="btn" id="timer-start">Start</button>
+            <button class="btn" id="timer-reset">Reset</button>
+          </div>
+        </div>
+      </section>
 
-    <ul id="todo-list">
-      <!-- JS로 항목 추가 -->
-    </ul>
+      <section class="card" id="todo-card">
+        <div class="card-title">✅ to do</div>
+        <div class="input-row">
+          <input id="todo-input" type="text" placeholder="할 일 추가..." />
+          <button class="btn" id="add-btn">＋</button>
+        </div>
+        <ul class="list" id="todo-list"></ul>
+      </section>
 
-    <footer>S O M I L I T I O N</footer>
+      <!-- CENTER -->
+      <section class="card" id="calendar-card">
+        <div class="card-title">🗓 calendar</div>
+        <div class="calendar">
+          <div class="cal-head">
+            <button class="ghost" id="cal-prev">‹</button>
+            <div class="cal-month" id="cal-month">JAN 2026</div>
+            <button class="ghost" id="cal-next">›</button>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+      </section>
+
+      <!-- RIGHT -->
+      <section class="card" id="search-card">
+        <div class="card-title">🔎 search</div>
+        <div class="search">
+          <input id="search-input" type="text" placeholder="예: 도쿄, 책, 위시리스트..." />
+          <button class="btn" id="search-btn">Search</button>
+        </div>
+        <div class="chips">
+          <button class="chip" data-q="WISH">WISH</button>
+          <button class="chip" data-q="BOOK">BOOK</button>
+          <button class="chip" data-q="READING LOGS">READING LOGS</button>
+        </div>
+        <div class="hint">* 버튼은 예시. 실제 검색 대상은 네가 연결하는 링크로 바꾸면 됨.</div>
+      </section>
+
+      <section class="card wide" id="dashboard-card">
+        <div class="card-title">📌 dashboard</div>
+        <div class="dash">
+          <div class="dash-box">오늘의 목표</div>
+          <div class="dash-box">독서 진행률</div>
+          <div class="dash-box">메모</div>
+          <div class="dash-box">링크</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">SOMILITION</footer>
   </div>
 
   <script src="script.js"></script>
