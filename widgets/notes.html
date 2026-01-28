@@ -1,1 +1,230 @@
+<!-- =========================
+  NOTES / MEMO WIDGET (COOL GRAY)
+  - Cool gray palette
+  - Transparent background
+  - Responsive
+  - Autosave localStorage
+========================= -->
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Memo — Soft Schedule</title>
+
+  <style>
+    :root{
+      /* ✅ Cool Gray (slightly bluish gray) */
+      --accent-1: rgba(210, 218, 228, 0.90);  /* border highlight */
+      --accent-2: rgba(190, 200, 212, 0.55);  /* soft */
+      --border: rgba(200, 208, 220, 0.62);
+
+      --text: rgba(28, 30, 33, 0.92);
+      --muted: rgba(28, 30, 33, 0.55);
+
+      --glass: rgba(255,255,255,0.10);
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --radius: 20px;
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      background: transparent;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: var(--text);
+    }
+
+    .wrap{
+      width: min(720px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2.6vw, 16px);
+      box-sizing: border-box;
+    }
+
+    .card{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(14px, 2.8vw, 18px);
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(120% 80% at 0% 0%, rgba(210,218,228,0.22), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(190,200,212,0.16), transparent 55%);
+      pointer-events:none;
+    }
+
+    .inner{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+    }
+
+    .top{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--accent-1);
+      box-shadow: 0 0 0 6px rgba(210,218,228,0.22);
+      flex: 0 0 auto;
+    }
+
+    h1{
+      margin:0;
+      font-size: clamp(14px, 3.6vw, 16px);
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    textarea{
+      width: 100%;
+      min-height: 160px;
+      resize: vertical;
+      border-radius: 14px;
+      border: 1px solid rgba(200,208,220,0.55);
+      background: rgba(255,255,255,0.12);
+      padding: 12px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      box-sizing: border-box;
+      line-height: 1.5;
+    }
+
+    textarea::placeholder{
+      color: rgba(28,30,33,0.45);
+    }
+
+    .footer{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .linkBtn{
+      border: 1px solid rgba(200,208,220,0.55);
+      background: rgba(255,255,255,0.08);
+      padding: 8px 10px;
+      border-radius: 12px;
+      cursor:pointer;
+      transition: background .2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .linkBtn:hover{ background: rgba(255,255,255,0.14); }
+
+    @media (max-width: 360px){
+      .meta{ display:none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="Memo Widget">
+      <div class="inner">
+        <div class="top">
+          <div class="title">
+            <span class="dot" aria-hidden="true"></span>
+            <h1>Memo</h1>
+          </div>
+          <div class="meta" id="metaText"></div>
+        </div>
+
+        <textarea id="notes" placeholder="짧은 메모, 컨디션, 주의사항…"></textarea>
+
+        <div class="footer">
+          <span id="status">자동 저장</span>
+          <button class="linkBtn" id="clearBtn" type="button">비우기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function ymd(d=new Date()){
+      const y=d.getFullYear();
+      const m=String(d.getMonth()+1).padStart(2,"0");
+      const day=String(d.getDate()).padStart(2,"0");
+      return `${y}.${m}.${day}`;
+    }
+    document.getElementById("metaText").textContent = ymd();
+
+    const STORAGE_KEY = "soft_schedule_notes_v1";
+    const textarea = document.getElementById("notes");
+    const status = document.getElementById("status");
+    const clearBtn = document.getElementById("clearBtn");
+
+    function load(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw !== null) textarea.value = raw;
+      }catch(e){}
+    }
+    function save(){
+      try{
+        localStorage.setItem(STORAGE_KEY, textarea.value);
+        status.textContent = "저장됨";
+        clearTimeout(save._t);
+        save._t = setTimeout(() => status.textContent = "자동 저장", 900);
+      }catch(e){
+        status.textContent = "저장 실패";
+      }
+    }
+
+    let t = null;
+    textarea.addEventListener("input", () => {
+      status.textContent = "입력 중…";
+      clearTimeout(t);
+      t = setTimeout(save, 350);
+    });
+
+    clearBtn.addEventListener("click", () => {
+      textarea.value = "";
+      save();
+    });
+
+    load();
+    status.textContent = "자동 저장";
+  </script>
+</body>
+</html>
 
