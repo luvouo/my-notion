@@ -1,10 +1,3 @@
-<!-- =========================
-  TODAY WIDGET (PASTEL PINK)
-  - Pink palette (pastel)
-  - Transparent background
-  - Responsive
-  - Per-day localStorage
-========================= -->
 <!doctype html>
 <html lang="ko">
 <head>
@@ -14,7 +7,7 @@
 
   <style>
     :root{
-      /* ✅ Pastel Pink (like the very first version) */
+      /* Pastel Pink */
       --accent-1: rgba(255, 192, 203, 0.88);
       --accent-2: rgba(255, 170, 190, 0.55);
       --border: rgba(255, 170, 190, 0.62);
@@ -29,17 +22,26 @@
       --radius: 20px;
     }
 
+    /* ✅ Custom Font: place the .ttf next to this HTML on GitHub Pages */
+    @font-face{
+      font-family: "EnterSanChaek";
+      src: url("./엔터+산책10_alpha2.9_20051120-hjwtkfksdl.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     html, body{
       margin:0;
       padding:0;
-      background: transparent;
+      background: transparent; /* Notion embed friendly */
       font-family: ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
       color: var(--text);
     }
 
     .wrap{
-      width: min(560px, 100%);
+      width: min(620px, 100%);
       margin: 0 auto;
       padding: clamp(10px, 2.6vw, 16px);
       box-sizing: border-box;
@@ -79,6 +81,7 @@
       align-items: baseline;
       justify-content: space-between;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
     .title{
@@ -97,9 +100,12 @@
       flex: 0 0 auto;
     }
 
-    h1{
+    /* ✅ Apply custom font ONLY to the "Today" label */
+    .title h1{
       margin:0;
-      font-size: clamp(14px, 3.6vw, 16px);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: clamp(15px, 3.8vw, 18px);
       letter-spacing: -0.2px;
       white-space: nowrap;
       overflow: hidden;
@@ -110,6 +116,14 @@
       font-size: 12px;
       color: var(--muted);
       white-space: nowrap;
+    }
+
+    .actions{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      flex: 1 1 auto;
     }
 
     .inputRow{
@@ -145,9 +159,18 @@
       transition: transform .08s ease, background .2s ease, border-color .2s ease;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      white-space: nowrap;
     }
     .btn:active{ transform: scale(0.98); }
     .btn:hover{ background: rgba(255,192,203,0.30); border-color: rgba(255,170,190,0.90); }
+
+    .btn.secondary{
+      border: 1px solid rgba(255,170,190,0.45);
+      background: rgba(255,255,255,0.08);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
 
     .list{
       margin:0;
@@ -231,21 +254,167 @@
       color: var(--muted);
     }
 
-    .linkBtn{
-      border: 1px solid rgba(255,170,190,0.45);
-      background: rgba(255,255,255,0.08);
-      padding: 8px 10px;
-      border-radius: 12px;
-      cursor:pointer;
-      transition: background .2s ease;
-      -webkit-tap-highlight-color: transparent;
+    .toast{
+      font-size: 12px;
+      color: rgba(30,30,30,0.65);
+      min-height: 16px;
     }
-    .linkBtn:hover{ background: rgba(255,255,255,0.14); }
+
+    /* -------- Modal (History / Archive) -------- */
+    .modalOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.22);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 9999;
+    }
+    .modalOverlay.open{ display: flex; }
+
+    .modal{
+      width: min(760px, 100%);
+      border-radius: 18px;
+      border: 1px solid rgba(255,170,190,0.38);
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      overflow: hidden;
+    }
+
+    .modalHeader{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .modalHeader .mhTitle{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      min-width: 0;
+    }
+    .modalHeader .mhTitle strong{
+      font-size: 14px;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .modalBody{
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 320px;
+    }
+
+    .dates{
+      border-right: 1px solid rgba(0,0,0,0.06);
+      padding: 12px;
+      overflow: auto;
+      max-height: 62vh;
+    }
+
+    .dateBtn{
+      width: 100%;
+      text-align: left;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.75);
+      cursor: pointer;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: rgba(30,30,30,0.85);
+    }
+    .dateBtn.active{
+      border-color: rgba(255,170,190,0.55);
+      background: rgba(255,192,203,0.18);
+    }
+    .dateBtn small{
+      display:block;
+      color: rgba(30,30,30,0.55);
+      margin-top: 3px;
+      font-size: 11px;
+    }
+
+    .preview{
+      padding: 12px;
+      overflow: auto;
+      max-height: 62vh;
+      display: grid;
+      gap: 10px;
+    }
+
+    .previewTop{
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .previewTop .picked{
+      font-size: 13px;
+      color: rgba(30,30,30,0.82);
+      white-space: nowrap;
+    }
+
+    .previewBox{
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,0.70);
+      display: grid;
+      gap: 8px;
+    }
+    .pItem{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      font-size: 13px;
+      color: rgba(30,30,30,0.85);
+    }
+    .badge{
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(0,0,0,0.03);
+      color: rgba(30,30,30,0.65);
+      flex: 0 0 auto;
+    }
+    .badge.done{
+      border-color: rgba(255,170,190,0.40);
+      background: rgba(255,192,203,0.18);
+    }
+
+    .modalFooter{
+      padding: 12px 14px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      font-size: 12px;
+      color: rgba(30,30,30,0.55);
+    }
+
+    @media (max-width: 680px){
+      .modalBody{ grid-template-columns: 1fr; }
+      .dates{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
+    }
 
     @media (max-width: 360px){
       .meta{ display:none; }
       .btn{ width: 100%; }
       .input{ flex-basis: 100%; }
+      .actions{ justify-content: flex-start; }
     }
   </style>
 </head>
@@ -259,6 +428,13 @@
             <span class="dot" aria-hidden="true"></span>
             <h1>Today</h1>
           </div>
+
+          <div class="actions">
+            <button class="btn secondary" id="carryBtn" type="button">어제 미완료 가져오기</button>
+            <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
+            <button class="btn secondary" id="copyTodayBtn" type="button">오늘 기록 복사</button>
+          </div>
+
           <div class="meta" id="metaText"></div>
         </div>
 
@@ -272,45 +448,90 @@
         <div class="footer">
           <span id="countText">0/0 done</span>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="linkBtn" id="clearDoneBtn" type="button">완료 삭제</button>
-            <button class="linkBtn" id="resetBtn" type="button">전체 초기화</button>
+            <button class="btn secondary" id="clearDoneBtn" type="button">완료 삭제</button>
+            <button class="btn secondary" id="resetBtn" type="button">전체 초기화</button>
           </div>
         </div>
+
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History / Archive Modal -->
+  <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="History / Archive">
+      <div class="modalHeader">
+        <div class="mhTitle">
+          <span class="dot" aria-hidden="true"></span>
+          <strong>History / Archive</strong>
+        </div>
+        <button class="btn secondary" id="closeModalBtn" type="button">닫기</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="dates" id="datesPanel">
+          <!-- dates list -->
+        </div>
+
+        <div class="preview">
+          <div class="previewTop">
+            <div class="picked" id="pickedDateText">날짜를 선택해줘</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn secondary" id="copyPickedBtn" type="button" disabled>선택 날짜 복사</button>
+            </div>
+          </div>
+
+          <div class="previewBox" id="previewBox">
+            <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+              왼쪽에서 날짜를 선택하면, 그날의 Today 기록을 보여줘.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modalFooter">
+        <span id="archiveMeta">자동 아카이브: ON (기간 제한 없음)</span>
+        <span id="archiveCount">0 days archived</span>
       </div>
     </div>
   </div>
 
   <script>
+    /* -----------------------------
+      Keys & helpers
+    ----------------------------- */
+    const PREFIX_DAY = "soft_schedule_today_";
+    const KEY_ARCHIVE = "soft_schedule_today_archive_v1"; // { "YYYY.MM.DD": [items] }
+    const KEY_VERSION = "soft_schedule_today_widget_v1";
+
+    function pad2(n){ return String(n).padStart(2,"0"); }
     function ymd(d=new Date()){
-      const y=d.getFullYear();
-      const m=String(d.getMonth()+1).padStart(2,"0");
-      const day=String(d.getDate()).padStart(2,"0");
-      return `${y}.${m}.${day}`;
+      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
     }
-    const today = ymd();
-    document.getElementById("metaText").textContent = today;
-
-    const STORAGE_KEY = `soft_schedule_today_${today}`;
-
-    const listEl = document.getElementById("list");
-    const inputEl = document.getElementById("todoInput");
-    const addBtn = document.getElementById("addBtn");
-    const countText = document.getElementById("countText");
-    const clearDoneBtn = document.getElementById("clearDoneBtn");
-    const resetBtn = document.getElementById("resetBtn");
-
-    let state = loadState();
-
-    function loadState(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
-      }catch(e){ return []; }
+    function parseYmd(str){
+      // expects YYYY.MM.DD
+      const m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(str);
+      if(!m) return null;
+      return { y:+m[1], m:+m[2], d:+m[3] };
     }
-    function saveState(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    function ymdToDate(str){
+      const p = parseYmd(str);
+      if(!p) return null;
+      return new Date(p.y, p.m-1, p.d);
+    }
+    function formatForCopy(dateStr, items){
+      // Notion-friendly plain text (checkbox-like)
+      // Example:
+      // [Today | 2026.01.30]
+      // - [ ] task
+      // - [x] done task
+      const lines = [];
+      lines.push(`[Today | ${dateStr}]`);
+      for(const it of items){
+        lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+      }
+      return lines.join("\n");
     }
     function escapeHtml(str){
       return String(str).replace(/[&<>"']/g, (m) => ({
@@ -321,6 +542,142 @@
         "'": "&#039;"
       }[m]));
     }
+    function showToast(msg){
+      toast.textContent = msg;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.textContent = "", 1600);
+    }
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        // fallback
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try{
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          return ok;
+        }catch(err){
+          document.body.removeChild(ta);
+          return false;
+        }
+      }
+    }
+
+    /* -----------------------------
+      Archive store
+    ----------------------------- */
+    function loadArchive(){
+      try{
+        const raw = localStorage.getItem(KEY_ARCHIVE);
+        if(!raw) return {};
+        const parsed = JSON.parse(raw);
+        return (parsed && typeof parsed === "object") ? parsed : {};
+      }catch(e){ return {}; }
+    }
+    function saveArchive(archive){
+      localStorage.setItem(KEY_ARCHIVE, JSON.stringify(archive));
+    }
+
+    /* -----------------------------
+      Auto-archive: move past day keys into archive (no limit)
+      - Keeps widget fast and makes History consistent.
+    ----------------------------- */
+    function autoArchivePastDays(todayStr){
+      const archive = loadArchive();
+      const keys = [];
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(!k) continue;
+        if(k === KEY_ARCHIVE) continue;
+        if(!k.startsWith(PREFIX_DAY)) continue;
+        // daily key: soft_schedule_today_YYYY.MM.DD
+        const dateStr = k.slice(PREFIX_DAY.length);
+        if(dateStr === todayStr) continue;
+        if(!parseYmd(dateStr)) continue;
+        keys.push({ k, dateStr });
+      }
+
+      // move
+      let moved = 0;
+      for(const {k, dateStr} of keys){
+        if(archive[dateStr]) {
+          // already archived -> can remove daily key to avoid duplication
+          try{ localStorage.removeItem(k); }catch(e){}
+          continue;
+        }
+        try{
+          const raw = localStorage.getItem(k);
+          const items = raw ? JSON.parse(raw) : null;
+          if(Array.isArray(items)){
+            archive[dateStr] = items;
+            moved++;
+          }
+          localStorage.removeItem(k);
+        }catch(e){
+          // ignore parse errors; don't remove in that case
+        }
+      }
+
+      if(moved > 0) saveArchive(archive);
+      return { archive, moved };
+    }
+
+    /* -----------------------------
+      Today state (per-day)
+    ----------------------------- */
+    const todayStr = ymd(new Date());
+    const yesterdayStr = ymd(new Date(Date.now() - 86400000));
+    const KEY_TODAY = `${PREFIX_DAY}${todayStr}`;
+
+    const metaText = document.getElementById("metaText");
+    const listEl = document.getElementById("list");
+    const inputEl = document.getElementById("todoInput");
+    const addBtn = document.getElementById("addBtn");
+    const countText = document.getElementById("countText");
+    const clearDoneBtn = document.getElementById("clearDoneBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const carryBtn = document.getElementById("carryBtn");
+    const historyBtn = document.getElementById("historyBtn");
+    const copyTodayBtn = document.getElementById("copyTodayBtn");
+
+    const toast = document.getElementById("toast");
+
+    // Modal
+    const modalOverlay = document.getElementById("modalOverlay");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const datesPanel = document.getElementById("datesPanel");
+    const pickedDateText = document.getElementById("pickedDateText");
+    const previewBox = document.getElementById("previewBox");
+    const copyPickedBtn = document.getElementById("copyPickedBtn");
+    const archiveCount = document.getElementById("archiveCount");
+
+    metaText.textContent = todayStr;
+
+    // Boot: auto-archive past days
+    let archive = autoArchivePastDays(todayStr).archive;
+
+    let state = loadDay(KEY_TODAY); // today's list only
+    let pickedDate = null;
+
+    function loadDay(key){
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      }catch(e){ return []; }
+    }
+    function saveDay(key, items){
+      localStorage.setItem(key, JSON.stringify(items));
+    }
 
     function addItem(text){
       const t = (text || "").trim();
@@ -330,31 +687,31 @@
         text: t,
         done: false
       });
-      saveState();
+      saveDay(KEY_TODAY, state);
       render();
     }
 
     function toggleItem(id){
-      state = state.map(it => it.id === id ? { ...it, done: !it.done } : it);
-      saveState();
+      state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+      saveDay(KEY_TODAY, state);
       render();
     }
 
     function deleteItem(id){
       state = state.filter(it => it.id !== id);
-      saveState();
+      saveDay(KEY_TODAY, state);
       render();
     }
 
     function clearDone(){
       state = state.filter(it => !it.done);
-      saveState();
+      saveDay(KEY_TODAY, state);
       render();
     }
 
     function resetAll(){
       state = [];
-      saveState();
+      saveDay(KEY_TODAY, state);
       render();
     }
 
@@ -379,15 +736,182 @@
       countText.textContent = `${done}/${total} done`;
     }
 
-    function submit(){
+    /* -----------------------------
+      Manual carry-over (yesterday unfinished -> today)
+      - No automatic carry; button only.
+      - Source: archive[yesterday] first, else daily key if exists
+    ----------------------------- */
+    function getYesterdayItems(){
+      // yesterday should already be archived, but just in case:
+      if(archive[yesterdayStr] && Array.isArray(archive[yesterdayStr])) return archive[yesterdayStr];
+      const raw = localStorage.getItem(`${PREFIX_DAY}${yesterdayStr}`);
+      if(!raw) return null;
+      try{
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : null;
+      }catch(e){ return null; }
+    }
+
+    function carryOverYesterdayUnfinished(){
+      const yItems = getYesterdayItems();
+      if(!yItems || yItems.length === 0){
+        showToast("어제 기록이 없어.");
+        return;
+      }
+      const unfinished = yItems.filter(x => !x.done);
+      if(unfinished.length === 0){
+        showToast("어제 미완료가 없어.");
+        return;
+      }
+
+      // avoid duplicates by text match (simple + practical)
+      const existingTexts = new Set(state.map(x => x.text.trim()));
+      const toAdd = [];
+      for(const it of unfinished){
+        const tx = (it.text || "").trim();
+        if(!tx) continue;
+        if(existingTexts.has(tx)) continue;
+        toAdd.push({
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+          text: tx,
+          done: false
+        });
+      }
+
+      if(toAdd.length === 0){
+        showToast("가져올 미완료가 이미 오늘에 있어.");
+        return;
+      }
+
+      // prepend carried items so they appear on top
+      state = [...toAdd, ...state];
+      saveDay(KEY_TODAY, state);
+      render();
+      showToast(`어제 미완료 ${toAdd.length}개 가져왔어.`);
+    }
+
+    /* -----------------------------
+      Export / Copy
+    ----------------------------- */
+    async function copyToday(){
+      const text = formatForCopy(todayStr, state);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "오늘 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
+    }
+
+    /* -----------------------------
+      History / Archive UI
+    ----------------------------- */
+    function openModal(){
+      // refresh archive (in case)
+      archive = loadArchive();
+      buildDates();
+      modalOverlay.classList.add("open");
+      modalOverlay.setAttribute("aria-hidden", "false");
+      // reset preview
+      pickedDate = null;
+      pickedDateText.textContent = "날짜를 선택해줘";
+      copyPickedBtn.disabled = true;
+      previewBox.innerHTML = `
+        <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+          왼쪽에서 날짜를 선택하면, 그날의 Today 기록을 보여줘.
+        </div>
+      `;
+    }
+
+    function closeModal(){
+      modalOverlay.classList.remove("open");
+      modalOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    function buildDates(){
+      const dates = Object.keys(archive).filter(d => parseYmd(d));
+      dates.sort((a,b) => {
+        const da = ymdToDate(a).getTime();
+        const db = ymdToDate(b).getTime();
+        return db - da; // desc
+      });
+
+      datesPanel.innerHTML = "";
+      if(dates.length === 0){
+        datesPanel.innerHTML = `
+          <div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">
+            아직 아카이브가 없어.
+          </div>
+        `;
+      }else{
+        for(const d of dates){
+          const items = archive[d] || [];
+          const done = items.filter(x => x.done).length;
+          const total = items.length;
+          const btn = document.createElement("button");
+          btn.className = "dateBtn";
+          btn.type = "button";
+          btn.dataset.date = d;
+          btn.innerHTML = `${d}<small>${done}/${total} done</small>`;
+          datesPanel.appendChild(btn);
+        }
+      }
+
+      archiveCount.textContent = `${dates.length} days archived`;
+    }
+
+    function setActiveDateButton(dateStr){
+      const btns = datesPanel.querySelectorAll(".dateBtn");
+      btns.forEach(b => b.classList.toggle("active", b.dataset.date === dateStr));
+    }
+
+    function renderPreview(dateStr){
+      const items = archive[dateStr];
+      pickedDate = dateStr;
+      setActiveDateButton(dateStr);
+
+      pickedDateText.textContent = `선택: ${dateStr}`;
+      copyPickedBtn.disabled = false;
+
+      if(!items || items.length === 0){
+        previewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">기록이 비어 있어.</div>`;
+        return;
+      }
+
+      const rows = items.map(it => {
+        const badgeCls = it.done ? "badge done" : "badge";
+        const badgeText = it.done ? "done" : "todo";
+        return `
+          <div class="pItem">
+            <span class="${badgeCls}">${badgeText}</span>
+            <span style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
+              ${escapeHtml(it.text)}
+            </span>
+          </div>
+        `;
+      }).join("");
+
+      previewBox.innerHTML = rows;
+    }
+
+    async function copyPicked(){
+      if(!pickedDate) return;
+      const items = archive[pickedDate] || [];
+      const text = formatForCopy(pickedDate, items);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "선택 날짜 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
+    }
+
+    /* -----------------------------
+      Events
+    ----------------------------- */
+    addBtn.addEventListener("click", () => {
       addItem(inputEl.value);
       inputEl.value = "";
       inputEl.focus();
-    }
+    });
 
-    addBtn.addEventListener("click", submit);
     inputEl.addEventListener("keydown", (e) => {
-      if(e.key === "Enter") submit();
+      if(e.key === "Enter"){
+        addItem(inputEl.value);
+        inputEl.value = "";
+      }
     });
 
     listEl.addEventListener("click", (e) => {
@@ -409,15 +933,26 @@
     clearDoneBtn.addEventListener("click", clearDone);
     resetBtn.addEventListener("click", resetAll);
 
-    if(state.length === 0){
-      state = [
-        { id: "s1", text: "오늘의 핵심 일정 1", done: false },
-        { id: "s2", text: "오늘의 핵심 일정 2", done: false },
-        { id: "s3", text: "연락/확인할 것", done: false },
-      ];
-      saveState();
-    }
+    carryBtn.addEventListener("click", carryOverYesterdayUnfinished);
+    historyBtn.addEventListener("click", openModal);
+    copyTodayBtn.addEventListener("click", copyToday);
 
+    closeModalBtn.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", (e) => {
+      if(e.target === modalOverlay) closeModal();
+    });
+
+    datesPanel.addEventListener("click", (e) => {
+      const btn = e.target.closest(".dateBtn");
+      if(!btn) return;
+      const d = btn.dataset.date;
+      renderPreview(d);
+    });
+
+    copyPickedBtn.addEventListener("click", copyPicked);
+
+    // initial render (today starts clean unless you already typed today)
+    // No seeding: your requirement implies real usage
     render();
   </script>
 </body>
