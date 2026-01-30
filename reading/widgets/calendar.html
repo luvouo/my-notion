@@ -117,7 +117,8 @@
       text-overflow: ellipsis;
       letter-spacing: .2px;
       background: rgba(243, 182, 198, .35);
-      padding: 6px 10px;
+      padding: 2px 6px;
+      line-height: 1;
       border-radius: 0px;      /* pill 형태 */
       display: inline-block;     /* 배경이 텍스트 길이만큼만 */
     }
@@ -177,6 +178,10 @@
       letter-spacing: .3px;
       padding: 2px 0;
       user-select:none;
+    }
+    .dow .wknd{
+      color: var(--accent);
+      font-weight: 700;
     }
 
     /* 6행 고정: 높이 안정 + 스크롤 방지 */
@@ -271,8 +276,9 @@
 
       <div class="grid">
         <div class="dow" aria-hidden="true">
-          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-        </div>
+  <div class="wknd">Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div class="wknd">Sat</div>
+</div>
+
         <div class="days" id="daysGrid"></div>
       </div>
     </div>
