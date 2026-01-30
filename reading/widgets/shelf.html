@@ -382,7 +382,7 @@
     // ✅ 여기만 수정해서 책 추가/정리하면 됨
     // status: "reading" | "read" | "paused"
     const BOOKS = [
-      { title: "브람스를 좋아하세요", author: "프랑수아즈 사강", status: "read",   color: "#f3b6c6", cover: https://product.kyobobook.co.kr/detail/S000000620316},
+      { title: "브람스를 좋아하세요", author: "프랑수아즈 사강", status: "read",   color: "#f3b6c6", cover: https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788937461798.jpg},
       { title: "무의미의 축제",       author: "밀란 쿤데라",   status: "reading",color: "#ffd7e2" },
       { title: "인생의 베일",         author: "서머싯 몸",     status: "read",   color: "#f3b6c6" },
       { title: "말",                 author: "장 폴 사르트르", status: "paused", color: "#f3b6c6" },
@@ -451,35 +451,47 @@
       } else {
         for(const b of slice){
           const spine = document.createElement('div');
-          spine.className = 'spine';
+spine.className = 'spine';
 
-          const band = document.createElement('div');
-          band.className = 'band';
-          band.style.background = b.color || 'var(--accent)';
+      /* ✅ 1) cover (왼쪽) */
+      const cover = document.createElement('div');
+      cover.className = 'cover';
+      
+      /* cover URL이 있을 때만 backgroundImage 적용 */
+      if (b.cover) {
+        cover.style.backgroundImage = `url("${b.cover}")`;
+      } else {
+        /* cover 없으면 그냥 단색(디버깅용) */
+        cover.style.background = 'rgba(0,0,0,.06)';
+      }
+      
+      /* ✅ 2) label (오른쪽) */
+      const label = document.createElement('div');
+      label.className = 'label';
+      
+      const t = document.createElement('div');
+      t.className = 't';
+      t.textContent = b.title;
+      
+      const a = document.createElement('div');
+      a.className = 'a';
+      a.textContent = b.author;
+      
+      label.appendChild(t);
+      label.appendChild(a);
+      
+      /* ✅ append 순서가 핵심 */
+      spine.appendChild(cover);
+      spine.appendChild(label);
+      
+      /* 기존처럼 band 쓰면 여기서 추가 */
+      const band = document.createElement('div');
+      band.className = 'band';
+      band.style.background = b.color || 'var(--accent)';
+      spine.appendChild(band);
+      
+      els.books.appendChild(spine);
 
-          const cover = document.createElement('div');
-          cover.className = 'cover';
-          cover.style.backgroundImage = `url(${b.cover})`;
-
-          /* ✅ 책등 라벨 */
-          const label = document.createElement('div');
-          label.className = 'label';
-
-          const t = document.createElement('div');
-          t.className = 't';
-          t.textContent = b.title;
-
-          const a = document.createElement('div');
-          a.className = 'a';
-          a.textContent = b.author;
-
-          label.appendChild(t);
-          label.appendChild(a);
-
-          spine.appendChild(cover);
-          spine.appendChild(label);
-
-          els.books.appendChild(spine);
         }
       }
 
