@@ -1,1 +1,498 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reading Shelf Widget</title>
+
+  <style>
+    @font-face{
+      font-family: "WhiteDay";
+      src: url("../../fonts/whiteday.ttf") format("truetype");
+      font-weight: 400 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root{
+      --text: rgba(20,20,22,.92);
+      --muted: rgba(20,20,22,.55);
+      --line: rgba(20,20,22,.10);
+
+      --accent: #f3b6c6;
+      --accent2: #ffd7e2;
+
+      --cardH: 320px;
+      --radius: 18px;
+      --shadow: 0 10px 30px rgba(0,0,0,.06);
+
+      --font: "WhiteDay", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+              Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Noto Sans", Arial, sans-serif;
+
+      /* 책 등(spine) */
+      --spineW: 44px;              /* JS가 폭에 따라 자동 조정 */
+      --spineH: 150px;             /* 고정(스크롤 방지) */
+      --spineRadius: 10px;         /* 너무 둥글지 않게 */
+      --gap: 10px;
+    }
+
+    html, body{
+      height: 100%;
+      margin: 0;
+      background: transparent;
+      font-family: var(--font);
+      color: var(--text);
+      overflow: hidden; /* 스크롤 방지 */
+    }
+
+    .wrap{
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+
+    .card{
+      height: var(--cardH);
+      background: rgba(255,255,255,.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (prefers-color-scheme: dark){
+      :root{
+        --text: rgba(245,245,248,.92);
+        --muted: rgba(245,245,248,.55);
+        --line: rgba(245,245,248,.12);
+        --shadow: 0 10px 30px rgba(0,0,0,.35);
+      }
+      .card{
+        background: rgba(18,18,20,.55);
+        border: 1px solid rgba(255,255,255,.08);
+      }
+    }
+
+    .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      flex: 0 0 auto;
+    }
+
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .h1{
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .2px;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .h2{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .controls{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .seg{
+      display:flex;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.45);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    @media (prefers-color-scheme: dark){
+      .seg{ background: rgba(18,18,20,.45); }
+    }
+    .seg button{
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 7px 10px;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      line-height: 1;
+      letter-spacing: .1px;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .seg button.active{
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,0));
+    }
+    @media (prefers-color-scheme: dark){
+      .seg button.active{
+        background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0));
+      }
+    }
+
+    .btn{
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.55);
+      color: var(--text);
+      cursor: pointer;
+      display:grid;
+      place-items:center;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    @media (prefers-color-scheme: dark){ .btn{ background: rgba(18,18,20,.45); } }
+    .btn:active{ transform: scale(.97); }
+    .btn:disabled{ opacity: .4; cursor: default; }
+
+    .body{
+      flex: 1 1 auto;
+      padding: 12px 14px 14px;
+      min-height: 0;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+
+    /* 책장 선반 */
+    .shelf{
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(255,255,255,.35);
+      border: 1px solid rgba(0,0,0,.05);
+    }
+    @media (prefers-color-scheme: dark){
+      .shelf{
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.10);
+      }
+    }
+
+    .books{
+      display:grid;
+      grid-auto-flow: column;
+      grid-auto-columns: var(--spineW);
+      gap: var(--gap);
+      align-items:end;
+      justify-content:start;
+      padding: 14px 14px 18px;
+      box-sizing:border-box;
+      height: calc(var(--spineH) + 18px);
+      /* 스크롤 금지 */
+      overflow: hidden;
+    }
+
+    .spine{
+      height: var(--spineH);
+      border-radius: var(--spineRadius);
+      border: 1px solid rgba(0,0,0,.08);
+      background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.35));
+      box-shadow: 0 8px 18px rgba(0,0,0,.06);
+      display:flex;
+      align-items:stretch;
+      justify-content:stretch;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+    }
+    @media (prefers-color-scheme: dark){
+      .spine{
+        border: 1px solid rgba(255,255,255,.12);
+        background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+        box-shadow: 0 12px 22px rgba(0,0,0,.35);
+      }
+    }
+
+    .spine::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(90deg, rgba(0,0,0,.08), rgba(0,0,0,0) 35%, rgba(0,0,0,.06));
+      opacity: .25;
+      pointer-events:none;
+    }
+
+    .label{
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      width: 100%;
+      padding: 10px 8px;
+      box-sizing:border-box;
+      display:flex;
+      gap: 6px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+
+    .t{
+      font-size: 12px;
+      line-height: 1;
+      letter-spacing: 0; /* 자간 타이트 */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-height: 100%;
+    }
+    .a{
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1;
+      letter-spacing: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-height: 100%;
+    }
+
+    /* 얇은 “띠” 포인트 */
+    .band{
+      position:absolute;
+      left:0;
+      top:0;
+      width: 6px;
+      height: 100%;
+      background: var(--accent);
+      opacity: .85;
+    }
+
+    /* 바닥 선반(wood line 느낌 아주 약하게) */
+    .plank{
+      height: 10px;
+      background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,0));
+      opacity: .12;
+    }
+
+    .empty{
+      padding: 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 0 2px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    @media (max-width: 360px){
+      :root{ --cardH: 300px; --spineH: 138px; }
+      .wrap{ padding: 10px; }
+      .header{ padding: 10px 12px; }
+      .body{ padding: 10px 12px 12px; }
+      .btn{ width: 30px; height: 30px; border-radius: 11px; }
+      .seg button{ padding: 7px 9px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" role="group" aria-label="reading shelf widget">
+      <div class="header">
+        <div class="title">
+          <div class="h1" id="title">My Shelf</div>
+          <div class="h2" id="subtitle">Read / Reading / Paused</div>
+        </div>
+
+        <div class="controls">
+          <div class="seg" aria-label="status filter">
+            <button type="button" data-filter="reading" class="active">Reading</button>
+            <button type="button" data-filter="read">Read</button>
+            <button type="button" data-filter="paused">Paused</button>
+          </div>
+
+          <button class="btn" id="prev" aria-label="previous page" title="Previous">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="btn" id="next" aria-label="next page" title="Next">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="body">
+        <div class="shelf">
+          <div class="books" id="books"></div>
+          <div class="plank"></div>
+        </div>
+
+        <div class="footer">
+          <div id="count">—</div>
+          <div id="page">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ✅ 여기만 수정해서 책 추가/정리하면 됨
+    // status: "reading" | "read" | "paused"
+    const BOOKS = [
+      { title: "브람스를 좋아하세요", author: "프랑수아즈 사강", status: "read",   color: "#f3b6c6" },
+      { title: "무의미의 축제",       author: "밀란 쿤데라",   status: "reading",color: "#ffd7e2" },
+      { title: "인생의 베일",         author: "서머싯 몸",     status: "read",   color: "#f3b6c6" },
+      { title: "말",                 author: "장 폴 사르트르", status: "paused", color: "#f3b6c6" },
+      { title: "불현한 출발",         author: "프란츠 카프카", status: "reading",color: "#ffd7e2" },
+      { title: "데일 카네기 자기관리론", author: "데일 카네기", status: "paused", color: "#ffd7e2" },
+      // 더 추가…
+    ];
+
+    const els = {
+      books: document.getElementById('books'),
+      count: document.getElementById('count'),
+      page: document.getElementById('page'),
+      title: document.getElementById('title'),
+      subtitle: document.getElementById('subtitle'),
+      prev: document.getElementById('prev'),
+      next: document.getElementById('next'),
+      segBtns: Array.from(document.querySelectorAll('.seg button'))
+    };
+
+    let filter = 'reading';
+    let pageIndex = 0;
+    let perPage = 0;
+    let filtered = [];
+
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+    function computeLayout(){
+      // container 폭에 맞춰 책 spine 너비/페이지당 권수 산정 (스크롤 없이 페이지)
+      const container = els.books.getBoundingClientRect();
+      const gap = 10; // CSS --gap과 맞추기
+      const minW = 38;
+      const maxW = 52;
+
+      // 가능한 columns 수 대충 계산 -> spineW 결정
+      const approxCols = Math.floor((container.width + gap) / (minW + gap));
+      const cols = clamp(approxCols, 4, 10);
+
+      const spineW = Math.floor((container.width - gap * (cols - 1)) / cols);
+      const finalW = clamp(spineW, minW, maxW);
+
+      document.documentElement.style.setProperty('--spineW', finalW + 'px');
+      perPage = cols;
+    }
+
+    function setFilter(nextFilter){
+      filter = nextFilter;
+      pageIndex = 0;
+      render();
+    }
+
+    function render(){
+      computeLayout();
+
+      filtered = BOOKS.filter(b => b.status === filter);
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total / perPage));
+      pageIndex = clamp(pageIndex, 0, totalPages - 1);
+
+      const start = pageIndex * perPage;
+      const slice = filtered.slice(start, start + perPage);
+
+      els.books.innerHTML = '';
+
+      if(slice.length === 0){
+        els.books.innerHTML = `<div class="empty">No books here yet.</div>`;
+      } else {
+        for(const b of slice){
+          const spine = document.createElement('div');
+          spine.className = 'spine';
+
+          const band = document.createElement('div');
+          band.className = 'band';
+          band.style.background = b.color || 'var(--accent)';
+
+          const label = document.createElement('div');
+          label.className = 'label';
+
+          const t = document.createElement('div');
+          t.className = 't';
+          t.textContent = b.title;
+
+          const a = document.createElement('div');
+          a.className = 'a';
+          a.textContent = b.author;
+
+          label.appendChild(t);
+          label.appendChild(a);
+
+          spine.appendChild(band);
+          spine.appendChild(label);
+
+          els.books.appendChild(spine);
+        }
+      }
+
+      const filterName =
+        filter === 'reading' ? 'Reading' :
+        filter === 'read' ? 'Read' : 'Paused';
+
+      els.title.textContent = `My Shelf · ${filterName}`;
+      els.subtitle.textContent = `fixed height · no scroll · page ${pageIndex + 1}/${totalPages}`;
+
+      els.count.textContent = `${total} book${total === 1 ? '' : 's'}`;
+      els.page.textContent = `${pageIndex + 1} / ${totalPages}`;
+
+      els.prev.disabled = pageIndex <= 0;
+      els.next.disabled = pageIndex >= totalPages - 1;
+
+      els.segBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+    }
+
+    els.prev.addEventListener('click', () => { pageIndex--; render(); });
+    els.next.addEventListener('click', () => { pageIndex++; render(); });
+
+    els.segBtns.forEach(btn => {
+      btn.addEventListener('click', () => setFilter(btn.dataset.filter));
+    });
+
+    // 반응형 재계산 (스크롤 없음 유지)
+    window.addEventListener('resize', () => render());
+
+    render();
+  </script>
+</body>
+</html>
 
