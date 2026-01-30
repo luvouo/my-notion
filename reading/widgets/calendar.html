@@ -203,7 +203,7 @@
       font-size: 12px;            /* 셀과 비슷한 크기 */
       line-height: 1;
       padding: 0;
-      letter-spacing: 0;
+      letter-spacing: -0.2px;
       color: var(--text);
       user-select: none;
       position: relative;
@@ -220,13 +220,12 @@
     }
 
     .day.today{
-      border: 1px solid var(--todayRing);
-      border-color: var(--todayRing);
-      box-shadow: none;
-      font-weight: 700;
-      padding: 0;
-    }
+      background: transparent;         /* ✅ 면적감 제거 */
+      box-shadow: none;                /* ✅ halo 제거 */
+      border: 1px solid var(--accent); /* ✅ 얇은 선만 */
 
+      padding: 0;                      /* ✅ 숫자와 동일 */
+    }
     .day.selected{
       background: linear-gradient(180deg, var(--accent2), rgba(255,255,255,0));
       border-color: rgba(243, 182, 198, .55);
