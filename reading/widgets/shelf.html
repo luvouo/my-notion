@@ -219,12 +219,18 @@
       border: 1px solid rgba(0,0,0,.08);
       background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.35));
       box-shadow: 0 8px 18px rgba(0,0,0,.06);
-      display:flex;
+      display:grid;
+      grid-template-columns: 18px 1fr;
       align-items:stretch;
       justify-content:stretch;
       position: relative;
       overflow: hidden;
       cursor: default;
+    }
+    .cover{
+      background-size: cover;
+      background-position: center;
+      border-right: 1px solid rgba(0,0,0,.08);
     }
     @media (prefers-color-scheme: dark){
       .spine{
@@ -367,7 +373,7 @@
     // ✅ 여기만 수정해서 책 추가/정리하면 됨
     // status: "reading" | "read" | "paused"
     const BOOKS = [
-      { title: "브람스를 좋아하세요", author: "프랑수아즈 사강", status: "read",   color: "#f3b6c6" },
+      { title: "브람스를 좋아하세요", author: "프랑수아즈 사강", status: "read",   color: "#f3b6c6", cover: https://product.kyobobook.co.kr/detail/S000000620316},
       { title: "무의미의 축제",       author: "밀란 쿤데라",   status: "reading",color: "#ffd7e2" },
       { title: "인생의 베일",         author: "서머싯 몸",     status: "read",   color: "#f3b6c6" },
       { title: "말",                 author: "장 폴 사르트르", status: "paused", color: "#f3b6c6" },
