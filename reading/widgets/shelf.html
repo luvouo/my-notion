@@ -6,6 +6,7 @@
   <title>Reading Shelf Widget</title>
 
   <style>
+    /* ===== Font ===== */
     @font-face{
       font-family: "WhiteDay";
       src: url("../../fonts/whiteday.ttf") format("truetype");
@@ -29,11 +30,19 @@
       --font: "WhiteDay", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
               Roboto, "Apple SD Gothic Neo", "Noto Sans KR", "Noto Sans", Arial, sans-serif;
 
-      /* 책 등(spine) */
-      --spineW: 44px;              /* JS가 폭에 따라 자동 조정 */
-      --spineH: 150px;             /* 고정(스크롤 방지) */
-      --spineRadius: 10px;         /* 너무 둥글지 않게 */
+      /* book layout */
+      --spineH: 118px;          /* 선반 3칸이라 약간 낮춤 */
+      --spineRadius: 10px;
       --gap: 10px;
+
+      /* cover strip */
+      --coverW: 18px;
+
+      /* computed by JS */
+      --spineW: 48px;
+
+      /* shelves */
+      --rowGap: 10px;
     }
 
     html, body{
@@ -42,11 +51,11 @@
       background: transparent;
       font-family: var(--font);
       color: var(--text);
-      overflow: hidden; /* 스크롤 방지 */
+      overflow: hidden; /* no scroll */
     }
 
     .wrap{
-      width: min(760px, 100%);
+      width: min(820px, 100%);
       margin: 0 auto;
       padding: 12px;
       box-sizing: border-box;
@@ -78,14 +87,15 @@
       }
     }
 
+    /* ===== Header ===== */
     .header{
+      flex: 0 0 auto;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap: 10px;
       padding: 12px 14px;
       border-bottom: 1px solid var(--line);
-      flex: 0 0 auto;
     }
 
     .title{
@@ -94,6 +104,7 @@
       gap: 4px;
       min-width: 0;
     }
+
     .h1{
       font-size: 14px;
       font-weight: 700;
@@ -112,136 +123,145 @@
       text-overflow: ellipsis;
     }
 
-    .controls{
+    .legend{
       display:flex;
+      gap: 10px;
       align-items:center;
-      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1;
+      white-space: nowrap;
       flex: 0 0 auto;
     }
+    .dot{
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      display:inline-block;
+      background: var(--accent);
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .dot.reading{ background: var(--accent); }
+    .dot.read{ background: rgba(20,20,22,.22); }
+    .dot.paused{ background: rgba(120,120,130,.40); }
+    @media (prefers-color-scheme: dark){
+      .dot.read{ background: rgba(255,255,255,.24); }
+      .dot.paused{ background: rgba(255,255,255,.34); }
+    }
 
-    .seg{
-      display:flex;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.45);
-      border-radius: 12px;
+    /* ===== Body layout ===== */
+    .body{
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 12px 14px 14px;
+      display: grid;
+      grid-template-rows: repeat(3, 1fr);
+      gap: var(--rowGap);
+    }
+
+    .shelfCard{
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.05);
+      background: rgba(255,255,255,.32);
       overflow: hidden;
+      display:flex;
+      flex-direction: column;
+      min-height: 0;
     }
     @media (prefers-color-scheme: dark){
-      .seg{ background: rgba(18,18,20,.45); }
-    }
-    .seg button{
-      border: 0;
-      background: transparent;
-      color: var(--muted);
-      padding: 7px 10px;
-      font: inherit;
-      font-size: 12px;
-      cursor: pointer;
-      line-height: 1;
-      letter-spacing: .1px;
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .seg button.active{
-      color: var(--text);
-      background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,0));
-    }
-    @media (prefers-color-scheme: dark){
-      .seg button.active{
-        background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0));
+      .shelfCard{
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.10);
       }
     }
 
+    .shelfHead{
+      flex: 0 0 auto;
+      padding: 8px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .shelfName{
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .2px;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      gap: 6px;
+    }
+
     .btn{
-      width: 32px;
-      height: 32px;
-      border-radius: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.55);
       color: var(--text);
       cursor: pointer;
       display:grid;
       place-items:center;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
       user-select:none;
       -webkit-tap-highlight-color: transparent;
-    }
-    @media (prefers-color-scheme: dark){ .btn{ background: rgba(18,18,20,.45); } }
-    .btn:active{ transform: scale(.97); }
-    .btn:disabled{ opacity: .4; cursor: default; }
-
-    .body{
-      flex: 1 1 auto;
-      padding: 12px 14px 14px;
-      min-height: 0;
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-    }
-
-    /* 책장 선반 */
-    .shelf{
-      position: relative;
-      flex: 1 1 auto;
-      min-height: 0;
-      display:flex;
-      flex-direction:column;
-      justify-content:flex-end;
-      border-radius: 14px;
-      overflow: hidden;
-      background: rgba(255,255,255,.35);
-      border: 1px solid rgba(0,0,0,.05);
+      transition: transform .12s ease, background .12s ease;
+      flex: 0 0 auto;
     }
     @media (prefers-color-scheme: dark){
-      .shelf{
-        background: rgba(255,255,255,.06);
-        border: 1px solid rgba(255,255,255,.10);
-      }
+      .btn{ background: rgba(18,18,20,.45); }
     }
+    .btn:active{ transform: scale(.97); }
+    .btn:disabled{ opacity: .35; cursor: default; }
 
     .books{
+      flex: 1 1 auto;
+      min-height: 0;
       display:grid;
       grid-auto-flow: column;
       grid-auto-columns: var(--spineW);
       gap: var(--gap);
       align-items:end;
       justify-content:start;
-      padding: 14px 14px 18px;
+      padding: 10px 10px 12px;
       box-sizing:border-box;
-      height: calc(var(--spineH) + 18px);
-      /* 스크롤 금지 */
-      overflow: hidden;
+      overflow: hidden; /* no scroll */
     }
 
+    /* ===== Book (cover + spine) ===== */
     .spine{
       height: var(--spineH);
       border-radius: var(--spineRadius);
       border: 1px solid rgba(0,0,0,.08);
-      background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.35));
+      background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.34));
       box-shadow: 0 8px 18px rgba(0,0,0,.06);
-      display:grid;
-      grid-template-columns: 18px 1fr;
-      align-items:stretch;
-      justify-content:stretch;
-      position: relative;
       overflow: hidden;
-      cursor: default;
-    }
-    .cover{
-      background-size: cover;
-      background-position: center;
-      border-right: 1px solid rgba(0,0,0,.08);
-    }
-    .label{
-      writing-mode: vertical-rl;
+      display: grid;
+      grid-template-columns: var(--coverW) 1fr; /* cover | label */
       position: relative;
-      transform: rotate(180deg);
-      padding: 10px 8px;
-      box-sizing: border-box;
-      display:flex;
-      justify-content:space-between;
     }
-    
     @media (prefers-color-scheme: dark){
       .spine{
         border: 1px solid rgba(255,255,255,.12);
@@ -250,31 +270,57 @@
       }
     }
 
+    /* subtle gloss */
     .spine::after{
       content:"";
       position:absolute;
       inset:0;
-      background: linear-gradient(90deg, rgba(0,0,0,.08), rgba(0,0,0,0) 35%, rgba(0,0,0,.06));
+      background: linear-gradient(90deg, rgba(0,0,0,.10), rgba(0,0,0,0) 35%, rgba(0,0,0,.08));
+      opacity: .18;
+      pointer-events:none;
+    }
+
+    .cover{
+      position: relative;
+      background-size: cover;
+      background-position: center;
+      border-right: 1px solid rgba(0,0,0,.08);
+
+      /* cover가 없거나 로드 실패해도 빈칸이 안 되게 기본 */
+      background-image: linear-gradient(180deg, rgba(243,182,198,.35), rgba(255,255,255,0));
+    }
+    @media (prefers-color-scheme: dark){
+      .cover{
+        border-right: 1px solid rgba(255,255,255,.12);
+        background-image: linear-gradient(180deg, rgba(243,182,198,.20), rgba(0,0,0,0));
+      }
+    }
+
+    /* fold shadow */
+    .cover::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(90deg, rgba(0,0,0,.20), rgba(0,0,0,0) 70%);
       opacity: .25;
       pointer-events:none;
     }
 
     .label{
+      position: relative;
       writing-mode: vertical-rl;
       transform: rotate(180deg);
-      width: 100%;
       padding: 10px 8px;
       box-sizing:border-box;
       display:flex;
-      gap: 6px;
-      align-items:flex-start;
       justify-content:space-between;
+      gap: 6px;
     }
 
     .t{
       font-size: 12px;
       line-height: 1;
-      letter-spacing: 0; /* 자간 타이트 */
+      letter-spacing: 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -291,47 +337,30 @@
       max-height: 100%;
     }
 
-    /* 얇은 “띠” 포인트 */
+    /* status ribbon INSIDE label (cover랑 충돌 없음) */
     .band{
       position:absolute;
-      left:0;
-      top:0;
+      left: 0;
+      top: 0;
       width: 4px;
       height: 100%;
       background: var(--accent);
       opacity: .85;
+      pointer-events:none;
     }
 
-    /* 바닥 선반(wood line 느낌 아주 약하게) */
-    .plank{
-      height: 10px;
-      background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,0));
-      opacity: .12;
-    }
-
-    .empty{
-      padding: 14px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .footer{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding: 0 2px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1;
-    }
-
+    /* ===== Small screens ===== */
     @media (max-width: 360px){
-      :root{ --cardH: 300px; --spineH: 138px; }
+      :root{
+        --cardH: 300px;
+        --spineH: 110px;
+        --gap: 8px;
+        --rowGap: 8px;
+      }
       .wrap{ padding: 10px; }
       .header{ padding: 10px 12px; }
       .body{ padding: 10px 12px 12px; }
-      .btn{ width: 30px; height: 30px; border-radius: 11px; }
-      .seg button{ padding: 7px 9px; }
+      .btn{ width: 26px; height: 26px; border-radius: 9px; }
     }
   </style>
 </head>
@@ -341,193 +370,239 @@
     <div class="card" role="group" aria-label="reading shelf widget">
       <div class="header">
         <div class="title">
-          <div class="h1" id="title">My Shelf</div>
-          <div class="h2" id="subtitle">Read / Reading / Paused</div>
+          <div class="h1">Reading Shelf</div>
+          <div class="h2">cover + spine · 3 shelves · fixed height · no scroll</div>
         </div>
 
-        <div class="controls">
-          <div class="seg" aria-label="status filter">
-            <button type="button" data-filter="reading" class="active">Reading</button>
-            <button type="button" data-filter="read">Read</button>
-            <button type="button" data-filter="paused">Paused</button>
-          </div>
-
-          <button class="btn" id="prev" aria-label="previous page" title="Previous">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <button class="btn" id="next" aria-label="next page" title="Next">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
+        <div class="legend" aria-hidden="true">
+          <span><span class="dot reading"></span>Reading</span>
+          <span><span class="dot read"></span>Read</span>
+          <span><span class="dot paused"></span>Paused</span>
         </div>
       </div>
 
       <div class="body">
-        <div class="shelf">
-          <div class="books" id="books"></div>
-          <div class="plank"></div>
-        </div>
+        <!-- Reading -->
+        <section class="shelfCard" data-status="reading">
+          <div class="shelfHead">
+            <div class="shelfName"><span class="dot reading"></span>Reading</div>
+            <div class="meta">
+              <span class="count" data-role="count">0</span>
+              <div class="nav">
+                <button class="btn" data-role="prev" aria-label="reading previous">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button class="btn" data-role="next" aria-label="reading next">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="page" data-role="page">1/1</span>
+            </div>
+          </div>
+          <div class="books" data-role="books"></div>
+        </section>
 
-        <div class="footer">
-          <div id="count">—</div>
-          <div id="page">—</div>
-        </div>
+        <!-- Read -->
+        <section class="shelfCard" data-status="read">
+          <div class="shelfHead">
+            <div class="shelfName"><span class="dot read"></span>Read</div>
+            <div class="meta">
+              <span class="count" data-role="count">0</span>
+              <div class="nav">
+                <button class="btn" data-role="prev" aria-label="read previous">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button class="btn" data-role="next" aria-label="read next">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="page" data-role="page">1/1</span>
+            </div>
+          </div>
+          <div class="books" data-role="books"></div>
+        </section>
+
+        <!-- Paused -->
+        <section class="shelfCard" data-status="paused">
+          <div class="shelfHead">
+            <div class="shelfName"><span class="dot paused"></span>Paused</div>
+            <div class="meta">
+              <span class="count" data-role="count">0</span>
+              <div class="nav">
+                <button class="btn" data-role="prev" aria-label="paused previous">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button class="btn" data-role="next" aria-label="paused next">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="page" data-role="page">1/1</span>
+            </div>
+          </div>
+          <div class="books" data-role="books"></div>
+        </section>
       </div>
     </div>
   </div>
 
   <script>
-    // ✅ 여기만 수정해서 책 추가/정리하면 됨
-    // status: "reading" | "read" | "paused"
+    /*
+      ✅ 책 추가/수정은 여기만.
+      - status: "reading" | "read" | "paused"
+      - cover: 표지 이미지 URL(권장: repo /covers/에 업로드 후 GitHub Pages URL 사용)
+    */
     const BOOKS = [
-      { title:"TEST", author:"TEST", status:"reading", cover:"https://picsum.photos/200/300" }
-      { title: "브람스를 좋아하세요", author: "프랑수아즈 사강", status: "read",   color: "#f3b6c6", cover: https://contents.kyobobook.co.kr/sih/fit-in/458x0/pdt/9788937461798.jpg},
-      { title: "무의미의 축제",       author: "밀란 쿤데라",   status: "reading",color: "#ffd7e2" },
-      { title: "인생의 베일",         author: "서머싯 몸",     status: "read",   color: "#f3b6c6" },
-      { title: "말",                 author: "장 폴 사르트르", status: "paused", color: "#f3b6c6" },
-      { title: "불현한 출발",         author: "프란츠 카프카", status: "reading",color: "#ffd7e2" },
-      { title: "데일 카네기 자기관리론", author: "데일 카네기", status: "paused", color: "#ffd7e2" },
-      // 더 추가…
+      { title: "무의미의 축제", author: "밀란 쿤데라", status: "reading", color:"#ffd7e2", cover: "" },
+      { title: "불현한 출발", author: "프란츠 카프카", status: "reading", color:"#ffd7e2", cover: "" },
+      { title: "브람스를 좋아하세요", author: "프랑수아즈 사강", status: "read", color:"#f3b6c6", cover: "" },
+      { title: "인생의 베일", author: "서머싯 몸", status: "read", color:"#f3b6c6", cover: "" },
+      { title: "말", author: "장 폴 사르트르", status: "paused", color:"#f3b6c6", cover: "" },
+      { title: "데일 카네기 자기관리론", author: "데일 카네기", status: "paused", color:"#ffd7e2", cover: "" },
+
+      // 테스트용(표지 확인): 아래 주석 해제하면 무조건 보임
+      // { title: "TEST COVER", author: "picsum", status: "reading", color:"#ffd7e2", cover: "https://picsum.photos/200/300" },
     ];
 
-    const els = {
-      books: document.getElementById('books'),
-      count: document.getElementById('count'),
-      page: document.getElementById('page'),
-      title: document.getElementById('title'),
-      subtitle: document.getElementById('subtitle'),
-      prev: document.getElementById('prev'),
-      next: document.getElementById('next'),
-      segBtns: Array.from(document.querySelectorAll('.seg button'))
-    };
+    const STATUS = ["reading", "read", "paused"];
 
-    let filter = 'reading';
-    let pageIndex = 0;
-    let perPage = 0;
-    let filtered = [];
+    const state = {
+      perPage: 6,
+      spineW: 48,
+      page: { reading: 0, read: 0, paused: 0 },
+    };
 
     function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 
-    function computeLayout(){
-      // container 폭에 맞춰 책 spine 너비/페이지당 권수 산정 (스크롤 없이 페이지)
-      const container = els.books.getBoundingClientRect();
-      const gap = 10; // CSS --gap과 맞추기
-      const minW = 38;
-      const maxW = 52;
+    function getShelfEl(status){
+      const root = document.querySelector(`.shelfCard[data-status="${status}"]`);
+      return {
+        root,
+        books: root.querySelector('[data-role="books"]'),
+        count: root.querySelector('[data-role="count"]'),
+        page: root.querySelector('[data-role="page"]'),
+        prev: root.querySelector('[data-role="prev"]'),
+        next: root.querySelector('[data-role="next"]'),
+      };
+    }
 
-      // 가능한 columns 수 대충 계산 -> spineW 결정
-      const approxCols = Math.floor((container.width + gap) / (minW + gap));
+    function computeLayout(){
+      // 폭 기준으로 한 줄에 들어갈 권수 계산(스크롤 없이 page)
+      const sample = document.querySelector('.books');
+      const rect = sample.getBoundingClientRect();
+      const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 10;
+
+      const minW = 40;
+      const maxW = 54;
+
+      const approxCols = Math.floor((rect.width + gap) / (minW + gap));
       const cols = clamp(approxCols, 4, 10);
 
-      const spineW = Math.floor((container.width - gap * (cols - 1)) / cols);
-      const finalW = clamp(spineW, minW, maxW);
+      const rawW = Math.floor((rect.width - gap * (cols - 1)) / cols);
+      const spineW = clamp(rawW, minW, maxW);
 
-      document.documentElement.style.setProperty('--spineW', finalW + 'px');
-      perPage = cols;
+      document.documentElement.style.setProperty('--spineW', spineW + 'px');
+      state.perPage = cols;
+      state.spineW = spineW;
     }
 
-    function setFilter(nextFilter){
-      filter = nextFilter;
-      pageIndex = 0;
-      render();
-    }
+    function makeBookSpine(b, status){
+      const spine = document.createElement('div');
+      spine.className = 'spine';
 
-    function render(){
-      computeLayout();
-
-      filtered = BOOKS.filter(b => b.status === filter);
-      const total = filtered.length;
-      const totalPages = Math.max(1, Math.ceil(total / perPage));
-      pageIndex = clamp(pageIndex, 0, totalPages - 1);
-
-      const start = pageIndex * perPage;
-      const slice = filtered.slice(start, start + perPage);
-
-      els.books.innerHTML = '';
-
-      if(slice.length === 0){
-        els.books.innerHTML = `<div class="empty">No books here yet.</div>`;
-      } else {
-        for(const b of slice){
-          const spine = document.createElement('div');
-          spine.className = 'spine';
-
-      /* ✅ 1) cover (왼쪽) */
+      // cover
       const cover = document.createElement('div');
       cover.className = 'cover';
-      
-      /* cover URL이 있을 때만 backgroundImage 적용 */
       if (b.cover) {
-        cover.style.backgroundImage = `url("${b.cover}")`;
-      } else {
-        /* cover 없으면 그냥 단색(디버깅용) */
-        cover.style.background = 'rgba(0,0,0,.06)';
+        cover.style.backgroundImage =
+          `linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0)), url("${b.cover}")`;
       }
-      
-      /* ✅ 2) label (오른쪽) */
+
+      // label
       const label = document.createElement('div');
       label.className = 'label';
-      
+
+      const band = document.createElement('div');
+      band.className = 'band';
+      // status별 톤 조절(원하면 바꿔도 됨)
+      if (status === "read") band.style.background = "rgba(20,20,22,.22)";
+      else if (status === "paused") band.style.background = "rgba(120,120,130,.45)";
+      else band.style.background = b.color || "var(--accent)";
+
       const t = document.createElement('div');
       t.className = 't';
       t.textContent = b.title;
-      
+
       const a = document.createElement('div');
       a.className = 'a';
       a.textContent = b.author;
-      
+
+      label.appendChild(band);
       label.appendChild(t);
       label.appendChild(a);
-      
-      /* ✅ append 순서가 핵심 */
-      spine.appendChild(cover);
-      label.appendChild(band);
-      spine.appendChild(label);
-      
-      /* 기존처럼 band 쓰면 여기서 추가 */
-      const band = document.createElement('div');
-      band.className = 'band';
-      band.style.background = b.color || 'var(--accent)';
-      spine.appendChild(band);
-      
-      els.books.appendChild(spine);
 
-        }
+      // append order: cover | label (grid columns)
+      spine.appendChild(cover);
+      spine.appendChild(label);
+
+      return spine;
+    }
+
+    function renderShelf(status){
+      const el = getShelfEl(status);
+      const list = BOOKS.filter(b => b.status === status);
+      const total = list.length;
+
+      const totalPages = Math.max(1, Math.ceil(total / state.perPage));
+      state.page[status] = clamp(state.page[status], 0, totalPages - 1);
+
+      const start = state.page[status] * state.perPage;
+      const slice = list.slice(start, start + state.perPage);
+
+      el.books.innerHTML = "";
+
+      for (const b of slice){
+        el.books.appendChild(makeBookSpine(b, status));
       }
 
-      const filterName =
-        filter === 'reading' ? 'Reading' :
-        filter === 'read' ? 'Read' : 'Paused';
+      el.count.textContent = `${total}`;
+      el.page.textContent = `${state.page[status] + 1}/${totalPages}`;
 
-      els.title.textContent = `My Shelf · ${filterName}`;
-      els.subtitle.textContent = `fixed height · no scroll · page ${pageIndex + 1}/${totalPages}`;
+      el.prev.disabled = state.page[status] <= 0;
+      el.next.disabled = state.page[status] >= totalPages - 1;
+    }
 
-      els.count.textContent = `${total} book${total === 1 ? '' : 's'}`;
-      els.page.textContent = `${pageIndex + 1} / ${totalPages}`;
+    function renderAll(){
+      computeLayout();
+      STATUS.forEach(renderShelf);
+    }
 
-      els.prev.disabled = pageIndex <= 0;
-      els.next.disabled = pageIndex >= totalPages - 1;
+    function bind(){
+      STATUS.forEach(status => {
+        const el = getShelfEl(status);
+        el.prev.addEventListener('click', () => { state.page[status]--; renderShelf(status); });
+        el.next.addEventListener('click', () => { state.page[status]++; renderShelf(status); });
+      });
 
-      els.segBtns.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filter === filter);
+      window.addEventListener('resize', () => {
+        // 리사이즈 시 페이지 범위가 변할 수 있어 전체 재렌더
+        renderAll();
       });
     }
 
-    els.prev.addEventListener('click', () => { pageIndex--; render(); });
-    els.next.addEventListener('click', () => { pageIndex++; render(); });
-
-    els.segBtns.forEach(btn => {
-      btn.addEventListener('click', () => setFilter(btn.dataset.filter));
-    });
-
-    // 반응형 재계산 (스크롤 없음 유지)
-    window.addEventListener('resize', () => render());
-
-    render();
+    bind();
+    renderAll();
   </script>
 </body>
 </html>
-
