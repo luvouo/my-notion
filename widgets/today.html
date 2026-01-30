@@ -34,7 +34,7 @@
     html, body{
       margin:0;
       padding:0;
-      background: transparent; /* Notion embed friendly */
+      background: transparent;
       font-family: ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
       color: var(--text);
@@ -100,7 +100,6 @@
       flex: 0 0 auto;
     }
 
-    /* ✅ Apply custom font ONLY to the "Today" label */
     .title h1{
       margin:0;
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
@@ -170,6 +169,10 @@
       padding: 10px 12px;
       border-radius: 12px;
       font-size: 12px;
+    }
+    .btn.secondary:disabled{
+      opacity: 0.55;
+      cursor: not-allowed;
     }
 
     .list{
@@ -260,7 +263,7 @@
       min-height: 16px;
     }
 
-    /* -------- Modal (History / Archive) -------- */
+    /* -------- Modal -------- */
     .modalOverlay{
       position: fixed;
       inset: 0;
@@ -274,7 +277,7 @@
     .modalOverlay.open{ display: flex; }
 
     .modal{
-      width: min(760px, 100%);
+      width: min(820px, 100%);
       border-radius: 18px;
       border: 1px solid rgba(255,170,190,0.38);
       background: rgba(255,255,255,0.82);
@@ -291,15 +294,16 @@
       gap: 10px;
       padding: 14px 14px;
       border-bottom: 1px solid rgba(0,0,0,0.06);
+      flex-wrap: wrap;
     }
 
-    .modalHeader .mhTitle{
+    .mhLeft{
       display:flex;
       gap: 10px;
       align-items:center;
       min-width: 0;
     }
-    .modalHeader .mhTitle strong{
+    .mhLeft strong{
       font-size: 14px;
       letter-spacing: -0.2px;
       white-space: nowrap;
@@ -307,10 +311,30 @@
       text-overflow: ellipsis;
     }
 
+    .mhRight{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content: flex-end;
+      flex: 1 1 auto;
+    }
+
+    .search{
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.70);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      outline: none;
+      min-width: min(340px, 100%);
+    }
+    .search::placeholder{ color: rgba(30,30,30,0.45); }
+
     .modalBody{
       display: grid;
-      grid-template-columns: 220px 1fr;
-      min-height: 320px;
+      grid-template-columns: 250px 1fr;
+      min-height: 340px;
     }
 
     .dates{
@@ -358,7 +382,7 @@
       gap: 10px;
       flex-wrap: wrap;
     }
-    .previewTop .picked{
+    .picked{
       font-size: 13px;
       color: rgba(30,30,30,0.82);
       white-space: nowrap;
@@ -372,12 +396,14 @@
       display: grid;
       gap: 8px;
     }
+
     .pItem{
       display:flex;
       gap: 10px;
       align-items:center;
       font-size: 13px;
       color: rgba(30,30,30,0.85);
+      line-height: 1.25;
     }
     .badge{
       font-size: 11px;
@@ -393,6 +419,12 @@
       background: rgba(255,192,203,0.18);
     }
 
+    .mark{
+      background: rgba(255,192,203,0.35);
+      border-radius: 6px;
+      padding: 0 3px;
+    }
+
     .modalFooter{
       padding: 12px 14px;
       border-top: 1px solid rgba(0,0,0,0.06);
@@ -405,9 +437,10 @@
       color: rgba(30,30,30,0.55);
     }
 
-    @media (max-width: 680px){
+    @media (max-width: 720px){
       .modalBody{ grid-template-columns: 1fr; }
       .dates{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
+      .search{ min-width: 100%; }
     }
 
     @media (max-width: 360px){
@@ -430,7 +463,7 @@
           </div>
 
           <div class="actions">
-            <button class="btn secondary" id="carryBtn" type="button">어제 미완료 가져오기</button>
+            <button class="btn secondary" id="carryYesterdayBtn" type="button">어제 미완료 가져오기</button>
             <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
             <button class="btn secondary" id="copyTodayBtn" type="button">오늘 기록 복사</button>
           </div>
@@ -462,22 +495,26 @@
   <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-label="History / Archive">
       <div class="modalHeader">
-        <div class="mhTitle">
+        <div class="mhLeft">
           <span class="dot" aria-hidden="true"></span>
           <strong>History / Archive</strong>
         </div>
-        <button class="btn secondary" id="closeModalBtn" type="button">닫기</button>
+
+        <div class="mhRight">
+          <input id="searchInput" class="search" type="text" placeholder="검색: 날짜(YYYY.MM.DD) 또는 할 일 키워드…" />
+          <button class="btn secondary" id="clearSearchBtn" type="button">검색 초기화</button>
+          <button class="btn secondary" id="closeModalBtn" type="button">닫기</button>
+        </div>
       </div>
 
       <div class="modalBody">
-        <div class="dates" id="datesPanel">
-          <!-- dates list -->
-        </div>
+        <div class="dates" id="datesPanel"></div>
 
         <div class="preview">
           <div class="previewTop">
             <div class="picked" id="pickedDateText">날짜를 선택해줘</div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn secondary" id="carryPickedBtn" type="button" disabled>선택 날짜 미완료 가져오기</button>
               <button class="btn secondary" id="copyPickedBtn" type="button" disabled>선택 날짜 복사</button>
             </div>
           </div>
@@ -503,14 +540,12 @@
     ----------------------------- */
     const PREFIX_DAY = "soft_schedule_today_";
     const KEY_ARCHIVE = "soft_schedule_today_archive_v1"; // { "YYYY.MM.DD": [items] }
-    const KEY_VERSION = "soft_schedule_today_widget_v1";
 
     function pad2(n){ return String(n).padStart(2,"0"); }
     function ymd(d=new Date()){
       return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
     }
     function parseYmd(str){
-      // expects YYYY.MM.DD
       const m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(str);
       if(!m) return null;
       return { y:+m[1], m:+m[2], d:+m[3] };
@@ -519,19 +554,6 @@
       const p = parseYmd(str);
       if(!p) return null;
       return new Date(p.y, p.m-1, p.d);
-    }
-    function formatForCopy(dateStr, items){
-      // Notion-friendly plain text (checkbox-like)
-      // Example:
-      // [Today | 2026.01.30]
-      // - [ ] task
-      // - [x] done task
-      const lines = [];
-      lines.push(`[Today | ${dateStr}]`);
-      for(const it of items){
-        lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
-      }
-      return lines.join("\n");
     }
     function escapeHtml(str){
       return String(str).replace(/[&<>"']/g, (m) => ({
@@ -552,7 +574,6 @@
         await navigator.clipboard.writeText(text);
         return true;
       }catch(e){
-        // fallback
         const ta = document.createElement("textarea");
         ta.value = text;
         ta.style.position = "fixed";
@@ -568,6 +589,26 @@
           return false;
         }
       }
+    }
+    function formatForCopy(dateStr, items){
+      const lines = [];
+      lines.push(`[Today | ${dateStr}]`);
+      for(const it of items){
+        lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+      }
+      return lines.join("\n");
+    }
+    function highlight(text, query){
+      const t = String(text);
+      const q = String(query || "").trim();
+      if(!q) return escapeHtml(t);
+      // simple case-insensitive highlight (safe)
+      const idx = t.toLowerCase().indexOf(q.toLowerCase());
+      if(idx === -1) return escapeHtml(t);
+      const before = escapeHtml(t.slice(0, idx));
+      const mid = escapeHtml(t.slice(idx, idx + q.length));
+      const after = escapeHtml(t.slice(idx + q.length));
+      return `${before}<span class="mark">${mid}</span>${after}`;
     }
 
     /* -----------------------------
@@ -586,8 +627,7 @@
     }
 
     /* -----------------------------
-      Auto-archive: move past day keys into archive (no limit)
-      - Keeps widget fast and makes History consistent.
+      Auto-archive past day keys -> archive (no limit)
     ----------------------------- */
     function autoArchivePastDays(todayStr){
       const archive = loadArchive();
@@ -597,18 +637,15 @@
         if(!k) continue;
         if(k === KEY_ARCHIVE) continue;
         if(!k.startsWith(PREFIX_DAY)) continue;
-        // daily key: soft_schedule_today_YYYY.MM.DD
         const dateStr = k.slice(PREFIX_DAY.length);
         if(dateStr === todayStr) continue;
         if(!parseYmd(dateStr)) continue;
         keys.push({ k, dateStr });
       }
 
-      // move
       let moved = 0;
       for(const {k, dateStr} of keys){
-        if(archive[dateStr]) {
-          // already archived -> can remove daily key to avoid duplication
+        if(archive[dateStr]){
           try{ localStorage.removeItem(k); }catch(e){}
           continue;
         }
@@ -621,12 +658,12 @@
           }
           localStorage.removeItem(k);
         }catch(e){
-          // ignore parse errors; don't remove in that case
+          // keep if broken
         }
       }
 
       if(moved > 0) saveArchive(archive);
-      return { archive, moved };
+      return archive;
     }
 
     /* -----------------------------
@@ -644,7 +681,7 @@
     const clearDoneBtn = document.getElementById("clearDoneBtn");
     const resetBtn = document.getElementById("resetBtn");
 
-    const carryBtn = document.getElementById("carryBtn");
+    const carryYesterdayBtn = document.getElementById("carryYesterdayBtn");
     const historyBtn = document.getElementById("historyBtn");
     const copyTodayBtn = document.getElementById("copyTodayBtn");
 
@@ -657,15 +694,19 @@
     const pickedDateText = document.getElementById("pickedDateText");
     const previewBox = document.getElementById("previewBox");
     const copyPickedBtn = document.getElementById("copyPickedBtn");
+    const carryPickedBtn = document.getElementById("carryPickedBtn");
     const archiveCount = document.getElementById("archiveCount");
+    const searchInput = document.getElementById("searchInput");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
 
     metaText.textContent = todayStr;
 
     // Boot: auto-archive past days
-    let archive = autoArchivePastDays(todayStr).archive;
+    let archive = autoArchivePastDays(todayStr);
 
-    let state = loadDay(KEY_TODAY); // today's list only
+    let state = loadDay(KEY_TODAY);
     let pickedDate = null;
+    let searchQuery = "";
 
     function loadDay(key){
       try{
@@ -690,25 +731,21 @@
       saveDay(KEY_TODAY, state);
       render();
     }
-
     function toggleItem(id){
       state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
       saveDay(KEY_TODAY, state);
       render();
     }
-
     function deleteItem(id){
       state = state.filter(it => it.id !== id);
       saveDay(KEY_TODAY, state);
       render();
     }
-
     function clearDone(){
       state = state.filter(it => !it.done);
       saveDay(KEY_TODAY, state);
       render();
     }
-
     function resetAll(){
       state = [];
       saveDay(KEY_TODAY, state);
@@ -737,40 +774,31 @@
     }
 
     /* -----------------------------
-      Manual carry-over (yesterday unfinished -> today)
-      - No automatic carry; button only.
-      - Source: archive[yesterday] first, else daily key if exists
+      Carry over from ANY date (manual)
     ----------------------------- */
-    function getYesterdayItems(){
-      // yesterday should already be archived, but just in case:
-      if(archive[yesterdayStr] && Array.isArray(archive[yesterdayStr])) return archive[yesterdayStr];
-      const raw = localStorage.getItem(`${PREFIX_DAY}${yesterdayStr}`);
-      if(!raw) return null;
-      try{
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : null;
-      }catch(e){ return null; }
-    }
-
-    function carryOverYesterdayUnfinished(){
-      const yItems = getYesterdayItems();
-      if(!yItems || yItems.length === 0){
-        showToast("어제 기록이 없어.");
+    function carryOverUnfinishedFromDate(dateStr){
+      if(!dateStr || !parseYmd(dateStr)){
+        showToast("가져오기 실패: 날짜 형식이 올바르지 않아.");
         return;
       }
-      const unfinished = yItems.filter(x => !x.done);
+      const src = archive[dateStr];
+      if(!src || !Array.isArray(src) || src.length === 0){
+        showToast("가져올 기록이 없어.");
+        return;
+      }
+
+      const unfinished = src.filter(x => !x.done && (x.text || "").trim());
       if(unfinished.length === 0){
-        showToast("어제 미완료가 없어.");
+        showToast("미완료가 없어.");
         return;
       }
 
-      // avoid duplicates by text match (simple + practical)
-      const existingTexts = new Set(state.map(x => x.text.trim()));
+      const existing = new Set(state.map(x => (x.text || "").trim()));
       const toAdd = [];
       for(const it of unfinished){
         const tx = (it.text || "").trim();
         if(!tx) continue;
-        if(existingTexts.has(tx)) continue;
+        if(existing.has(tx)) continue;
         toAdd.push({
           id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
           text: tx,
@@ -779,39 +807,71 @@
       }
 
       if(toAdd.length === 0){
-        showToast("가져올 미완료가 이미 오늘에 있어.");
+        showToast("미완료가 이미 오늘에 있어.");
         return;
       }
 
-      // prepend carried items so they appear on top
       state = [...toAdd, ...state];
       saveDay(KEY_TODAY, state);
       render();
-      showToast(`어제 미완료 ${toAdd.length}개 가져왔어.`);
+      showToast(`${dateStr} 미완료 ${toAdd.length}개 가져왔어.`);
+    }
+
+    function carryOverYesterday(){
+      // yesterday is expected in archive; fallback to day key (rare)
+      if(archive[yesterdayStr]) return carryOverUnfinishedFromDate(yesterdayStr);
+
+      const raw = localStorage.getItem(`${PREFIX_DAY}${yesterdayStr}`);
+      if(!raw){
+        showToast("어제 기록이 없어.");
+        return;
+      }
+      try{
+        const items = JSON.parse(raw);
+        if(Array.isArray(items)){
+          // temporarily treat it as archive source
+          archive[yesterdayStr] = items;
+          saveArchive(archive);
+          try{ localStorage.removeItem(`${PREFIX_DAY}${yesterdayStr}`);}catch(e){}
+          carryOverUnfinishedFromDate(yesterdayStr);
+        }else{
+          showToast("어제 기록을 읽을 수 없어.");
+        }
+      }catch(e){
+        showToast("어제 기록을 읽을 수 없어.");
+      }
     }
 
     /* -----------------------------
-      Export / Copy
+      Copy / Export
     ----------------------------- */
     async function copyToday(){
       const text = formatForCopy(todayStr, state);
       const ok = await copyToClipboard(text);
       showToast(ok ? "오늘 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
     }
+    async function copyPicked(){
+      if(!pickedDate) return;
+      const items = archive[pickedDate] || [];
+      const text = formatForCopy(pickedDate, items);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "선택 날짜 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
+    }
 
     /* -----------------------------
       History / Archive UI
     ----------------------------- */
     function openModal(){
-      // refresh archive (in case)
-      archive = loadArchive();
+      archive = loadArchive(); // refresh
+      searchQuery = (searchInput.value || "").trim();
       buildDates();
       modalOverlay.classList.add("open");
       modalOverlay.setAttribute("aria-hidden", "false");
-      // reset preview
+
       pickedDate = null;
       pickedDateText.textContent = "날짜를 선택해줘";
       copyPickedBtn.disabled = true;
+      carryPickedBtn.disabled = true;
       previewBox.innerHTML = `
         <div style="color: rgba(30,30,30,0.55); font-size:12px;">
           왼쪽에서 날짜를 선택하면, 그날의 Today 기록을 보여줘.
@@ -824,36 +884,62 @@
       modalOverlay.setAttribute("aria-hidden", "true");
     }
 
+    function dateMatchesQuery(dateStr, items, q){
+      if(!q) return true;
+      const lowerQ = q.toLowerCase();
+      if(dateStr.toLowerCase().includes(lowerQ)) return true;
+      for(const it of (items || [])){
+        const tx = String(it.text || "").toLowerCase();
+        if(tx.includes(lowerQ)) return true;
+      }
+      return false;
+    }
+
     function buildDates(){
+      const q = (searchQuery || "").trim();
       const dates = Object.keys(archive).filter(d => parseYmd(d));
-      dates.sort((a,b) => {
-        const da = ymdToDate(a).getTime();
-        const db = ymdToDate(b).getTime();
-        return db - da; // desc
-      });
+      dates.sort((a,b) => ymdToDate(b).getTime() - ymdToDate(a).getTime()); // desc
+
+      const filtered = dates.filter(d => dateMatchesQuery(d, archive[d], q));
 
       datesPanel.innerHTML = "";
-      if(dates.length === 0){
+      if(filtered.length === 0){
         datesPanel.innerHTML = `
           <div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">
-            아직 아카이브가 없어.
+            검색 결과가 없어.
           </div>
         `;
       }else{
-        for(const d of dates){
+        for(const d of filtered){
           const items = archive[d] || [];
           const done = items.filter(x => x.done).length;
           const total = items.length;
+
           const btn = document.createElement("button");
           btn.className = "dateBtn";
           btn.type = "button";
           btn.dataset.date = d;
-          btn.innerHTML = `${d}<small>${done}/${total} done</small>`;
+          btn.innerHTML = `${escapeHtml(d)}<small>${done}/${total} done</small>`;
           datesPanel.appendChild(btn);
         }
       }
 
-      archiveCount.textContent = `${dates.length} days archived`;
+      archiveCount.textContent = `${filtered.length} / ${dates.length} days`;
+      // if pickedDate is no longer visible after filtering, clear preview
+      if(pickedDate && !filtered.includes(pickedDate)){
+        pickedDate = null;
+        pickedDateText.textContent = "날짜를 선택해줘";
+        copyPickedBtn.disabled = true;
+        carryPickedBtn.disabled = true;
+        previewBox.innerHTML = `
+          <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+            검색 결과에서 날짜를 선택해줘.
+          </div>
+        `;
+      }else if(pickedDate){
+        setActiveDateButton(pickedDate);
+        renderPreview(pickedDate);
+      }
     }
 
     function setActiveDateButton(dateStr){
@@ -862,40 +948,42 @@
     }
 
     function renderPreview(dateStr){
-      const items = archive[dateStr];
+      const items = archive[dateStr] || [];
+      const q = (searchQuery || "").trim();
+
       pickedDate = dateStr;
       setActiveDateButton(dateStr);
 
       pickedDateText.textContent = `선택: ${dateStr}`;
       copyPickedBtn.disabled = false;
+      carryPickedBtn.disabled = false;
 
-      if(!items || items.length === 0){
-        previewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">기록이 비어 있어.</div>`;
+      let view = items;
+      if(q){
+        const lowerQ = q.toLowerCase();
+        view = items.filter(it => String(it.text || "").toLowerCase().includes(lowerQ) || dateStr.toLowerCase().includes(lowerQ));
+      }
+
+      if(!view || view.length === 0){
+        previewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">표시할 항목이 없어.</div>`;
         return;
       }
 
-      const rows = items.map(it => {
+      const rows = view.map(it => {
         const badgeCls = it.done ? "badge done" : "badge";
         const badgeText = it.done ? "done" : "todo";
+        const textHtml = highlight(it.text || "", q);
         return `
           <div class="pItem">
             <span class="${badgeCls}">${badgeText}</span>
             <span style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
-              ${escapeHtml(it.text)}
+              ${textHtml}
             </span>
           </div>
         `;
       }).join("");
 
       previewBox.innerHTML = rows;
-    }
-
-    async function copyPicked(){
-      if(!pickedDate) return;
-      const items = archive[pickedDate] || [];
-      const text = formatForCopy(pickedDate, items);
-      const ok = await copyToClipboard(text);
-      showToast(ok ? "선택 날짜 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
     }
 
     /* -----------------------------
@@ -933,7 +1021,7 @@
     clearDoneBtn.addEventListener("click", clearDone);
     resetBtn.addEventListener("click", resetAll);
 
-    carryBtn.addEventListener("click", carryOverYesterdayUnfinished);
+    carryYesterdayBtn.addEventListener("click", carryOverYesterday);
     historyBtn.addEventListener("click", openModal);
     copyTodayBtn.addEventListener("click", copyToday);
 
@@ -945,14 +1033,29 @@
     datesPanel.addEventListener("click", (e) => {
       const btn = e.target.closest(".dateBtn");
       if(!btn) return;
-      const d = btn.dataset.date;
-      renderPreview(d);
+      renderPreview(btn.dataset.date);
     });
 
     copyPickedBtn.addEventListener("click", copyPicked);
 
-    // initial render (today starts clean unless you already typed today)
-    // No seeding: your requirement implies real usage
+    carryPickedBtn.addEventListener("click", () => {
+      if(!pickedDate) return;
+      carryOverUnfinishedFromDate(pickedDate);
+    });
+
+    searchInput.addEventListener("input", () => {
+      searchQuery = (searchInput.value || "").trim();
+      buildDates();
+    });
+
+    clearSearchBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      searchQuery = "";
+      buildDates();
+      showToast("검색을 초기화했어.");
+    });
+
+    // Initial render (today starts clean unless you already typed today)
     render();
   </script>
 </body>
