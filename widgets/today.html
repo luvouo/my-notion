@@ -22,10 +22,10 @@
       --radius: 20px;
     }
 
-    /* ✅ Custom Font: place the .ttf next to this HTML on GitHub Pages */
+    /* ✅ Font path (widgets/today.html -> fonts/) */
     @font-face{
       font-family: "EnterSanChaek";
-      src: url("./엔터+산책10_alpha2.9_20051120-hjwtkfksdl.ttf") format("truetype");
+      src: url("../fonts/엔터산책10.ttf") format("truetype");
       font-weight: 400;
       font-style: normal;
       font-display: swap;
@@ -91,13 +91,15 @@
       min-width: 0;
     }
 
-    .dot{
-      width: 10px;
-      height: 10px;
+    /* ✅ Icon image (widgets/today.html -> widgets/icon/) */
+    .pearl{
+      width: 18px;
+      height: 18px;
       border-radius: 999px;
-      background: var(--accent-1);
-      box-shadow: 0 0 0 6px rgba(255,192,203,0.22);
+      display: block;
+      object-fit: cover;
       flex: 0 0 auto;
+      box-shadow: 0 0 0 6px rgba(255,192,203,0.20);
     }
 
     .title h1{
@@ -458,7 +460,7 @@
       <div class="inner">
         <div class="top">
           <div class="title">
-            <span class="dot" aria-hidden="true"></span>
+            <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
             <h1>Today</h1>
           </div>
 
@@ -496,7 +498,7 @@
     <div class="modal" role="dialog" aria-modal="true" aria-label="History / Archive">
       <div class="modalHeader">
         <div class="mhLeft">
-          <span class="dot" aria-hidden="true"></span>
+          <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
           <strong>History / Archive</strong>
         </div>
 
@@ -535,11 +537,8 @@
   </div>
 
   <script>
-    /* -----------------------------
-      Keys & helpers
-    ----------------------------- */
     const PREFIX_DAY = "soft_schedule_today_";
-    const KEY_ARCHIVE = "soft_schedule_today_archive_v1"; // { "YYYY.MM.DD": [items] }
+    const KEY_ARCHIVE = "soft_schedule_today_archive_v1";
 
     function pad2(n){ return String(n).padStart(2,"0"); }
     function ymd(d=new Date()){
@@ -602,7 +601,6 @@
       const t = String(text);
       const q = String(query || "").trim();
       if(!q) return escapeHtml(t);
-      // simple case-insensitive highlight (safe)
       const idx = t.toLowerCase().indexOf(q.toLowerCase());
       if(idx === -1) return escapeHtml(t);
       const before = escapeHtml(t.slice(0, idx));
@@ -611,9 +609,6 @@
       return `${before}<span class="mark">${mid}</span>${after}`;
     }
 
-    /* -----------------------------
-      Archive store
-    ----------------------------- */
     function loadArchive(){
       try{
         const raw = localStorage.getItem(KEY_ARCHIVE);
@@ -626,9 +621,6 @@
       localStorage.setItem(KEY_ARCHIVE, JSON.stringify(archive));
     }
 
-    /* -----------------------------
-      Auto-archive past day keys -> archive (no limit)
-    ----------------------------- */
     function autoArchivePastDays(todayStr){
       const archive = loadArchive();
       const keys = [];
@@ -657,18 +649,13 @@
             moved++;
           }
           localStorage.removeItem(k);
-        }catch(e){
-          // keep if broken
-        }
+        }catch(e){}
       }
 
       if(moved > 0) saveArchive(archive);
       return archive;
     }
 
-    /* -----------------------------
-      Today state (per-day)
-    ----------------------------- */
     const todayStr = ymd(new Date());
     const yesterdayStr = ymd(new Date(Date.now() - 86400000));
     const KEY_TODAY = `${PREFIX_DAY}${todayStr}`;
@@ -687,7 +674,6 @@
 
     const toast = document.getElementById("toast");
 
-    // Modal
     const modalOverlay = document.getElementById("modalOverlay");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const datesPanel = document.getElementById("datesPanel");
@@ -701,9 +687,7 @@
 
     metaText.textContent = todayStr;
 
-    // Boot: auto-archive past days
     let archive = autoArchivePastDays(todayStr);
-
     let state = loadDay(KEY_TODAY);
     let pickedDate = null;
     let searchQuery = "";
@@ -773,9 +757,6 @@
       countText.textContent = `${done}/${total} done`;
     }
 
-    /* -----------------------------
-      Carry over from ANY date (manual)
-    ----------------------------- */
     function carryOverUnfinishedFromDate(dateStr){
       if(!dateStr || !parseYmd(dateStr)){
         showToast("가져오기 실패: 날짜 형식이 올바르지 않아.");
@@ -818,7 +799,6 @@
     }
 
     function carryOverYesterday(){
-      // yesterday is expected in archive; fallback to day key (rare)
       if(archive[yesterdayStr]) return carryOverUnfinishedFromDate(yesterdayStr);
 
       const raw = localStorage.getItem(`${PREFIX_DAY}${yesterdayStr}`);
@@ -829,7 +809,6 @@
       try{
         const items = JSON.parse(raw);
         if(Array.isArray(items)){
-          // temporarily treat it as archive source
           archive[yesterdayStr] = items;
           saveArchive(archive);
           try{ localStorage.removeItem(`${PREFIX_DAY}${yesterdayStr}`);}catch(e){}
@@ -842,9 +821,6 @@
       }
     }
 
-    /* -----------------------------
-      Copy / Export
-    ----------------------------- */
     async function copyToday(){
       const text = formatForCopy(todayStr, state);
       const ok = await copyToClipboard(text);
@@ -858,11 +834,8 @@
       showToast(ok ? "선택 날짜 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
     }
 
-    /* -----------------------------
-      History / Archive UI
-    ----------------------------- */
     function openModal(){
-      archive = loadArchive(); // refresh
+      archive = loadArchive();
       searchQuery = (searchInput.value || "").trim();
       buildDates();
       modalOverlay.classList.add("open");
@@ -898,7 +871,7 @@
     function buildDates(){
       const q = (searchQuery || "").trim();
       const dates = Object.keys(archive).filter(d => parseYmd(d));
-      dates.sort((a,b) => ymdToDate(b).getTime() - ymdToDate(a).getTime()); // desc
+      dates.sort((a,b) => ymdToDate(b).getTime() - ymdToDate(a).getTime());
 
       const filtered = dates.filter(d => dateMatchesQuery(d, archive[d], q));
 
@@ -925,7 +898,7 @@
       }
 
       archiveCount.textContent = `${filtered.length} / ${dates.length} days`;
-      // if pickedDate is no longer visible after filtering, clear preview
+
       if(pickedDate && !filtered.includes(pickedDate)){
         pickedDate = null;
         pickedDateText.textContent = "날짜를 선택해줘";
@@ -986,9 +959,6 @@
       previewBox.innerHTML = rows;
     }
 
-    /* -----------------------------
-      Events
-    ----------------------------- */
     addBtn.addEventListener("click", () => {
       addItem(inputEl.value);
       inputEl.value = "";
@@ -1037,7 +1007,6 @@
     });
 
     copyPickedBtn.addEventListener("click", copyPicked);
-
     carryPickedBtn.addEventListener("click", () => {
       if(!pickedDate) return;
       carryOverUnfinishedFromDate(pickedDate);
@@ -1055,7 +1024,6 @@
       showToast("검색을 초기화했어.");
     });
 
-    // Initial render (today starts clean unless you already typed today)
     render();
   </script>
 </body>
