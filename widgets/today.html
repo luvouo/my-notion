@@ -99,7 +99,7 @@
       display: block;
       object-fit: cover;
       flex: 0 0 auto;
-      box-shadow: 0 0 0 6px rgba(255,192,203,0.20);
+      box-shadow: 0 0 0 2px rgba(255,192,203,0.22); /* halo를 이미지 크기에 거의 맞춤 */
     }
 
     .title h1{
@@ -464,11 +464,6 @@
             <h1>Today</h1>
           </div>
 
-          <div class="actions">
-            <button class="btn secondary" id="carryYesterdayBtn" type="button">어제 미완료 가져오기</button>
-            <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
-            <button class="btn secondary" id="copyTodayBtn" type="button">오늘 기록 복사</button>
-          </div>
 
           <div class="meta" id="metaText"></div>
         </div>
@@ -483,9 +478,14 @@
         <div class="footer">
           <span id="countText">0/0 done</span>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn secondary" id="clearDoneBtn" type="button">완료 삭제</button>
-            <button class="btn secondary" id="resetBtn" type="button">전체 초기화</button>
-          </div>
+          <button class="btn secondary" id="carryYesterdayBtn" type="button">어제 미완료 가져오기</button>
+          <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
+          <button class="btn secondary" id="copyTodayBtn" type="button">오늘 기록 복사</button>
+        
+          <!-- 기능은 남겨두되 화면에서는 숨김 처리할 거라서 DOM에만 유지 -->
+          <button class="btn secondary" id="clearDoneBtn" type="button">완료 삭제</button>
+          <button class="btn secondary" id="resetBtn" type="button">전체 초기화</button>
+        </div>
         </div>
 
         <div class="toast" id="toast"></div>
