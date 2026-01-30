@@ -448,6 +448,11 @@
           band.className = 'band';
           band.style.background = b.color || 'var(--accent)';
 
+          const cover = document.createElement('div');
+          cover.className = 'cover';
+          cover.style.backgroundImage = `url(${b.cover})`;
+
+          /* ✅ 책등 라벨 */
           const label = document.createElement('div');
           label.className = 'label';
 
@@ -462,7 +467,7 @@
           label.appendChild(t);
           label.appendChild(a);
 
-          spine.appendChild(band);
+          spine.appendChild(cover);
           spine.appendChild(label);
 
           els.books.appendChild(spine);
