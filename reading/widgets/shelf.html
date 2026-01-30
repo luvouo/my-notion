@@ -234,6 +234,7 @@
     }
     .label{
       writing-mode: vertical-rl;
+      position: relative;
       transform: rotate(180deg);
       padding: 10px 8px;
       box-sizing: border-box;
@@ -295,7 +296,7 @@
       position:absolute;
       left:0;
       top:0;
-      width: 6px;
+      width: 4px;
       height: 100%;
       background: var(--accent);
       opacity: .85;
@@ -452,7 +453,7 @@
       } else {
         for(const b of slice){
           const spine = document.createElement('div');
-spine.className = 'spine';
+          spine.className = 'spine';
 
       /* ✅ 1) cover (왼쪽) */
       const cover = document.createElement('div');
@@ -483,6 +484,7 @@ spine.className = 'spine';
       
       /* ✅ append 순서가 핵심 */
       spine.appendChild(cover);
+      label.appendChild(band);
       spine.appendChild(label);
       
       /* 기존처럼 band 쓰면 여기서 추가 */
