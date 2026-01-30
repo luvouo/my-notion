@@ -492,6 +492,11 @@
       </div>
     </div>
   </div>
+  
+#clearDoneBtn,
+#resetBtn{
+  display: none !important;
+}
 
   <!-- History / Archive Modal -->
   <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
@@ -988,8 +993,9 @@
       }
     });
 
-    clearDoneBtn.addEventListener("click", clearDone);
-    resetBtn.addEventListener("click", resetAll);
+    if (clearDoneBtn) clearDoneBtn.addEventListener("click", clearDone);
+    if (resetBtn) resetBtn.addEventListener("click", resetAll);
+
 
     carryYesterdayBtn.addEventListener("click", carryOverYesterday);
     historyBtn.addEventListener("click", openModal);
