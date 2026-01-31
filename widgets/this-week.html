@@ -592,6 +592,223 @@
       .input{ flex-basis: 100%; }
       .dayStrip{ width: 100%; }
     }
+
+    /* ===== Modal (reuse Today-like) ===== */
+    .modalOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      z-index: 5000;
+      overflow: hidden;
+    }
+    .modalOverlay.open{ display:flex; }
+    
+    .modal{
+      width: min(820px, 100%);
+      max-height: calc(100vh - 20px);
+      display: flex;
+      flex-direction: column;
+      border-radius: 18px;
+      border: 1px solid rgba(160,195,225,0.38);
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      overflow: hidden;
+    }
+    
+    .modalHeader{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      flex-wrap: wrap;
+    }
+    .mhLeft{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      min-width: 0;
+    }
+    .mhLeft strong{
+      font-size: 14px;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .mhRight{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content: flex-end;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .search{
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.70);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      outline: none;
+      min-width: min(340px, 100%);
+      flex: 1 1 260px;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    .search::placeholder{ color: rgba(30,30,30,0.45); }
+    
+    .modalBody{
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+    .dates{
+      border-right: 1px solid rgba(0,0,0,0.06);
+      padding: 12px 10px;
+      overflow: auto;
+      width: max-content;
+      min-height: 0;
+    }
+    .dateBtn{
+      width: fit-content;
+      max-width: 100%;
+      display: grid;
+      gap: 4px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(160,195,225,0.22);
+      background: rgba(255,255,255,0.62);
+      cursor: pointer;
+      text-align: left;
+      white-space: nowrap;
+      font-size: 13px;
+      color: rgba(30,30,30,0.88);
+      transition: background .18s ease, border-color .18s ease, transform .08s ease;
+      -webkit-tap-highlight-color: transparent;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .dateBtn:hover{
+      border-color: rgba(160,195,225,0.45);
+      background: rgba(255,255,255,0.72);
+    }
+    .dateBtn:active{ transform: scale(0.99); }
+    .dateBtn small{
+      display:block;
+      font-size: 11px;
+      color: rgba(30,30,30,0.52);
+    }
+    .dateBtn.active{
+      border-color: rgba(160,195,225,0.70);
+      background: rgba(180,210,235,0.14);
+      box-shadow: 0 10px 26px rgba(160,195,225,0.12);
+    }
+    
+    .preview{
+      padding: 12px;
+      overflow: auto;
+      min-height: 0;
+      display: grid;
+      gap: 10px;
+    }
+    .previewTop{
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+      min-width: 0;
+    }
+    .picked{
+      font-size: 13px;
+      color: rgba(30,30,30,0.82);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      flex: 1 1 auto;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .previewTop > div:last-child{
+      display:flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+    }
+    .previewBox{
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.66);
+      display: grid;
+      gap: 10px;
+    }
+    .pItem{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      font-size: 13px;
+      color: rgba(30,30,30,0.86);
+      line-height: 1.25;
+    }
+    .badge{
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(0,0,0,0.03);
+      color: rgba(30,30,30,0.58);
+      flex: 0 0 auto;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .badge.done{
+      border-color: rgba(160,195,225,0.40);
+      background: rgba(180,210,235,0.18);
+      color: rgba(30,30,30,0.62);
+    }
+    .mark{
+      background: rgba(180,210,235,0.30);
+      border-radius: 6px;
+      padding: 0 3px;
+    }
+    
+    .modalFooter{
+      padding: 12px 14px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      font-size: 12px;
+      color: rgba(30,30,30,0.55);
+    }
+    
+    @media (max-width: 420px){
+      .modalBody{ grid-template-columns: 1fr; }
+      .dates{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
+      .search{ min-width: 100%; }
+    }
+
+
+    
   </style>
 </head>
 
@@ -631,6 +848,7 @@
           <span id="countText">0/0 done</span>
 
           <div class="footer-actions">
+            <button class="btn secondary" id="historyWeekBtn" type="button">History / Archive</button>
             <button class="btn secondary" id="copyBtn" type="button">Copy</button>
             <button class="btn secondary" id="clearDoneBtn" type="button">Clear done</button>
           </div>
@@ -772,6 +990,24 @@
     const clearDoneBtn = document.getElementById("clearDoneBtn");
 
     const toast = document.getElementById("toast");
+
+    // ===== Week History / Archive DOM =====
+    const historyWeekBtn = document.getElementById("historyWeekBtn");
+    const weekModalOverlay = document.getElementById("weekModalOverlay");
+    const weekCloseModalBtn = document.getElementById("weekCloseModalBtn");
+    const weeksPanel = document.getElementById("weeksPanel");
+    const pickedWeekText = document.getElementById("pickedWeekText");
+    const weekPreviewBox = document.getElementById("weekPreviewBox");
+    const weekCopyBtn = document.getElementById("weekCopyBtn");
+    const weekPullBtn = document.getElementById("weekPullBtn");
+    const weekArchiveCount = document.getElementById("weekArchiveCount");
+    const weekSearchInput = document.getElementById("weekSearchInput");
+    const weekClearSearchBtn = document.getElementById("weekClearSearchBtn");
+    
+    let pickedWeek = null;
+    let weekSearchQuery = "";
+
+    
 
     // plus icon
     addBtn.innerHTML = `
@@ -973,6 +1209,174 @@
         "'": "&#039;"
       }[m]));
     }
+
+    function highlight(text, query){
+      const t = String(text);
+      const q = String(query || "").trim();
+      if(!q) return escapeHtml(t);
+      const idx = t.toLowerCase().indexOf(q.toLowerCase());
+      if(idx === -1) return escapeHtml(t);
+      const before = escapeHtml(t.slice(0, idx));
+      const mid = escapeHtml(t.slice(idx, idx + q.length));
+      const after = escapeHtml(t.slice(idx + q.length));
+      return `${before}<span class="mark">${mid}</span>${after}`;
+    }
+    
+    function listWeekKeys(){
+      const weeks = [];
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(!k) continue;
+        if(!k.startsWith(KEY_PREFIX)) continue;
+        const weekStartStr = k.slice(KEY_PREFIX.length);
+        if(!parseYmd(weekStartStr)) continue;
+        weeks.push(weekStartStr);
+      }
+      // newest first
+      weeks.sort((a,b) => ymdToDate(b).getTime() - ymdToDate(a).getTime());
+      return weeks;
+    }
+    
+    function weekMatchesQuery(weekStartStr, items, q){
+      if(!q) return true;
+      const lowerQ = q.toLowerCase();
+      if(weekStartStr.toLowerCase().includes(lowerQ)) return true;
+      for(const it of (items || [])){
+        const tx = String(it.text || "").toLowerCase();
+        if(tx.includes(lowerQ)) return true;
+      }
+      return false;
+    }
+    
+    function buildWeeks(){
+      const q = (weekSearchQuery || "").trim();
+      const all = listWeekKeys();
+      const filtered = [];
+    
+      for(const ws of all){
+        const items = loadWeek(ws);
+        if(weekMatchesQuery(ws, items, q)) filtered.push(ws);
+      }
+    
+      weeksPanel.innerHTML = "";
+      if(filtered.length === 0){
+        weeksPanel.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">검색 결과가 없어.</div>`;
+      }else{
+        for(const ws of filtered){
+          const items = loadWeek(ws);
+          const total = items.length;
+          const done = items.filter(x => x.done).length;
+    
+          const btn = document.createElement("button");
+          btn.className = "dateBtn";
+          btn.type = "button";
+          btn.dataset.week = ws;
+          btn.innerHTML = `${escapeHtml(ws)}<small>${done}/${total}</small>`;
+          weeksPanel.appendChild(btn);
+        }
+      }
+    
+      weekArchiveCount.textContent = `${filtered.length} / ${all.length} weeks`;
+    
+      if(pickedWeek && !filtered.includes(pickedWeek)){
+        pickedWeek = null;
+        pickedWeekText.textContent = "주를 선택해줘";
+        weekCopyBtn.disabled = true;
+        weekPullBtn.disabled = true;
+        weekPreviewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">검색 결과에서 주를 선택해줘.</div>`;
+      }else if(pickedWeek){
+        setActiveWeekButton(pickedWeek);
+        renderWeekPreview(pickedWeek);
+      }
+    }
+    
+    function setActiveWeekButton(ws){
+      const btns = weeksPanel.querySelectorAll(".dateBtn");
+      btns.forEach(b => b.classList.toggle("active", b.dataset.week === ws));
+    }
+    
+    function renderWeekPreview(ws){
+      const items = loadWeek(ws);
+      const q = (weekSearchQuery || "").trim();
+    
+      pickedWeek = ws;
+      setActiveWeekButton(ws);
+    
+      pickedWeekText.textContent = `선택: ${ws}`;
+      weekCopyBtn.disabled = false;
+      weekPullBtn.disabled = false;
+    
+      let view = items;
+      if(q){
+        const lowerQ = q.toLowerCase();
+        view = items.filter(it =>
+          String(it.text || "").toLowerCase().includes(lowerQ) ||
+          String(it.dateStr || "").toLowerCase().includes(lowerQ) ||
+          ws.toLowerCase().includes(lowerQ)
+        );
+      }
+    
+      if(!view || view.length === 0){
+        weekPreviewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">표시할 항목이 없어.</div>`;
+        return;
+      }
+    
+      // group: dateStr(week days) then someday
+      const groups = new Map();
+      for(const it of view){
+        const k = it.dateStr || "Someday";
+        if(!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(it);
+      }
+    
+      const keys = Array.from(groups.keys()).sort((a,b)=>{
+        if(a === "Someday") return 1;
+        if(b === "Someday") return -1;
+        const da = ymdToDate(a), db = ymdToDate(b);
+        return (da && db) ? da.getTime() - db.getTime() : String(a).localeCompare(String(b));
+      });
+    
+      const html = keys.map(k=>{
+        const rows = groups.get(k).map(it=>{
+          const badgeCls = it.done ? "badge done" : "badge";
+          const badgeText = it.done ? "done" : "todo";
+          const txt = highlight(it.text || "", q);
+          const deco = it.done ? `style="text-decoration:line-through; color:rgba(30,30,30,0.55);"` : "";
+          return `<div class="pItem"><span class="${badgeCls}">${badgeText}</span><span ${deco}>${txt}</span></div>`;
+        }).join("");
+    
+        return `<div style="display:grid; gap:8px;">
+          <div style="font-family:EnterSanChaek, ui-sans-serif, system-ui; font-size:12px; color:rgba(30,30,30,0.70);">${escapeHtml(String(k))}</div>
+          <div style="display:grid; gap:8px;">${rows}</div>
+        </div>`;
+      }).join("");
+    
+      weekPreviewBox.innerHTML = html;
+    }
+    
+    function openWeekModal(){
+      weekSearchQuery = (weekSearchInput.value || "").trim();
+      buildWeeks();
+    
+      weekModalOverlay.classList.add("open");
+      weekModalOverlay.setAttribute("aria-hidden", "false");
+    
+      pickedWeek = null;
+      pickedWeekText.textContent = "주를 선택해줘";
+      weekCopyBtn.disabled = true;
+      weekPullBtn.disabled = true;
+      weekPreviewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">
+        왼쪽에서 주를 선택하면, 그 주의 기록을 보여줘.
+      </div>`;
+    }
+    
+    function closeWeekModal(){
+      weekModalOverlay.classList.remove("open");
+      weekModalOverlay.setAttribute("aria-hidden", "true");
+    }
+
+
+    
 
     function addItem(text){
       const t = (text || "").trim();
@@ -1339,5 +1743,49 @@
 
     mount();
   </script>
+
+<!-- Week History / Archive Modal -->
+<div class="modalOverlay" id="weekModalOverlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Week History / Archive">
+    <div class="modalHeader">
+      <div class="mhLeft">
+        <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+        <strong>Week History / Archive</strong>
+      </div>
+      <div class="mhRight">
+        <input id="weekSearchInput" class="search" type="text" placeholder="검색: 주 시작일(YYYY.MM.DD) 또는 할 일 키워드…" />
+        <button class="btn secondary" id="weekClearSearchBtn" type="button">Clear</button>
+        <button class="btn secondary" id="weekCloseModalBtn" type="button">Close</button>
+      </div>
+    </div>
+
+    <div class="modalBody">
+      <div class="dates" id="weeksPanel"></div>
+
+      <div class="preview">
+        <div class="previewTop">
+          <div class="picked" id="pickedWeekText">주를 선택해줘</div>
+          <div>
+            <button class="btn secondary" id="weekPullBtn" type="button" disabled>Pull</button>
+            <button class="btn secondary" id="weekCopyBtn" type="button" disabled>Copy</button>
+          </div>
+        </div>
+
+        <div class="previewBox" id="weekPreviewBox">
+          <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+            왼쪽에서 주를 선택하면, 그 주의 기록을 보여줘.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modalFooter">
+      <span id="weekArchiveMeta">저장: 자동(주별)</span>
+      <span id="weekArchiveCount">0 / 0 weeks</span>
+    </div>
+  </div>
+</div>
+
+  
 </body>
 </html>
