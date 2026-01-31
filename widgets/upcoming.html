@@ -7,11 +7,10 @@
 
   <style>
     :root{
-      /* Pastel Sky Blue */
-      --accent-1: rgba(165, 205, 235, 0.90);
-      --accent-2: rgba(150, 190, 220, 0.52);
-      --border:   rgba(150, 190, 220, 0.58);
-
+      /* Pastel Skyblue (slightly desaturated) */
+      --accent-1: rgba(165, 210, 235, 0.90);
+      --accent-2: rgba(150, 195, 225, 0.55);
+      --border:   rgba(150, 190, 220, 0.62);
 
       --text:  rgba(30,30,30,0.92);
       --muted: rgba(30,30,30,0.38);
@@ -64,8 +63,8 @@
       position:absolute;
       inset:-2px;
       background:
-        radial-gradient(120% 80% at 0% 0%, rgba(170,220,255,0.22), transparent 55%),
-        radial-gradient(80% 80% at 100% 20%, rgba(140,205,255,0.16), transparent 55%);
+        radial-gradient(120% 80% at 0% 0%, rgba(165,210,235,0.22), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(150,195,225,0.16), transparent 55%);
       pointer-events:none;
     }
 
@@ -98,7 +97,7 @@
       display: block;
       object-fit: cover;
       flex: 0 0 auto;
-      box-shadow: 0 0 0 2px rgba(170,220,255,0.20);
+      box-shadow: 0 0 0 2px rgba(165,210,235,0.18);
     }
 
     .title h1{
@@ -117,9 +116,11 @@
       color: var(--muted);
       white-space: nowrap;
       margin-left: auto;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
 
-    /* ===== Inputs ===== */
+    /* ===== Input Row ===== */
     .inputRow{
       display:flex;
       gap: 10px;
@@ -130,7 +131,7 @@
     .input{
       flex: 1 1 220px;
       min-width: 0;
-      border: 1px solid rgba(140,205,255,0.45);
+      border: 1px solid rgba(150,190,220,0.45);
       background: rgba(255,255,255,0.10);
       border-radius: 14px;
       padding: 12px 12px;
@@ -140,100 +141,273 @@
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
-    .input::placeholder{ color: rgba(30,30,30,0.45); }
+    .input::placeholder{ color: var(--muted); }
 
-    .dateInput{
-      flex: 0 0 auto;
-      width: 148px;
-      border: 1px solid rgba(150,190,220,0.45);
-      background: rgba(255,255,255,0.08);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.20);
-      border-radius: 14px;
-      padding: 11px 10px;
-      outline: none;
-      color: rgba(30,30,30,0.45);
-      font-size: 13px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-
-        /* Chrome / Edge */
-    .dateInput::-webkit-datetime-edit{
-      color: rgba(30,30,30,0.45);
-    }
-    
-    /* 달력 아이콘 */
-    .dateInput::-webkit-calendar-picker-indicator{
-      filter: grayscale(1) brightness(0.55);
-      opacity: 0.8;
-    }
-    
-    .dateInput:focus-visible{
-      outline: none;
-      border-color: rgba(150,190,220,0.75);
-      box-shadow:
-      0 0 0 3px rgba(165,205,235,0.26),
-      inset 0 0 0 1px rgba(255,255,255,0.25);
-    }
-
-    .dateWrap{
-      position: relative;
-      flex: 0 0 auto;
-    }
-    
-    .dateHint{
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      font-size: 13px;
-      color: rgba(30,30,30,0.45);
-    }
-    .dateWrap.hasValue .dateHint{
-      display: none;
-    }
-    
-
+    /* Base button */
     .btn{
       flex: 0 0 auto;
-      border: 1px solid rgba(140,205,255,0.70);
-      background: rgba(170,220,255,0.18);
+      border: 1px solid rgba(150,190,220,0.70);
+      background: rgba(165,210,235,0.18);
       border-radius: 14px;
       padding: 12px 14px;
       font-size: 13px;
       color: rgba(30,30,30,0.85);
       cursor: pointer;
-      transition: transform .08s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease, box-shadow .18s ease, color .18s ease;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       white-space: nowrap;
     }
     .btn:active{ transform: scale(0.98); }
     .btn:hover{
-      background: rgba(170,220,255,0.24);
-      border-color: rgba(140,205,255,0.88);
-      box-shadow: 0 0 0 3px rgba(170,220,255,0.22);
+      background: rgba(165,210,235,0.26);
+      border-color: rgba(150,190,220,0.90);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.20);
     }
     .btn:focus-visible{
       outline: none;
-      box-shadow: 0 0 0 3px rgba(170,220,255,0.28);
-      border-color: rgba(140,205,255,0.78);
+      border-color: rgba(150,190,220,0.90);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.28);
     }
 
-    .btn.secondary{
-      border: 1px solid rgba(140,205,255,0.45);
-      background: rgba(255,255,255,0.08);
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 12px;
+    /* Add (+) button: small round */
+    #addUpcomingBtn{
+      height: clamp(28px, 3.2vw, 32px);
+      min-width: clamp(28px, 3.2vw, 32px);
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      color: rgba(150,190,220,0.55);
+      background: rgba(255,255,255,0.70);
+      border: 1px solid rgba(150,190,220,0.40);
+      border-radius: 999px;
+
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: box-shadow .18s ease, border-color .18s ease, background .18s ease, transform .12s ease;
+    }
+    #addUpcomingBtn:hover{
+      background: rgba(255,255,255,0.62);
+      border-color: rgba(150,190,220,0.65);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.22);
+    }
+    #addUpcomingBtn:active{ transform: scale(0.96); }
+    #addUpcomingBtn:disabled{
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    #addUpcomingBtn:disabled:hover{
+      box-shadow: none;
+    }
+
+    /* ===== Custom Date Picker Trigger (in row) ===== */
+    .dpTrigger{
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+
+      height: 38px; /* input의 시각적 높이와 맞춤 */
+      padding: 0 12px;
+
+      border: 1px solid rgba(150,190,220,0.45);
+      background: rgba(255,255,255,0.10);
+      border-radius: 14px;
+
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    .dpText{
+      font-size: 14px;
+      color: var(--muted); /* ✅ '미래 할 일…' placeholder와 동일 */
+      white-space: nowrap;
+    }
+    .dpIcon{
+      color: var(--muted); /* ✅ 아이콘도 동일 */
+      display: inline-flex;
+      align-items: center;
+    }
+    .dpTrigger:hover{
+      border-color: rgba(150,190,220,0.75);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.20);
+    }
+    .dpTrigger:focus-visible{
+      outline: none;
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.28);
+    }
+    .dpTrigger.filled .dpText,
+    .dpTrigger.filled .dpIcon{
+      color: rgba(30,30,30,0.78); /* 날짜 선택 완료 시 진한 그레이로 */
+    }
+
+    /* ===== Date Picker Popover (fixed, portal) ===== */
+    .dpPop{
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: min(320px, calc(100vw - 16px));
+      z-index: 99999;
+
+      border-radius: 16px;
+      border: 1px solid rgba(150,190,220,0.45);
+      background: rgba(255,255,255,0.90);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+      padding: 10px;
+
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(6px);
+      transition: opacity .14s ease, transform .14s ease;
+    }
+    .dpPop.open{
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .dpHeader{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 4px 2px 8px;
+    }
+    .dpTitle{
+      font-size: 13px;
+      color: rgba(30,30,30,0.78); /* ✅ 상단 날짜: 진한 그레이 */
+      letter-spacing: -0.2px;
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
-    .btn.secondary:disabled{
-      opacity: 0.55;
-      cursor: not-allowed;
-      box-shadow: none;
+    .dpNav{
+      width: 34px;
+      height: 30px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.60);
+      color: rgba(30,30,30,0.70);
+      cursor: pointer;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
+    }
+    .dpNav:hover{
+      border-color: rgba(150,190,220,0.65);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.20);
+    }
+    .dpNav:active{ transform: scale(0.98); }
+    .dpNav:focus-visible{
+      outline: none;
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.28);
+    }
+
+    .dpDow{
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      padding: 2px 2px 6px;
+      font-size: 11px;
+      letter-spacing: 0.2px;
+      color: rgba(30,30,30,0.72); /* ✅ 요일: 진한 그레이 */
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .dpDow span:nth-child(1),
+    .dpDow span:nth-child(7){
+      color: rgba(30,30,30,0.72); /* ✅ 주말도 진한 그레이 */
+    }
+
+    .dpGrid{
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      padding: 2px;
+    }
+
+    .dpDay{
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.55);
+      color: rgba(30,30,30,0.78);
+      font-size: 12px;
+      cursor: pointer;
+
+      display: grid;
+      place-items: center;
+
+      transition: box-shadow .18s ease, border-color .18s ease, background .18s ease, transform .08s ease;
+    }
+    .dpDay[disabled]{
+      opacity: 0.35;
+      cursor: default;
+    }
+    .dpDay:hover:not([disabled]){
+      border-color: rgba(150,190,220,0.65);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.18);
+    }
+    .dpDay:active:not([disabled]){ transform: scale(0.98); }
+    .dpDay:focus-visible{
+      outline: none;
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.28);
+    }
+
+    .dpDay.today::after{
+      content:"";
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(30,30,30,0.58);
+      margin-top: 2px;
+    }
+
+    .dpDay.selected{
+      background: rgba(165,210,235,0.24);
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.22);
+    }
+
+    .dpFooter{
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 10px;
+    }
+    .dpAction{
+      flex: 1 1 auto;
+      height: 34px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.60);
+      color: rgba(30,30,30,0.78); /* ✅ Back/Today: 진한 그레이 */
+      font-size: 12px;
+      cursor: pointer;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .dpAction:hover{
+      border-color: rgba(150,190,220,0.65);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.20);
+    }
+    .dpAction:active{ transform: scale(0.98); }
+    .dpAction:focus-visible{
+      outline: none;
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.28);
+    }
+    .dpAction.primary{
+      background: rgba(165,210,235,0.18);
+      border-color: rgba(150,190,220,0.70);
     }
 
     /* ===== List ===== */
@@ -251,7 +425,7 @@
       gap: 10px;
       padding: 8px 10px;
       border-radius: 14px;
-      border: 1px solid rgba(140,205,255,0.28);
+      border: 1px solid rgba(150,190,220,0.30);
       background: var(--glass-2);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -263,7 +437,7 @@
       height: 18px;
       margin-top: 1px;
       border-radius: 6px;
-      border: 1.6px solid rgba(140,205,255,0.95);
+      border: 1.6px solid rgba(150,190,220,0.95);
       display:grid;
       place-items:center;
       flex: 0 0 auto;
@@ -272,23 +446,40 @@
       transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
     }
     .check:hover{
-      background: rgba(170,220,255,0.14);
-      border-color: rgba(140,205,255,1);
-      box-shadow: 0 0 0 3px rgba(170,220,255,0.20);
+      background: rgba(165,210,235,0.14);
+      border-color: rgba(150,190,220,1);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.20);
     }
     .check:active{ transform: scale(0.98); }
     .check:focus-visible{
       outline: none;
-      background: rgba(170,220,255,0.12);
-      border-color: rgba(140,205,255,1);
-      box-shadow: 0 0 0 3px rgba(170,220,255,0.28);
+      background: rgba(165,210,235,0.12);
+      border-color: rgba(150,190,220,1);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.28);
     }
+
     .check svg{
       width: 12px;
       height: 12px;
       opacity: 0;
       transform: scale(0.9);
       transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .badgeDate{
+      flex: 0 0 auto;
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.55);
+      color: rgba(30,30,30,0.70);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .badgeDate.someday{
+      background: rgba(165,210,235,0.16);
+      border-color: rgba(150,190,220,0.35);
     }
 
     .text{
@@ -299,60 +490,6 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    .pill{
-      flex: 0 0 auto;
-      font-size: 11px;
-      line-height: 1;
-      padding: 6px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.06);
-      background: rgba(255,255,255,0.50);
-      color: rgba(30,30,30,0.62);
-      white-space: nowrap;
-    }
-    .pill.dueSoon{
-      border-color: rgba(140,205,255,0.55);
-      background: rgba(170,220,255,0.16);
-    }
-    .pill.overdue{
-      border-color: rgba(255,170,190,0.55);
-      background: rgba(255,192,203,0.14);
-    }
-    .pill.noDate{
-      background: rgba(0,0,0,0.03);
-    }
-
-    .mini{
-      flex: 0 0 auto;
-      border: 1px solid rgba(140,205,255,0.45);
-      background: rgba(255,255,255,0.06);
-      border-radius: 999px;
-      padding: 7px 10px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: color .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .08s ease;
-      color: rgba(30,30,30,0.78);
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      white-space: nowrap;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-    .mini:hover{
-      color: var(--accent-1);
-      border-color: rgba(140,205,255,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,255,0.22);
-      background: rgba(255,255,255,0.08);
-    }
-    .mini:active{ transform: scale(0.98); }
-    .mini:focus-visible{
-      outline: none;
-      color: var(--accent-1);
-      border-color: rgba(140,205,255,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,255,0.28);
-      background: rgba(255,255,255,0.08);
     }
 
     .del{
@@ -368,27 +505,27 @@
       -webkit-tap-highlight-color: transparent;
     }
     .del:hover{
-      background: rgba(170,220,255,0.14);
+      background: rgba(165,210,235,0.14);
       color: rgba(30,30,30,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,255,0.20);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.20);
     }
     .del:active{ transform: scale(0.96); }
     .del:focus-visible{
       outline: none;
-      background: rgba(170,220,255,0.12);
+      background: rgba(165,210,235,0.12);
       color: rgba(30,30,30,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,255,0.28);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.28);
     }
 
     .item.done{ opacity: 0.78; }
     .item.done .text{ text-decoration: line-through; color: rgba(30,30,30,0.50); }
     .item.done .check{
-      background: rgba(170,220,255,0.20);
-      border-color: rgba(140,205,255,1);
+      background: rgba(165,210,235,0.22);
+      border-color: rgba(150,190,220,1);
     }
     .item.done .check svg{ opacity: 1; transform: scale(1); }
 
-    /* ===== Footer ===== */
+    /* Footer */
     .footer{
       display:flex;
       justify-content: space-between;
@@ -399,28 +536,7 @@
       color: var(--muted);
     }
 
-    .footer-actions{
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-
-      margin-left: auto;
-      padding-left: 8px;
-      padding-right: 2px;
-
-      scrollbar-width: none;
-    }
-    .footer-actions::-webkit-scrollbar{ display: none; }
-    .footer-actions > *{ flex: 0 0 auto; }
-
-    /* ===== Toast overlay (same idea) ===== */
+    /* Toast overlay */
     .toast{
       position: absolute;
       left: 16px;
@@ -455,218 +571,34 @@
       width: 6px;
       height: 6px;
       border-radius: 999px;
-      background: rgba(170,220,255,0.92);
-      box-shadow: 0 0 0 3px rgba(170,220,255,0.16);
+      background: rgba(165,210,235,0.90);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.14);
       flex: 0 0 auto;
     }
 
+    /* Small screens */
     @media (max-width: 360px){
       .meta{ display:none; }
-      .dateInput{ width: 100%; }
+      .input{ flex-basis: 100%; }
+      .dpTrigger{ width: 100%; }
+      #addUpcomingBtn{ width: 100%; border-radius: 14px; height: 38px; }
     }
 
-        /* ===== Date Picker (Custom) ===== */
-    .dp{ position: relative; }
-    
-    .dpTrigger{
-      width: 100%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.08);
-      border-radius: 14px;
-      padding: 12px 12px;
-    
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    
-      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    /* Touch hitbox */
+    @media (pointer: coarse){
+      #addUpcomingBtn{ position: relative; }
+      #addUpcomingBtn::after{
+        content:"";
+        position:absolute;
+        inset:-6px;
+      }
+      .dpTrigger{ position: relative; }
+      .dpTrigger::after{
+        content:"";
+        position:absolute;
+        inset:-6px;
+      }
     }
-    
-    .dpText{
-      font-size: 14px;
-      color: var(--muted); /* ✅ "미래 할 일…" placeholder와 동일 톤으로 쓰기 */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .dpIcon{
-      color: var(--muted);
-      display: inline-flex;
-      align-items: center;
-    }
-    
-    .dpTrigger:hover{
-      border-color: rgba(150,190,220,0.75);
-      box-shadow: 0 0 0 3px rgba(165,205,235,0.20);
-    }
-    
-    .dpTrigger:focus-visible{
-      outline: none;
-      border-color: rgba(150,190,220,0.85);
-      box-shadow: 0 0 0 3px rgba(165,205,235,0.28);
-    }
-    
-    /* Popover */
-    .dpPop{
-      position: absolute;
-      top: calc(100% + 8px);
-      left: 0;
-      width: min(320px, 100%);
-      z-index: 9999;
-    
-      border-radius: 16px;
-      border: 1px solid rgba(150,190,220,0.45);
-      background: rgba(255,255,255,0.86);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
-      padding: 10px;
-    }
-    
-    .dpHeader{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 4px 2px 8px;
-    }
-    
-    .dpTitle{
-      font-size: 13px;
-      color: rgba(30,30,30,0.78); /* ✅ 상단 날짜: 진한 그레이 */
-      letter-spacing: -0.2px;
-    }
-    
-    .dpNav{
-      width: 34px;
-      height: 30px;
-      border-radius: 10px;
-      border: 1px solid rgba(0,0,0,0.06);
-      background: rgba(255,255,255,0.60);
-      color: rgba(30,30,30,0.70);
-      cursor: pointer;
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
-    }
-    .dpNav:hover{
-      border-color: rgba(150,190,220,0.65);
-      box-shadow: 0 0 0 3px rgba(165,205,235,0.20);
-    }
-    .dpNav:active{ transform: scale(0.98); }
-    .dpNav:focus-visible{
-      outline: none;
-      border-color: rgba(150,190,220,0.85);
-      box-shadow: 0 0 0 3px rgba(165,205,235,0.28);
-    }
-    
-    .dpDow{
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      padding: 2px 2px 6px;
-      font-size: 11px;
-      letter-spacing: 0.2px;
-      color: rgba(30,30,30,0.72); /* ✅ 요일: 진한 그레이 */
-    }
-    .dpDow span:nth-child(1),
-    .dpDow span:nth-child(7){
-      color: rgba(30,30,30,0.72); /* ✅ 주말도 진한 그레이 */
-    }
-    
-    .dpGrid{
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      padding: 2px;
-    }
-    
-    .dpDay{
-      height: 34px;
-      border-radius: 10px;
-      border: 1px solid rgba(0,0,0,0.06);
-      background: rgba(255,255,255,0.55);
-      color: rgba(30,30,30,0.78);
-      font-size: 12px;
-      cursor: pointer;
-    
-      display: grid;
-      place-items: center;
-    
-      transition: box-shadow .18s ease, border-color .18s ease, background .18s ease, transform .08s ease;
-    }
-    .dpDay[disabled]{
-      opacity: 0.35;
-      cursor: default;
-    }
-    .dpDay:hover:not([disabled]){
-      border-color: rgba(150,190,220,0.65);
-      box-shadow: 0 0 0 3px rgba(165,205,235,0.18);
-    }
-    .dpDay:active:not([disabled]){ transform: scale(0.98); }
-    .dpDay:focus-visible{
-      outline: none;
-      border-color: rgba(150,190,220,0.85);
-      box-shadow: 0 0 0 3px rgba(165,205,235,0.28);
-    }
-    
-    /* Today dot */
-    .dpDay.today::after{
-      content:"";
-      width: 5px;
-      height: 5px;
-      border-radius: 999px;
-      background: rgba(30,30,30,0.58);
-      margin-top: 2px;
-    }
-    
-    /* Selected */
-    .dpDay.selected{
-      background: rgba(165,205,235,0.24); /* ✅ accent */
-      border-color: rgba(150,190,220,0.85);
-      box-shadow: 0 0 0 3px rgba(165,205,235,0.22);
-    }
-    
-    /* Footer buttons */
-    .dpFooter{
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      padding-top: 10px;
-    }
-    
-    .dpAction{
-      flex: 1 1 auto;
-      height: 34px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.06);
-      background: rgba(255,255,255,0.60);
-      color: rgba(30,30,30,0.78); /* ✅ Back / Today 텍스트 진한 그레이 */
-      font-size: 12px;
-      cursor: pointer;
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
-    }
-    .dpAction:hover{
-      border-color: rgba(150,190,220,0.65);
-      box-shadow: 0 0 0 3px rgba(165,205,235,0.20);
-    }
-    .dpAction:active{ transform: scale(0.98); }
-    .dpAction:focus-visible{
-      outline: none;
-      border-color: rgba(150,190,220,0.85);
-      box-shadow: 0 0 0 3px rgba(165,205,235,0.28);
-    }
-    
-    .dpAction.primary{
-      background: rgba(165,205,235,0.18);
-      border-color: rgba(150,190,220,0.70);
-    }
-
-    
   </style>
 </head>
 
@@ -683,58 +615,34 @@
         </div>
 
         <div class="inputRow">
-          <input id="taskInput" class="input" type="text" placeholder="미래 할 일 (Enter)…" maxlength="80" />
-          
-                      <!-- Date Picker Trigger -->
-          <div class="dp" id="datePicker">
-            <button type="button" class="dpTrigger" id="dpTrigger" aria-haspopup="dialog" aria-expanded="false">
-              <span class="dpText" id="dpText">날짜 선택</span>
-              <span class="dpIcon" aria-hidden="true">
-                <!-- calendar icon -->
-                <svg viewBox="0 0 24 24" width="16" height="16">
-                  <path d="M7 3v2M17 3v2M4 8h16M6 5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
-                        fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                </svg>
-              </span>
-            </button>
-          
-            <!-- Popover / Dialog -->
-            <div class="dpPop" id="dpPop" role="dialog" aria-modal="false" aria-label="Date Picker" hidden>
-              <div class="dpHeader">
-                <button type="button" class="dpNav" id="dpPrev" aria-label="Previous month">‹</button>
-                <div class="dpTitle" id="dpTitle">2026.01</div>
-                <button type="button" class="dpNav" id="dpNext" aria-label="Next month">›</button>
-              </div>
-          
-              <div class="dpDow" aria-hidden="true">
-                <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
-              </div>
-          
-              <div class="dpGrid" id="dpGrid" role="grid" aria-label="Calendar days"></div>
-          
-              <div class="dpFooter">
-                <button type="button" class="dpAction" id="dpBack">Back</button>
-                <button type="button" class="dpAction primary" id="dpToday">Today</button>
-              </div>
-            </div>
-          </div>
+          <input id="upcomingInput" class="input" type="text" placeholder="미래 할 일…" maxlength="80" />
 
-          <input id="dateInput" class="dateInput" type="date" aria-label="날짜 (선택)" />
-          <button class="btn" id="addBtn" type="button" title="추가" aria-label="추가">Add</button>
+          <!-- Date Picker Trigger -->
+          <button type="button" class="dpTrigger" id="dpTrigger" aria-haspopup="dialog" aria-expanded="false">
+            <span class="dpText" id="dpText">날짜 선택</span>
+            <span class="dpIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path d="M7 3v2M17 3v2M4 8h16M6 5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+                      fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </button>
+
+          <button class="btn" id="addUpcomingBtn" type="button" title="할 일 추가" aria-label="할 일 추가"></button>
         </div>
 
         <ul class="list" id="list"></ul>
 
         <div class="footer">
-          <span id="countText">0 items</span>
-
-          <div class="footer-actions">
-            <button class="btn secondary" id="filterAllBtn" type="button">All</button>
-            <button class="btn secondary" id="filterDatedBtn" type="button">Dated</button>
-            <button class="btn secondary" id="filterNoDateBtn" type="button">No date</button>
-            <button class="btn secondary" id="filterOverdueBtn" type="button">Overdue</button>
-            <button class="btn secondary" id="copyBtn" type="button">Copy</button>
-          </div>
+          <span id="countText">0/0 done</span>
+          <span style="display:flex; gap:8px; align-items:center;">
+            <button class="btn" id="copyBtn" type="button" style="padding:10px 12px; border-radius:12px; font-size:12px; background: rgba(255,255,255,0.08); border-color: rgba(150,190,220,0.45);">
+              Copy
+            </button>
+            <button class="btn" id="clearDoneBtn" type="button" style="padding:10px 12px; border-radius:12px; font-size:12px; background: rgba(255,255,255,0.08); border-color: rgba(150,190,220,0.45);">
+              Clear done
+            </button>
+          </span>
         </div>
 
         <div class="toast" id="toast"></div>
@@ -742,34 +650,47 @@
     </div>
   </div>
 
+  <!-- Date Picker Popover (Portal) -->
+  <div class="dpPop" id="dpPop" role="dialog" aria-label="Date Picker">
+    <div class="dpHeader">
+      <button type="button" class="dpNav" id="dpPrev" aria-label="Previous month">‹</button>
+      <div class="dpTitle" id="dpTitle">2026.01</div>
+      <button type="button" class="dpNav" id="dpNext" aria-label="Next month">›</button>
+    </div>
+
+    <div class="dpDow" aria-hidden="true">
+      <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+    </div>
+
+    <div class="dpGrid" id="dpGrid" role="grid" aria-label="Calendar days"></div>
+
+    <div class="dpFooter">
+      <button type="button" class="dpAction" id="dpBack">Back</button>
+      <button type="button" class="dpAction primary" id="dpToday">Today</button>
+    </div>
+  </div>
+
   <script>
-    /* ===== Storage keys ===== */
-    const KEY_UPCOMING = "soft_schedule_upcoming_v1";
-
-    /* Today widget compatible key (so Upcoming -> Today move works) */
-    const PREFIX_DAY = "soft_schedule_today_";
+    // ===== Helpers =====
     function pad2(n){ return String(n).padStart(2,"0"); }
-    function ymd(d=new Date()){
-      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+    function ymdDash(d=new Date()){
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
     }
-
-    /* ===== Helpers ===== */
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, (m) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      }[m]));
+    function ymdDotFromDash(s){
+      // "YYYY-MM-DD" -> "YYYY.MM.DD"
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s||""));
+      if(!m) return null;
+      return `${m[1]}.${m[2]}.${m[3]}`;
     }
-
-    function showToast(msg){
-      toast.textContent = msg;
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(()=> toast.textContent = "", 1600);
+    function dashFromDate(d){
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
     }
-
+    function fmtYM(d){
+      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}`;
+    }
+    function isSameDay(a, b){
+      return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+    }
     async function copyToClipboard(text){
       try{
         await navigator.clipboard.writeText(text);
@@ -792,26 +713,36 @@
       }
     }
 
-    function isoToYmdDot(iso){ // "2026-02-01" -> "2026.02.01"
-      if(!iso) return "";
-      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
-      if(!m) return "";
-      return `${m[1]}.${m[2]}.${m[3]}`;
+    // ===== UI refs =====
+    const metaText = document.getElementById("metaText");
+    const listEl = document.getElementById("list");
+    const inputEl = document.getElementById("upcomingInput");
+    const addBtn = document.getElementById("addUpcomingBtn");
+    const countText = document.getElementById("countText");
+    const toast = document.getElementById("toast");
+    const copyBtn = document.getElementById("copyBtn");
+    const clearDoneBtn = document.getElementById("clearDoneBtn");
+
+    // Add button icon
+    addBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+        <path d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"/>
+      </svg>
+    `;
+
+    function showToast(msg){
+      toast.textContent = msg;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.textContent = "", 1600);
     }
 
-    function ymdDotToDate(dot){ // "2026.02.01" -> Date
-      const m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(dot);
-      if(!m) return null;
-      return new Date(+m[1], +m[2]-1, +m[3]);
-    }
+    metaText.textContent = "Date optional";
 
-    function daysDiffFromToday(dot){ // dot date - today (days)
-      const d = ymdDotToDate(dot);
-      if(!d) return null;
-      const t0 = new Date(); t0.setHours(0,0,0,0);
-      const t1 = new Date(d); t1.setHours(0,0,0,0);
-      return Math.round((t1 - t0) / 86400000);
-    }
+    // ===== Storage =====
+    const KEY_UPCOMING = "soft_schedule_upcoming_v1";
 
     function loadUpcoming(){
       try{
@@ -821,361 +752,185 @@
         return Array.isArray(parsed) ? parsed : [];
       }catch(e){ return []; }
     }
-
     function saveUpcoming(items){
       localStorage.setItem(KEY_UPCOMING, JSON.stringify(items));
     }
 
-    function loadTodayList(){
-      const key = `${PREFIX_DAY}${ymd(new Date())}`;
-      try{
-        const raw = localStorage.getItem(key);
-        if(!raw) return { key, items: [] };
-        const parsed = JSON.parse(raw);
-        return { key, items: Array.isArray(parsed) ? parsed : [] };
-      }catch(e){
-        return { key, items: [] };
-      }
-    }
+    let state = loadUpcoming();
 
-    function saveTodayList(key, items){
-      localStorage.setItem(key, JSON.stringify(items));
-    }
-
-    function syncDateHint(){
-      const wrap = dateInput.closest(".dateWrap");
-      if(dateInput.value) wrap.classList.add("hasValue");
-      else wrap.classList.remove("hasValue");
-    }
-    dateInput.addEventListener("change", syncDateHint);
-    syncDateHint();
-    
-
-    /* ===== DOM ===== */
-    const metaText = document.getElementById("metaText");
-    const listEl = document.getElementById("list");
-    const taskInput = document.getElementById("taskInput");
-    const dateInput = document.getElementById("dateInput");
-    const addBtn = document.getElementById("addBtn");
-    const countText = document.getElementById("countText");
-    const toast = document.getElementById("toast");
-
-    const filterAllBtn = document.getElementById("filterAllBtn");
-    const filterDatedBtn = document.getElementById("filterDatedBtn");
-    const filterNoDateBtn = document.getElementById("filterNoDateBtn");
-    const filterOverdueBtn = document.getElementById("filterOverdueBtn");
-    const copyBtn = document.getElementById("copyBtn");
-
-        // ===== Custom Date Picker =====
-    const dpRoot = document.getElementById("datePicker");
+    // ===== Custom Date Picker (Portal) =====
     const dpTrigger = document.getElementById("dpTrigger");
-    const dpPop = document.getElementById("dpPop");
     const dpText = document.getElementById("dpText");
+    const dpPop = document.getElementById("dpPop");
     const dpTitle = document.getElementById("dpTitle");
     const dpGrid = document.getElementById("dpGrid");
     const dpPrev = document.getElementById("dpPrev");
     const dpNext = document.getElementById("dpNext");
     const dpBack = document.getElementById("dpBack");
     const dpToday = document.getElementById("dpToday");
-    
+
     // selectedDate: "YYYY-MM-DD" or null
     let selectedDate = null;
-    
-    // viewDate: first day of current viewed month
     let view = new Date();
     view.setDate(1);
-    
-    function pad2(n){ return String(n).padStart(2,"0"); }
-    function fmtYMD(d){
-      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-    }
-    function fmtYM(d){
-      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}`;
-    }
-    function isSameDay(a, b){
-      return a.getFullYear()===b.getFullYear() &&
-             a.getMonth()===b.getMonth() &&
-             a.getDate()===b.getDate();
-    }
-    
+
     function openDP(){
-      dpPop.hidden = false;
-      dpTrigger.setAttribute("aria-expanded", "true");
+      dpTrigger.setAttribute("aria-expanded","true");
+      dpPop.classList.add("open");
       renderDP();
-      // 첫 포커스: 이전 달 버튼
-      requestAnimationFrame(()=> dpPrev.focus());
+      requestAnimationFrame(()=>{
+        placeDP();
+        dpPrev.focus();
+      });
     }
-    
     function closeDP(){
-      dpPop.hidden = true;
-      dpTrigger.setAttribute("aria-expanded", "false");
+      dpTrigger.setAttribute("aria-expanded","false");
+      dpPop.classList.remove("open");
     }
-    
+
     function setSelected(dateObjOrNull, {close=true} = {}){
       if(!dateObjOrNull){
         selectedDate = null;
         dpText.textContent = "날짜 선택";
-        // placeholder 느낌 유지: muted 색은 CSS가 처리
+        dpTrigger.classList.remove("filled");
       }else{
-        selectedDate = fmtYMD(dateObjOrNull);
-        // 표시 텍스트는 위젯 스타일에 맞게 바꾸고 싶으면 여기에서 포맷
-        dpText.textContent = `${dateObjOrNull.getFullYear()}.${pad2(dateObjOrNull.getMonth()+1)}.${pad2(dateObjOrNull.getDate())}`;
+        selectedDate = dashFromDate(dateObjOrNull);
+        dpText.textContent = ymdDotFromDash(selectedDate);
+        dpTrigger.classList.add("filled");
       }
       renderDP();
       if(close) closeDP();
     }
-    
+
     function renderDP(){
       dpTitle.textContent = fmtYM(view);
       dpGrid.innerHTML = "";
-    
+
       const today = new Date();
       const first = new Date(view.getFullYear(), view.getMonth(), 1);
       const last  = new Date(view.getFullYear(), view.getMonth()+1, 0);
       const daysInMonth = last.getDate();
-    
-      // Start on Sunday (S M T W T F S)
-      const startDow = first.getDay(); // 0..6, Sunday=0
-    
-      // Fill leading blanks
+      const startDow = first.getDay(); // Sunday=0
+
       for(let i=0;i<startDow;i++){
         const blank = document.createElement("button");
         blank.type = "button";
         blank.className = "dpDay";
         blank.disabled = true;
-        blank.setAttribute("aria-hidden", "true");
+        blank.setAttribute("aria-hidden","true");
         blank.textContent = "";
         dpGrid.appendChild(blank);
       }
-    
-      // Days
+
       for(let day=1; day<=daysInMonth; day++){
         const d = new Date(view.getFullYear(), view.getMonth(), day);
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "dpDay";
         btn.textContent = String(day);
-        btn.setAttribute("role", "gridcell");
-    
+        btn.setAttribute("role","gridcell");
+
         if(isSameDay(d, today)) btn.classList.add("today");
-        if(selectedDate && selectedDate === fmtYMD(d)) btn.classList.add("selected");
-    
+        if(selectedDate && selectedDate === dashFromDate(d)) btn.classList.add("selected");
+
         btn.addEventListener("click", ()=> setSelected(d, {close:true}));
         dpGrid.appendChild(btn);
       }
     }
-    
+
+    function placeDP(){
+      const r = dpTrigger.getBoundingClientRect();
+      const popRect = dpPop.getBoundingClientRect();
+      const gap = 8;
+      const pad = 8;
+
+      // below trigger, left aligned
+      let top = r.bottom + gap;
+      let left = r.left;
+
+      // if overflow bottom, place above
+      if(top + popRect.height > window.innerHeight - pad){
+        top = r.top - popRect.height - gap;
+      }
+
+      // clamp horizontally
+      left = Math.max(pad, Math.min(left, window.innerWidth - popRect.width - pad));
+      top = Math.max(pad, Math.min(top, window.innerHeight - popRect.height - pad));
+
+      dpPop.style.left = `${left}px`;
+      dpPop.style.top = `${top}px`;
+    }
+
     dpTrigger.addEventListener("click", (e)=>{
       e.stopPropagation();
-      if(dpPop.hidden) openDP();
-      else closeDP();
+      if(dpPop.classList.contains("open")) closeDP();
+      else openDP();
     });
-    
+
     dpPrev.addEventListener("click", ()=>{
       view = new Date(view.getFullYear(), view.getMonth()-1, 1);
       renderDP();
+      placeDP();
     });
-    
     dpNext.addEventListener("click", ()=>{
       view = new Date(view.getFullYear(), view.getMonth()+1, 1);
       renderDP();
+      placeDP();
     });
-    
-    dpBack.addEventListener("click", ()=>{
-      setSelected(null, {close:true}); // Back = 선택 해제 + 닫기
-    });
-    
+
+    dpBack.addEventListener("click", ()=> setSelected(null, {close:true}));
     dpToday.addEventListener("click", ()=>{
       const t = new Date();
       view = new Date(t.getFullYear(), t.getMonth(), 1);
       setSelected(t, {close:true});
     });
-    
-    // Close on outside click
-    document.addEventListener("click", ()=>{
-      if(!dpPop.hidden) closeDP();
-    });
-    
-    // Prevent closing when clicking inside popover
+
+    // prevent outside close when clicking pop
     dpPop.addEventListener("click", (e)=> e.stopPropagation());
-    
-    // Esc to close
+
+    document.addEventListener("click", ()=> { if(dpPop.classList.contains("open")) closeDP(); });
     document.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape" && !dpPop.hidden){
+      if(e.key === "Escape" && dpPop.classList.contains("open")){
         closeDP();
         dpTrigger.focus();
       }
     });
 
+    window.addEventListener("resize", ()=> { if(dpPop.classList.contains("open")) placeDP(); }, {passive:true});
+    window.addEventListener("scroll", ()=> { if(dpPop.classList.contains("open")) placeDP(); }, {passive:true});
 
-    metaText.textContent = ymd(new Date());
-
-    let state = loadUpcoming();
-    let filter = "all"; // all | dated | nodate | overdue
-
-    /* ===== Actions ===== */
+    // ===== Add button enable/disable =====
     function syncAddButtonState(){
-      const hasText = (taskInput.value || "").trim().length > 0;
+      const hasText = (inputEl.value || "").trim().length > 0;
       addBtn.disabled = !hasText;
     }
-    taskInput.addEventListener("input", syncAddButtonState);
+    inputEl.addEventListener("input", syncAddButtonState);
     syncAddButtonState();
 
-    function addItem(text, isoDate){
-      const t = (text || "").trim();
-      if(!t) return;
-
-      const due = isoToYmdDot(isoDate || ""); // "YYYY.MM.DD" or ""
-      state.unshift({
-        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
-        text: t,
-        due: due,      // "" means no date
-        done: false,
-        createdAt: Date.now()
-      });
-
-      saveUpcoming(state);
-      render();
-    }
-
-    function toggleItem(id){
-      state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
-      saveUpcoming(state);
-      render();
-    }
-
-    function deleteItem(id){
-      state = state.filter(it => it.id !== id);
-      saveUpcoming(state);
-      render();
-    }
-
-    function moveToToday(id){
-      const it = state.find(x => x.id === id);
-      if(!it) return;
-
-      const tx = (it.text || "").trim();
-      if(!tx){
-        showToast("보낼 텍스트가 없어.");
-        return;
-      }
-
-      const { key, items } = loadTodayList();
-      const exists = new Set(items.map(x => (x.text || "").trim()));
-      if(exists.has(tx)){
-        showToast("이미 Today에 있어.");
-        return;
-      }
-
-      items.unshift({
-        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
-        text: tx,
-        done: false
-      });
-
-      saveTodayList(key, items);
-      showToast("Today로 보냈어.");
-    }
-
-    function setFilter(next){
-      filter = next;
-      render();
-    }
-
-    function formatForCopy(items){
-      const lines = [];
-      lines.push(`[Upcoming]`);
+    // ===== Render =====
+    function sortUpcoming(items){
+      // dated first (asc), then undated (keep newest first among undated)
+      const dated = [];
+      const undated = [];
       for(const it of items){
-        const due = it.due ? ` (${it.due})` : "";
-        lines.push(`- [${it.done ? "x" : " "}] ${it.text}${due}`);
+        if(it.date) dated.push(it);
+        else undated.push(it);
       }
-      return lines.join("\n");
-    }
-
-    async function copyFiltered(){
-      const items = getFilteredSorted();
-      const ok = await copyToClipboard(formatForCopy(items));
-      showToast(ok ? "복사했어." : "복사 실패 (브라우저 권한 확인)");
-    }
-
-    /* ===== View model ===== */
-    function getFilteredSorted(){
-      const now = new Date(); now.setHours(0,0,0,0);
-      const todayDot = ymd(new Date());
-
-      let items = [...state];
-
-      if(filter === "dated"){
-        items = items.filter(x => !!x.due);
-      }else if(filter === "nodate"){
-        items = items.filter(x => !x.due);
-      }else if(filter === "overdue"){
-        items = items.filter(x => {
-          if(!x.due || x.done) return false;
-          const diff = daysDiffFromToday(x.due);
-          return diff !== null && diff < 0;
-        });
-      }
-
-      // sort:
-      // 1) not done first
-      // 2) dated items first (soonest first)
-      // 3) no-date items last (newest first)
-      items.sort((a,b) => {
-        if(a.done !== b.done) return a.done ? 1 : -1;
-
-        const ad = a.due ? 1 : 0;
-        const bd = b.due ? 1 : 0;
-        if(ad !== bd) return bd - ad; // dated first
-
-        if(a.due && b.due){
-          const da = ymdDotToDate(a.due)?.getTime() ?? 0;
-          const db = ymdDotToDate(b.due)?.getTime() ?? 0;
-          if(da !== db) return da - db; // earlier first
-          return (b.createdAt||0) - (a.createdAt||0);
-        }
-
-        return (b.createdAt||0) - (a.createdAt||0);
-      });
-
-      return items;
-    }
-
-    function pillInfo(it){
-      if(!it.due) return { cls: "pill noDate", text: "No date" };
-      const diff = daysDiffFromToday(it.due);
-      if(diff === null) return { cls: "pill", text: it.due };
-      if(it.done) return { cls: "pill", text: it.due };
-
-      if(diff < 0) return { cls: "pill overdue", text: `Overdue · ${it.due}` };
-      if(diff === 0) return { cls: "pill dueSoon", text: `Today · ${it.due}` };
-      if(diff === 1) return { cls: "pill dueSoon", text: `D-1 · ${it.due}` };
-      if(diff <= 7) return { cls: "pill dueSoon", text: `D-${diff} · ${it.due}` };
-      return { cls: "pill", text: it.due };
-    }
-
-    function setActiveFilterButton(){
-      const map = {
-        all: filterAllBtn,
-        dated: filterDatedBtn,
-        nodate: filterNoDateBtn,
-        overdue: filterOverdueBtn
-      };
-      Object.keys(map).forEach(k => {
-        map[k].style.opacity = (k === filter) ? "1" : "0.78";
-      });
+      dated.sort((a,b)=> String(a.date).localeCompare(String(b.date))); // YYYY-MM-DD lexicographic works
+      undated.sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+      return [...dated, ...undated];
     }
 
     function render(){
-      setActiveFilterButton();
-      const items = getFilteredSorted();
+      state = sortUpcoming(state);
 
       listEl.innerHTML = "";
-      for(const it of items){
+      for(const it of state){
         const li = document.createElement("li");
         li.className = "item" + (it.done ? " done" : "");
 
-        const pill = pillInfo(it);
+        const badgeText = it.date ? (ymdDotFromDash(it.date) || it.date) : "Someday";
+        const badgeCls = "badgeDate" + (it.date ? "" : " someday");
 
         li.innerHTML = `
           <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
@@ -1183,52 +938,78 @@
               <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
-          <span class="${pill.cls}">${escapeHtml(pill.text)}</span>
-          <button class="mini" type="button" data-today="${it.id}" title="Today로 보내기">Today</button>
+          <span class="${badgeCls}" title="${badgeText}">${badgeText}</span>
+          <div class="text" title="${String(it.text||"").replace(/"/g,'&quot;')}">${String(it.text||"")}</div>
           <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
         `;
         listEl.appendChild(li);
-
-        // show checkmark only when done (re-use same behavior as Today)
-        const svg = li.querySelector(".check svg");
-        if(it.done){
-          svg.style.opacity = "1";
-          svg.style.transform = "scale(1)";
-        }
       }
 
       const total = state.length;
-      const shown = items.length;
-      countText.textContent = (filter === "all") ? `${total} items` : `${shown} / ${total}`;
+      const done = state.filter(x => x.done).length;
+      countText.textContent = `${done}/${total} done`;
+
+      saveUpcoming(state);
     }
 
-    /* ===== Events ===== */
-    addBtn.addEventListener("click", () => {
-      addItem(taskInput.value, dateInput.value);
-      taskInput.value = "";
-      dateInput.value = "";
-      taskInput.focus();
-      syncAddButtonState();
-    });
+    function addItem(){
+      const t = (inputEl.value || "").trim();
+      if(!t) return;
 
-    taskInput.addEventListener("keydown", (e) => {
+      state.unshift({
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+        text: t,
+        date: selectedDate || null,
+        done: false,
+        createdAt: Date.now()
+      });
+
+      inputEl.value = "";
+      inputEl.focus();
+      syncAddButtonState();
+
+      // 날짜는 기본적으로 “옵션”이라서 추가 후 초기화(원하면 이 줄을 삭제해도 됨)
+      setSelected(null, {close:false});
+
+      showToast(selectedDate ? "날짜 포함으로 추가했어." : "Someday로 추가했어.");
+      render();
+    }
+
+    function toggleItem(id){
+      state = state.map(it => it.id === id ? ({...it, done: !it.done}) : it);
+      render();
+    }
+
+    function deleteItem(id){
+      state = state.filter(it => it.id !== id);
+      render();
+    }
+
+    function clearDone(){
+      const before = state.length;
+      state = state.filter(it => !it.done);
+      render();
+      showToast(before === state.length ? "완료된 항목이 없어." : "완료 항목을 지웠어.");
+    }
+
+    // ===== Events =====
+    addBtn.addEventListener("click", addItem);
+
+    inputEl.addEventListener("keydown", (e)=>{
       if(e.key === "Enter"){
         e.preventDefault();
         if(!addBtn.disabled) addBtn.click();
       }
     });
 
-    listEl.addEventListener("click", (e) => {
+    listEl.addEventListener("click", (e)=>{
       const check = e.target.closest(".check");
       const del = e.target.closest("[data-del]");
-      const toToday = e.target.closest("[data-today]");
       if(check) toggleItem(check.dataset.id);
-      else if(toToday) moveToToday(toToday.dataset.today);
       else if(del) deleteItem(del.dataset.del);
     });
 
-    listEl.addEventListener("keydown", (e) => {
+    listEl.addEventListener("keydown", (e)=>{
       const check = e.target.closest(".check");
       if(!check) return;
       if(e.key === "Enter" || e.key === " "){
@@ -1237,13 +1018,20 @@
       }
     });
 
-    filterAllBtn.addEventListener("click", () => setFilter("all"));
-    filterDatedBtn.addEventListener("click", () => setFilter("dated"));
-    filterNoDateBtn.addEventListener("click", () => setFilter("nodate"));
-    filterOverdueBtn.addEventListener("click", () => setFilter("overdue"));
+    clearDoneBtn.addEventListener("click", clearDone);
 
-    copyBtn.addEventListener("click", copyFiltered);
+    copyBtn.addEventListener("click", async ()=>{
+      const lines = [];
+      lines.push("[Upcoming]");
+      for(const it of state){
+        const dateLabel = it.date ? (ymdDotFromDash(it.date) || it.date) : "Someday";
+        lines.push(`- [${it.done ? "x" : " "}] (${dateLabel}) ${it.text}`);
+      }
+      const ok = await copyToClipboard(lines.join("\n"));
+      showToast(ok ? "복사했어." : "복사 실패 (브라우저 권한 확인)");
+    });
 
+    // Initial
     render();
   </script>
 </body>
