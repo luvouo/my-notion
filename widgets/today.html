@@ -297,6 +297,23 @@
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
 
+    /* ✅ footer 3 buttons hover -> accent color */
+    #carryYesterdayBtn:hover,
+    #historyBtn:hover,
+    #copyTodayBtn:hover{
+      color: var(--accent-1);
+      border-color: rgba(255,170,190,0.90);
+      background: rgba(255,192,203,0.18);
+    }
+    
+    /* (선택) hover 시 아이콘/텍스트가 더 또렷해지게 */
+    #carryYesterdayBtn:hover,
+    #historyBtn:hover,
+    #copyTodayBtn:hover{
+      text-shadow: 0 0 0.01px currentColor; /* 미세한 선명도 */
+    }
+
+    
         /* 선택 날짜 액션 버튼을 더 작고 정돈된 pill로 */
     #carryPickedBtn,
     #copyPickedBtn{
@@ -676,43 +693,7 @@
       box-sizing: border-box;
     }
 
-        /* ===== Add(＋) button tuning (place at very end of <style>) ===== */
-    #addBtn{
-      height: 38px;               /* 입력창보다 살짝 작게 */
-      min-width: 38px;
-      padding: 0;
-    
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    
-      font-size: 18px;            /* 기호 크기 소폭 축소 */
-      font-weight: 400;
-      line-height: 1;
-      color: rgba(30,30,30,0.58); /* 덜 까맣게 */
-    
-      border-radius: 999px;
-    }
-    
-    #addBtn:hover{
-      background: rgba(255,192,203,0.14);
-    }
-    #addBtn:active{
-      transform: scale(0.97);
-    }
-    
-    #addBtn:disabled{
-      opacity: 0.45;
-      cursor: not-allowed;
-      background: rgba(255,255,255,0.06);
-      border-color: rgba(255,170,190,0.30);
-      transform: none;
-    }
-    #addBtn:disabled:hover{
-      background: rgba(255,255,255,0.06);
-    }
-    
-    /* ✅ 모바일에서만 '보이지 않는' 터치 영역 확대 */
+       
     @media (pointer: coarse){
       #addBtn{
         position: relative;
@@ -968,10 +949,7 @@
           </svg>
           `;
           
-          /* 기존 addBtn 이벤트들(예: 클릭) 아래로 그대로 */
-          addBtn.addEventListener('click', () => {
-            // ...
-          });
+      
     
     const countText = document.getElementById("countText");
     const clearDoneBtn = document.getElementById("clearDoneBtn");
