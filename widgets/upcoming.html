@@ -481,6 +481,41 @@
 
         <div class="inputRow">
           <input id="taskInput" class="input" type="text" placeholder="미래 할 일 (Enter)…" maxlength="80" />
+          
+                      <!-- Date Picker Trigger -->
+          <div class="dp" id="datePicker">
+            <button type="button" class="dpTrigger" id="dpTrigger" aria-haspopup="dialog" aria-expanded="false">
+              <span class="dpText" id="dpText">날짜 선택</span>
+              <span class="dpIcon" aria-hidden="true">
+                <!-- calendar icon -->
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                  <path d="M7 3v2M17 3v2M4 8h16M6 5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+                        fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+              </span>
+            </button>
+          
+            <!-- Popover / Dialog -->
+            <div class="dpPop" id="dpPop" role="dialog" aria-modal="false" aria-label="Date Picker" hidden>
+              <div class="dpHeader">
+                <button type="button" class="dpNav" id="dpPrev" aria-label="Previous month">‹</button>
+                <div class="dpTitle" id="dpTitle">2026.01</div>
+                <button type="button" class="dpNav" id="dpNext" aria-label="Next month">›</button>
+              </div>
+          
+              <div class="dpDow" aria-hidden="true">
+                <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+              </div>
+          
+              <div class="dpGrid" id="dpGrid" role="grid" aria-label="Calendar days"></div>
+          
+              <div class="dpFooter">
+                <button type="button" class="dpAction" id="dpBack">Back</button>
+                <button type="button" class="dpAction primary" id="dpToday">Today</button>
+              </div>
+            </div>
+          </div>
+
           <input id="dateInput" class="dateInput" type="date" aria-label="날짜 (선택)" />
           <button class="btn" id="addBtn" type="button" title="추가" aria-label="추가">Add</button>
         </div>
