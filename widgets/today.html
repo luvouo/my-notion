@@ -297,6 +297,15 @@
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
 
+        /* 선택 날짜 액션 버튼을 더 작고 정돈된 pill로 */
+    #carryPickedBtn,
+    #copyPickedBtn{
+      padding: 9px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      line-height: 1;
+    }
+    
     /* -------- Modal -------- */
     .modalOverlay{
       position: fixed;
@@ -455,21 +464,38 @@
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;       /* ✅ 기본은 한 줄 유지 */
+      min-width: 0;
     }
+    
     .picked{
       font-size: 13px;
       color: rgba(30,30,30,0.82);
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis; /* ✅ 길면 말줄임 */
+      min-width: 0;
+      flex: 1 1 auto;
     }
 
+        /* 버튼 2개 래퍼(HTML에 인라인 style로 되어있던 부분을 class로 바꾸는 게 베스트지만,
+       지금 구조 그대로 쓸 수 있게 "previewTop 안의 버튼 그룹"을 타겟팅 */
+    .previewTop > div:last-child{
+      display:flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+    }
+
+    
     .previewBox{
       border: 1px solid rgba(0,0,0,0.06);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 12px;
-      background: rgba(255,255,255,0.70);
+      background: rgba(255,255,255,0.66);
       display: grid;
-      gap: 8px;
+      gap: 10px;
     }
 
     .pItem{
@@ -477,21 +503,22 @@
       gap: 10px;
       align-items:center;
       font-size: 13px;
-      color: rgba(30,30,30,0.85);
+      color: rgba(30,30,30,0.86);
       line-height: 1.25;
     }
     .badge{
       font-size: 11px;
-      padding: 4px 8px;
+      padding: 4px 9px;
       border-radius: 999px;
       border: 1px solid rgba(0,0,0,0.06);
       background: rgba(0,0,0,0.03);
-      color: rgba(30,30,30,0.65);
+      color: rgba(30,30,30,0.58);
       flex: 0 0 auto;
     }
     .badge.done{
       border-color: rgba(255,170,190,0.40);
       background: rgba(255,192,203,0.18);
+      color: rgba(30,30,30,0.62);
     }
 
     .mark{
