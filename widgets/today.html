@@ -250,10 +250,29 @@
       font-size: 14px;
       padding: 6px 8px;
       border-radius: 10px;
-      transition: background .2s ease, color .2s ease;
+      transition: background .18s ease,
+                  color .18s ease,
+                  box-shadow .18s ease,
+                  transform .08s ease;
       -webkit-tap-highlight-color: transparent;
     }
-    .del:hover{ background: rgba(0,0,0,0.05); color: rgba(30,30,30,0.75); }
+    .del:hover{
+      background: rgba(255,192,203,0.14);
+      color: rgba(30,30,30,0.78);
+      box-shadow: 0 0 0 3px rgba(255,192,203,0.20);
+    }
+    
+    .del:active{
+      transform: scale(0.96);
+    }
+    
+    /* 키보드 접근 */
+    .del:focus-visible{
+      outline: none;
+      background: rgba(255,192,203,0.12);
+      color: rgba(30,30,30,0.78);
+      box-shadow: 0 0 0 3px rgba(255,192,203,0.28);
+    }
 
     .item.done{ opacity: 0.78; }
     .item.done .text{ text-decoration: line-through; color: rgba(30,30,30,0.50); }
