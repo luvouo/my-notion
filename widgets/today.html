@@ -392,37 +392,55 @@
       max-width: none;          /* ✅ 상한 제거 */
       min-width: unset;         /* ✅ 하한 제거 */
       min-height: 0;
+
+      justify-items: start;
     }
 
 
     .dateBtn{
-      width: fit-content;      /* ✅ 내용만큼만 */
+      width: fit-content;
       max-width: 100%;
-      display: block;          /* 버튼을 블록처럼 */
-      text-align: left;
+      display: grid;
+      gap: 4px;
     
-      padding: 9px 10px;       /* (선택) 살짝 컴팩트 */
-      white-space: nowrap;     /* ✅ 날짜 줄바꿈 방지 */
+      padding: 8px 10px;
+      margin-bottom: 10px;
     
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.06);
-      background: rgba(255,255,255,0.75);
+      border-radius: 14px;
+      border: 1px solid rgba(255,170,190,0.22);
+      background: rgba(255,255,255,0.62);
+    
       cursor: pointer;
-      margin-bottom: 8px;
+      text-align: left;
+      white-space: nowrap;
     
       font-size: 13px;
-      color: rgba(30,30,30,0.85);
+      color: rgba(30,30,30,0.88);
+    
+      transition: background .18s ease, border-color .18s ease, transform .08s ease;
+      -webkit-tap-highlight-color: transparent;
     }
-    .dateBtn.active{
-      border-color: rgba(255,170,190,0.55);
-      background: rgba(255,192,203,0.18);
+    .dateBtn:hover{
+      border-color: rgba(255,170,190,0.45);
+      background: rgba(255,255,255,0.72);
     }
+    .dateBtn:active{
+      transform: scale(0.99);
+    }
+    
     .dateBtn small{
-      display:block;
-      color: rgba(30,30,30,0.55);
-      margin-top: 3px;
+      display: block;
       font-size: 11px;
+      color: rgba(30,30,30,0.52);
+      margin-top: 0;
     }
+    
+    .dateBtn.active{
+      border-color: rgba(255,170,190,0.70);
+      background: rgba(255,192,203,0.14);
+      box-shadow: 0 10px 26px rgba(255,170,190,0.12);
+    }
+
 
     .preview{
       padding: 12px;
