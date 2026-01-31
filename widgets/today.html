@@ -711,6 +711,8 @@
     const carryYesterdayBtn = document.getElementById("carryYesterdayBtn");
     const historyBtn = document.getElementById("historyBtn");
     const copyTodayBtn = document.getElementById("copyTodayBtn");
+    const copyModeEl = document.getElementById("copyMode");
+
 
     const toast = document.getElementById("toast");
 
@@ -862,10 +864,22 @@
     }
 
     async function copyToday(){
-      const text = formatForCopy(todayStr, state);
-      const ok = await copyToClipboard(text);
-      showToast(ok ? "오늘 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
-    }
+  const mode = (copyModeEl && copyModeEl.value) ? copyModeEl.value : "all";
+
+  let filtered = state;
+  if(mode === "todo") filtered = state.filter(x => !x.done);
+  if(mode === "done") filtered = state.filter(x => x.done);
+
+  const text = formatForCopy(todayStr, filtered);
+  const ok = await copyToClipboard(text);
+
+  const label =
+    mode === "todo" ? "미완료만" :
+    mode === "done" ? "완료만" : "전체";
+
+  showToast(ok ? `${label} 복사했어.` : "복사 실패 (브라우저 권한 확인)");
+}
+
     async function copyPicked(){
       if(!pickedDate) return;
       const items = archive[pickedDate] || [];
