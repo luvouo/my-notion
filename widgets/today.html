@@ -295,23 +295,35 @@
     #copyTodayBtn{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      transition:
+        color .18s ease,
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background .18s ease,
+        transform .08s ease;
     }
 
     /* ✅ footer 3 buttons hover -> accent color */
     #carryYesterdayBtn:hover,
     #historyBtn:hover,
     #copyTodayBtn:hover{
+      color: var(--accent-1);                 /* ✅ 텍스트만 포인트 */
+      background: rgba(255,255,255,0.08);     /* ✅ 거의 변화 없음(미니멀) */
+      border-color: rgba(255,170,190,0.70);   /* ✅ 살짝만 강조 */
+      box-shadow: 0 0 0 3px rgba(255,192,203,0.22);  /* ✅ 중간 강도 링 */
+    }
+
+    /* ✅ keyboard focus: match hover tone (medium) */
+    #carryYesterdayBtn:focus-visible,
+    #historyBtn:focus-visible,
+    #copyTodayBtn:focus-visible{
+      outline: none;                           /* 기본 파란 outline 제거 */
       color: var(--accent-1);
-      border-color: rgba(255,170,190,0.90);
-      background: rgba(255,192,203,0.18);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,170,190,0.78);
+      box-shadow: 0 0 0 3px rgba(255,192,203,0.28);
     }
-    
-    /* (선택) hover 시 아이콘/텍스트가 더 또렷해지게 */
-    #carryYesterdayBtn:hover,
-    #historyBtn:hover,
-    #copyTodayBtn:hover{
-      text-shadow: 0 0 0.01px currentColor; /* 미세한 선명도 */
-    }
+
 
     
         /* 선택 날짜 액션 버튼을 더 작고 정돈된 pill로 */
