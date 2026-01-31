@@ -734,49 +734,55 @@
       }
     }
 
-/* ===== Toast overlay (B) ===== */
-.card{ position: relative; }
+/* ===== Toast overlay (A) ===== */
+.card{ position: relative; } /* 이미 relative지만 안전하게 */
 
 .toast{
   position: absolute;
   left: 16px;
-  bottom: 12px;
+  right: 16px;
+  bottom: 14px;                 /* ✅ 카드 하단에 붙임 */
   z-index: 10;
 
   display: inline-flex;
   align-items: center;
   gap: 8px;
 
-  padding: 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  padding: 10px 12px;
+  border-radius: 14px;
 
-  color: rgba(30,30,30,0.62);
+  background: rgba(255,255,255,0.78);
+  border: 1px solid rgba(255,170,190,0.38);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.10);
+
+  color: rgba(30,30,30,0.78);
   font-size: 12px;
   line-height: 1;
 
   opacity: 0;
-  transform: translateY(4px);
+  transform: translateY(6px);
   pointer-events: none;
 
-  transition: opacity .14s ease, transform .14s ease;
+  transition: opacity .16s ease, transform .16s ease;
 }
 
+/* ✅ 내용이 생기면 표시 */
 .toast:not(:empty){
   opacity: 1;
   transform: translateY(0);
 }
 
+/* ✅ 아이콘(핑크 점) */
 .toast::before{
   content: "";
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background: rgba(255,192,203,0.88);
-  box-shadow: 0 0 0 3px rgba(255,192,203,0.16);
+  box-shadow: 0 0 0 3px rgba(255,192,203,0.20);
   flex: 0 0 auto;
 }
+
 
 
 
