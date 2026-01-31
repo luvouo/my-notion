@@ -202,8 +202,27 @@
       flex: 0 0 auto;
       cursor:pointer;
       -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
     }
 
+    .check:hover{
+      background: rgba(255,192,203,0.14);
+      border-color: rgba(255,170,190,1);
+      box-shadow: 0 0 0 3px rgba(255,192,203,0.20);
+    }
+    
+    .check:active{
+      transform: scale(0.98);
+    }
+    
+    /* 키보드 접근(탭으로 체크박스 포커스 갔을 때) */
+    .check:focus-visible{
+      outline: none;
+      background: rgba(255,192,203,0.12);
+      border-color: rgba(255,170,190,1);
+      box-shadow: 0 0 0 3px rgba(255,192,203,0.28);
+    }
+    
     .check svg{
       width: 12px;
       height: 12px;
