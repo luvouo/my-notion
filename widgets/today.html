@@ -99,7 +99,8 @@
       display: block;
       object-fit: cover;
       flex: 0 0 auto;
-      box-shadow: 0 0 0 2px rgba(255,192,203,0.22); /* halo를 이미지 크기에 거의 맞춤 */
+      /* halo reduced to be close to image size */
+      box-shadow: 0 0 0 2px rgba(255,192,203,0.22);
     }
 
     .title h1{
@@ -117,14 +118,7 @@
       font-size: 12px;
       color: var(--muted);
       white-space: nowrap;
-    }
-
-    .actions{
-      display:flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      flex: 1 1 auto;
+      margin-left: auto; /* keep date at far right */
     }
 
     .inputRow{
@@ -175,23 +169,6 @@
     .btn.secondary:disabled{
       opacity: 0.55;
       cursor: not-allowed;
-    }
-    .select{
-      border: 1px solid rgba(255,170,190,0.45);
-      background: rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 12px;
-      color: rgba(30,30,30,0.80);
-      outline: none;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-    
-    .select:hover{
-      border-color: rgba(255,170,190,0.70);
-      background: rgba(255,255,255,0.10);
     }
 
     .list{
@@ -274,32 +251,6 @@
       flex-wrap: wrap;
       font-size: 12px;
       color: var(--muted);
-    }
-
-       /* bottom buttons: right aligned + horizontal scroll on narrow screens */
-    .footer-actions{
-      display: flex;
-      justify-content: flex-end;      /* 항상 오른쪽 정렬 */
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-    
-      flex-wrap: nowrap;             /* 줄바꿈 금지 */
-      overflow-x: auto;              /* 좁으면 가로 스크롤 */
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-    
-      margin-left: auto;
-      padding-left: 8px;             /* 왼쪽 살짝 여백(스크롤 시작 자연스럽게) */
-      padding-right: 2px;
-    
-      scrollbar-width: none;         /* Firefox 스크롤바 숨김 */
-    }
-    .footer-actions::-webkit-scrollbar{
-      display: none;                 /* Chrome/Safari 스크롤바 숨김 */
-    }
-    .footer-actions > .btn{
-      flex: 0 0 auto;
     }
 
     .toast{
@@ -492,23 +443,11 @@
       .meta{ display:none; }
       .btn{ width: 100%; }
       .input{ flex-basis: 100%; }
-      .actions{ justify-content: flex-start; }
-    }
-    /* ✅ hide non-essential buttons (place near end of <style>) */
-    #clearDoneBtn,
-    #resetBtn{
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border: 0 !important;
     }
 
+    /* --- Copy popover --- */
+    .footer-actions{ position: relative; } /* popover anchor */
 
-        /* --- Copy popover --- */
-    .footer-actions{ position: relative; } /* popover 위치 기준 */
-    
     .popover{
       position: absolute;
       right: 0;
@@ -524,9 +463,8 @@
       display: none;
       z-index: 9999;
     }
-    
     .popover.open{ display: grid; gap: 6px; }
-    
+
     .popItem{
       width: 100%;
       text-align: left;
@@ -538,12 +476,34 @@
       color: rgba(30,30,30,0.82);
       cursor: pointer;
     }
-    
     .popItem:hover{
       border-color: rgba(255,170,190,0.55);
       background: rgba(255,192,203,0.14);
     }
 
+    /* ✅ bottom buttons: right aligned + horizontal scroll on narrow screens */
+    .footer-actions{
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+
+      margin-left: auto;
+      padding-left: 8px;
+      padding-right: 2px;
+
+      scrollbar-width: none;
+    }
+    .footer-actions::-webkit-scrollbar{ display: none; }
+    .footer-actions > .btn{ flex: 0 0 auto; }
+
+    /* ✅ hide non-essential buttons (keep in DOM) */
     #clearDoneBtn,
     #resetBtn{
       display: none !important;
@@ -554,20 +514,18 @@
       border: 0 !important;
     }
 
-    
-    /* bottom action buttons font */
+    /* ✅ bottom action buttons font */
     #carryYesterdayBtn,
     #historyBtn,
     #copyTodayBtn{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
+    /* ✅ popover items font */
     #copyPopover .popItem{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
-
-
   </style>
 </head>
 
@@ -580,8 +538,6 @@
             <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
             <h1>Today</h1>
           </div>
-
-
           <div class="meta" id="metaText"></div>
         </div>
 
@@ -594,29 +550,29 @@
 
         <div class="footer">
           <span id="countText">0/0 done</span>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+
+          <!-- bottom actions -->
           <div class="footer-actions">
+            <button class="btn secondary" id="carryYesterdayBtn" type="button">Carry over</button>
+            <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
 
-          <button class="btn secondary" id="carryYesterdayBtn" type="button">Carry over</button>
-          <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
-          <button class="btn secondary" id="copyTodayBtn" type="button">Copy</button>
-          <div class="popover" id="copyPopover" aria-hidden="true">
-            <button class="popItem" type="button" data-copy="all">All</button>
-            <button class="popItem" type="button" data-copy="todo">Todo only</button>
-            <button class="popItem" type="button" data-copy="done">Done only</button>
+            <button class="btn secondary" id="copyTodayBtn" type="button">Copy</button>
+            <div class="popover" id="copyPopover" aria-hidden="true">
+              <button class="popItem" type="button" data-copy="all">All</button>
+              <button class="popItem" type="button" data-copy="todo">Todo</button>
+              <button class="popItem" type="button" data-copy="done">Done</button>
+            </div>
+
+            <!-- kept but hidden -->
+            <button class="btn secondary" id="clearDoneBtn" type="button">완료 삭제</button>
+            <button class="btn secondary" id="resetBtn" type="button">전체 초기화</button>
           </div>
+        </div>
 
-          <!-- 기능은 남겨두되 화면에서는 숨김 처리할 거라서 DOM에만 유지 -->
-          <button class="btn secondary" id="clearDoneBtn" type="button">완료 삭제</button>
-          <button class="btn secondary" id="resetBtn" type="button">전체 초기화</button>
-        </div>
-        </div>
-            
         <div class="toast" id="toast"></div>
       </div>
     </div>
   </div>
-  
 
   <!-- History / Archive Modal -->
   <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
@@ -796,13 +752,11 @@
     const carryYesterdayBtn = document.getElementById("carryYesterdayBtn");
     const historyBtn = document.getElementById("historyBtn");
     const copyTodayBtn = document.getElementById("copyTodayBtn");
-    const copyModeEl = document.getElementById("copyMode");
-
     const copyPopover = document.getElementById("copyPopover");
-
 
     const toast = document.getElementById("toast");
 
+    // Modal
     const modalOverlay = document.getElementById("modalOverlay");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const datesPanel = document.getElementById("datesPanel");
@@ -951,19 +905,19 @@
     }
 
     async function copyToday(mode = "all"){
-  let filtered = state;
-  if(mode === "todo") filtered = state.filter(x => !x.done);
-  if(mode === "done") filtered = state.filter(x => x.done);
+      let filtered = state;
+      if(mode === "todo") filtered = state.filter(x => !x.done);
+      if(mode === "done") filtered = state.filter(x => x.done);
 
-  const text = formatForCopy(todayStr, filtered);
-  const ok = await copyToClipboard(text);
+      const text = formatForCopy(todayStr, filtered);
+      const ok = await copyToClipboard(text);
 
-  const label =
-    mode === "todo" ? "미완료만" :
-    mode === "done" ? "완료만" : "전체";
+      const label =
+        mode === "todo" ? "미완료만" :
+        mode === "done" ? "완료만" : "전체";
 
-  showToast(ok ? `${label} 복사했어.` : "복사 실패 (브라우저 권한 확인)");
-}
+      showToast(ok ? `${label} 복사했어.` : "복사 실패 (브라우저 권한 확인)");
+    }
 
     async function copyPicked(){
       if(!pickedDate) return;
@@ -1098,27 +1052,13 @@
       previewBox.innerHTML = rows;
     }
 
+    // Events
     addBtn.addEventListener("click", () => {
       addItem(inputEl.value);
       inputEl.value = "";
       inputEl.focus();
     });
 
-    document.addEventListener("click", () => {
-      if(copyPopover) copyPopover.classList.remove("open");
-    });
-    
-    if(copyPopover){
-      copyPopover.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const btn = e.target.closest("[data-copy]");
-        if(!btn) return;
-        const mode = btn.dataset.copy || "all";
-        copyPopover.classList.remove("open");
-        copyToday(mode);
-      });
-    }
-    
     inputEl.addEventListener("keydown", (e) => {
       if(e.key === "Enter"){
         addItem(inputEl.value);
@@ -1142,18 +1082,36 @@
       }
     });
 
+    // keep these safe even if removed later
     if (clearDoneBtn) clearDoneBtn.addEventListener("click", clearDone);
     if (resetBtn) resetBtn.addEventListener("click", resetAll);
 
-
     carryYesterdayBtn.addEventListener("click", carryOverYesterday);
     historyBtn.addEventListener("click", openModal);
+
+    // Copy popover toggle
     copyTodayBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       if(!copyPopover) return;
       copyPopover.classList.toggle("open");
     });
 
+    // close popover on outside click
+    document.addEventListener("click", () => {
+      if(copyPopover) copyPopover.classList.remove("open");
+    });
+
+    // choose copy mode
+    if(copyPopover){
+      copyPopover.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const btn = e.target.closest("[data-copy]");
+        if(!btn) return;
+        const mode = btn.dataset.copy || "all";
+        copyPopover.classList.remove("open");
+        copyToday(mode);
+      });
+    }
 
     closeModalBtn.addEventListener("click", closeModal);
     modalOverlay.addEventListener("click", (e) => {
@@ -1167,6 +1125,7 @@
     });
 
     copyPickedBtn.addEventListener("click", copyPicked);
+
     carryPickedBtn.addEventListener("click", () => {
       if(!pickedDate) return;
       carryOverUnfinishedFromDate(pickedDate);
