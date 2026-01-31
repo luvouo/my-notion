@@ -340,6 +340,42 @@
       white-space: nowrap;
     }
 
+    /* ===== Section Collapse ===== */
+    .section.collapsed .list{ display:none; }
+    .section.collapsed .secHead{ opacity: 0.92; }
+    
+    .secHead{
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .secToggle{
+      flex: 0 0 auto;
+      border: 1px solid rgba(160,195,225,0.42);
+      background: rgba(255,255,255,0.06);
+      color: rgba(30,30,30,0.68);
+      border-radius: 10px;
+      padding: 6px 8px;
+      font-size: 12px;
+      line-height: 1;
+      cursor: pointer;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease, background .18s ease;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .secToggle:hover{
+      border-color: rgba(160,195,225,0.70);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.18);
+    }
+    .secToggle:active{ transform: scale(0.98); }
+    .secToggle:focus-visible{
+      outline:none;
+      border-color: rgba(160,195,225,0.78);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
+    }
+
+    
     .list{
       margin:0;
       padding:0;
@@ -581,9 +617,9 @@
           <input id="taskInput" class="input" type="text" placeholder="이번 주 할 일…" maxlength="80" />
           <div class="dayStrip" id="dayStrip" aria-label="요일 선택"></div>
 
-          <button class="btn" id="fromTodayBtn" type="button" title="Today에서 오늘 미완료 가져오기">From Today</button>
-          <button class="btn" id="pullBtn" type="button" title="다음 주 작업을 이번 주로 당기기">Pull</button>
-          <button class="btn" id="pushBtn" type="button" title="이번 주 미완료를 다음 주로 미루기">Push</button>
+         <button class="btn secondary" id="fromTodayBtn" type="button" title="Today에서 오늘 미완료 가져오기">From Today</button>
+          <button class="btn secondary" id="pullBtn" type="button" title="다음 주 작업을 이번 주로 당기기">Pull</button>
+          <button class="btn secondary" id="pushBtn" type="button" title="이번 주 미완료를 다음 주로 미루기">Push</button>
 
           <button id="addBtn" type="button" aria-label="할 일 추가" title="할 일 추가"></button>
         </div>
@@ -610,6 +646,25 @@
        Storage keys
     ========================= */
     const KEY_PREFIX = "soft_schedule_this_week_";   // per-week storage
+
+    const UI_PREFIX = "soft_schedule_this_week_ui_"; // per-week UI state
+
+      function loadUI(weekStartStr){
+        try{
+          const raw = localStorage.getItem(UI_PREFIX + weekStartStr);
+          if(!raw) return { collapsed: {} };
+          const parsed = JSON.parse(raw);
+          if(!parsed || typeof parsed !== "object") return { collapsed: {} };
+          if(!parsed.collapsed || typeof parsed.collapsed !== "object") parsed.collapsed = {};
+          return parsed;
+        }catch(e){
+          return { collapsed: {} };
+        }
+      }
+      function saveUI(weekStartStr, ui){
+        localStorage.setItem(UI_PREFIX + weekStartStr, JSON.stringify(ui));
+      }
+
     const KEY_ARCHIVE = "soft_schedule_this_week_archive_v1"; // reserved (not used yet)
 
     // Today widget storage prefix (your existing Today)
@@ -819,16 +874,29 @@
 
       weekSections.innerHTML = "";
 
+      const ui = loadUI(wsStr);
+
+      
       for(const sec of sections){
         // skip empty sections except someday if empty too (keep it hidden)
         if(sec.items.length === 0) continue;
 
         const box = document.createElement("div");
-        box.className = "section";
+        box.className = "section" + (ui.collapsed[sec.key] ? " collapsed" : "");
+        box.dataset.key = sec.key;
 
         const head = document.createElement("div");
         head.className = "secHead";
 
+        const tgl = document.createElement("button");
+        tgl.type = "button";
+        tgl.className = "secToggle";
+        tgl.dataset.toggle = sec.key;
+        tgl.setAttribute("aria-label", "섹션 접기/펴기");
+        tgl.textContent = ui.collapsed[sec.key] ? "Show" : "Hide";
+        right.prepend(tgl);
+
+        
         const left = document.createElement("div");
         left.className = "secTitle";
 
@@ -1180,6 +1248,24 @@
 
       // list actions (toggle/delete/next)
       weekSections.addEventListener("click", (e) => {
+              // section collapse toggle
+      const toggleBtn = e.target.closest("[data-toggle]");
+      const head = e.target.closest(".secHead");
+      if(toggleBtn || (head && !e.target.closest(".miniBtn") && !e.target.closest(".del") && !e.target.closest(".check"))){
+        const wsStr = getWeekStartStr();
+        const ui = loadUI(wsStr);
+      
+        const key = toggleBtn ? toggleBtn.dataset.toggle : head.closest(".section")?.dataset.key;
+        if(!key) return;
+      
+        ui.collapsed[key] = !ui.collapsed[key];
+        saveUI(wsStr, ui);
+      
+        // 즉시 UI 반영
+        render();
+        return;
+      }
+
         const check = e.target.closest(".check");
         const del = e.target.closest("[data-del]");
         const next = e.target.closest("[data-next]");
