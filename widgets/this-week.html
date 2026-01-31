@@ -1741,6 +1741,87 @@
       render();
     }
 
+historyWeekBtn.addEventListener("click", openWeekModal);
+weekCloseModalBtn.addEventListener("click", closeWeekModal);
+weekModalOverlay.addEventListener("click", (e)=>{ if(e.target === weekModalOverlay) closeWeekModal(); });
+
+weeksPanel.addEventListener("click", (e)=>{
+  const btn = e.target.closest(".dateBtn");
+  if(!btn) return;
+  renderWeekPreview(btn.dataset.week);
+});
+
+weekSearchInput.addEventListener("input", ()=>{
+  weekSearchQuery = (weekSearchInput.value || "").trim();
+  buildWeeks();
+});
+
+weekClearSearchBtn.addEventListener("click", ()=>{
+  weekSearchInput.value = "";
+  weekSearchQuery = "";
+  buildWeeks();
+  showToast("검색을 초기화했어.");
+});
+
+weekCopyBtn.addEventListener("click", async ()=>{
+  if(!pickedWeek) return;
+  const items = loadWeek(pickedWeek);
+
+  // copy format: same as weekly copy
+  const ws = ymdToDate(pickedWeek);
+  const wsStr = pickedWeek;
+
+  const labelsFull = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const sections = [];
+  if(ws){
+    for(let i=0;i<7;i++){
+      const dateStr = ymd(addDays(ws, i));
+      const sItems = items.filter(it => it.dateStr === dateStr);
+      if(sItems.length) sections.push({ title: `${labelsFull[i]} · ${dateStr}`, items: sItems });
+    }
+  }
+  const somedayItems = items.filter(it => !it.dateStr);
+  if(somedayItems.length) sections.push({ title: "Someday", items: somedayItems });
+
+  const text = formatForCopy(wsStr, sections);
+  const ok = await copyToClipboard(text);
+  showToast(ok ? "선택 주 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
+});
+
+weekPullBtn.addEventListener("click", ()=>{
+  if(!pickedWeek) return;
+
+  // Pull: 선택 주의 미완료 -> 현재 보고 있는 주로 합치기(중복 제거)
+  const src = loadWeek(pickedWeek);
+  const unfinished = src.filter(x => x && !x.done && (x.text||"").trim());
+  if(unfinished.length === 0){
+    showToast("당겨올 미완료가 없어.");
+    return;
+  }
+
+  const curWsStr = getWeekStartStr();
+  const existing = new Set(state.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
+  const toAdd = [];
+
+  for(const it of unfinished){
+    const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
+    if(existing.has(key)) continue;
+    toAdd.push({ ...it, id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())) });
+  }
+
+  if(toAdd.length === 0){
+    showToast("이미 이번 주에 있어.");
+    return;
+  }
+
+  state = [...toAdd, ...state];
+  saveWeek(curWsStr, state);
+  render();
+  showToast(`이번 주로 ${toAdd.length}개 당겼어.`);
+});
+
+
+    
     mount();
   </script>
 
