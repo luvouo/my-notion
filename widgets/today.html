@@ -301,17 +301,25 @@
     .modalOverlay{
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.22);
+      background: rgba(0,0,0,0.18);
+    
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 18px;
+    
+      padding: 10px;               /* 기존 18px → 줄여서 공간 확보 */
       z-index: 5000;
+    
+      overflow: hidden;            /* overlay 자체는 스크롤 X */
     }
-    .modalOverlay.open{ display: flex; }
+    .modalOverlay.open{ display:flex; }
+
 
     .modal{
       width: min(820px, 100%);
+      max-height: calc(100vh - 20px); /* ✅ iframe/뷰포트 내에서 최대 높이 */
+      display: flex;                  /* ✅ 헤더/바디/푸터 레이아웃 고정 */
+      flex-direction: column;
       border-radius: 18px;
       border: 1px solid rgba(255,170,190,0.38);
       background: rgba(255,255,255,0.82);
@@ -368,14 +376,18 @@
     .modalBody{
       display: grid;
       grid-template-columns: 250px 1fr;
-      min-height: 340px;
+    
+      min-height: 0;                 /* ✅ 중요: 자식 overflow 작동 조건 */
+      flex: 1 1 auto;                /* ✅ 남는 영역을 바디가 차지 */
+      overflow: hidden;              /* ✅ 패널들이 스크롤 */
     }
+
 
     .dates{
       border-right: 1px solid rgba(0,0,0,0.06);
       padding: 12px;
       overflow: auto;
-      max-height: 62vh;
+      min-height: 0;
     }
 
     .dateBtn{
@@ -404,7 +416,7 @@
     .preview{
       padding: 12px;
       overflow: auto;
-      max-height: 62vh;
+      min-height: 0;                 /* ✅ 중요 */
       display: grid;
       gap: 10px;
     }
