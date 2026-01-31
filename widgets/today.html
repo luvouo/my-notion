@@ -1091,48 +1091,47 @@
 
     // Copy popover toggle
     copyTodayBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if(!copyPopover) return;
-    
-      const willOpen = !copyPopover.classList.contains("open");
-      copyPopover.classList.toggle("open", willOpen);
-    
-      if(willOpen){
-        // ✅ open 후 실제 크기를 얻기 위해 다음 프레임에서 위치 계산
-        requestAnimationFrame(() => {
-          const btnRect = copyTodayBtn.getBoundingClientRect();
-          const popRect = copyPopover.getBoundingClientRect();
-    
-          const gap = 8;
-    
-          // 기본: 버튼 위로 띄우기
-          let top = btnRect.top - popRect.height - gap;
-          let left = btnRect.right - popRect.width;
-    
-          // 화면 밖으로 나가면 보정
-          const pad = 8;
-          if(top < pad) top = btnRect.bottom + gap;                 // 위가 부족하면 아래로
-          if(left < pad) left = pad;
-          const maxLeft = window.innerWidth - popRect.width - pad;
-          if(left > maxLeft) left = Math.max(pad, maxLeft);
-    
-          copyPopover.style.left = `${left}px`;
-          copyPopover.style.top = `${top}px`;
-        });
-      } else {
-        // 닫을 때는 초기화(선택)
-        copyPopover.style.left = "0px";
-        copyPopover.style.top = "0px";
-        copyPopover.style.transform = "translate(-9999px, -9999px)";
-      }
+  e.stopPropagation();
+  if(!copyPopover) return;
+
+  const willOpen = !copyPopover.classList.contains("open");
+  copyPopover.classList.toggle("open", willOpen);
+
+  if(willOpen){
+    // ✅ 인라인 transform이 남아있으면 open에서도 계속 화면 밖으로 감 → 반드시 제거
+    copyPopover.style.transform = "none";
+
+    requestAnimationFrame(() => {
+      const btnRect = copyTodayBtn.getBoundingClientRect();
+      const popRect = copyPopover.getBoundingClientRect();
+
+      const gap = 8;
+      const pad = 8;
+
+      // 기본: 버튼 위에 뜨게
+      let top = btnRect.top - popRect.height - gap;
+      let left = btnRect.right - popRect.width;
+
+      // 위가 부족하면 아래로
+      if(top < pad) top = btnRect.bottom + gap;
+
+      // 좌우 보정
+      if(left < pad) left = pad;
+      const maxLeft = window.innerWidth - popRect.width - pad;
+      if(left > maxLeft) left = Math.max(pad, maxLeft);
+
+      copyPopover.style.left = `${left}px`;
+      copyPopover.style.top = `${top}px`;
     });
+  }
+});
+
 
 
     // close popover on outside click
     document.addEventListener("click", () => {
       if(!copyPopover) return;
       copyPopover.classList.remove("open");
-      copyPopover.style.transform = "translate(-9999px, -9999px)";
     });
 
 
@@ -1142,11 +1141,13 @@
         e.stopPropagation();
         const btn = e.target.closest("[data-copy]");
         if(!btn) return;
+    
         const mode = btn.dataset.copy || "all";
         copyPopover.classList.remove("open");
         copyToday(mode);
       });
     }
+
 
     closeModalBtn.addEventListener("click", closeModal);
     modalOverlay.addEventListener("click", (e) => {
