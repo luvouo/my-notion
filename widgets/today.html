@@ -276,13 +276,30 @@
       color: var(--muted);
     }
 
+       /* bottom buttons: right aligned + horizontal scroll on narrow screens */
     .footer-actions{
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-left: auto;          /* 오른쪽으로 밀기 */
-      justify-content: flex-end;
+      justify-content: flex-end;      /* 항상 오른쪽 정렬 */
       align-items: center;
+      gap: 8px;
+      width: 100%;
+    
+      flex-wrap: nowrap;             /* 줄바꿈 금지 */
+      overflow-x: auto;              /* 좁으면 가로 스크롤 */
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    
+      margin-left: auto;
+      padding-left: 8px;             /* 왼쪽 살짝 여백(스크롤 시작 자연스럽게) */
+      padding-right: 2px;
+    
+      scrollbar-width: none;         /* Firefox 스크롤바 숨김 */
+    }
+    .footer-actions::-webkit-scrollbar{
+      display: none;                 /* Chrome/Safari 스크롤바 숨김 */
+    }
+    .footer-actions > .btn{
+      flex: 0 0 auto;
     }
 
     .toast{
@@ -481,7 +498,13 @@
     #clearDoneBtn,
     #resetBtn{
       display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 0 !important;
     }
+
 
         /* --- Copy popover --- */
     .footer-actions{ position: relative; } /* popover 위치 기준 */
@@ -520,6 +543,19 @@
       border-color: rgba(255,170,190,0.55);
       background: rgba(255,192,203,0.14);
     }
+    
+    /* bottom action buttons font */
+    #carryYesterdayBtn,
+    #historyBtn,
+    #copyTodayBtn{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    #copyPopover .popItem{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
 
   </style>
 </head>
