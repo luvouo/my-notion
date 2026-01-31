@@ -483,6 +483,44 @@
       display: none !important;
     }
 
+        /* --- Copy popover --- */
+    .footer-actions{ position: relative; } /* popover 위치 기준 */
+    
+    .popover{
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 8px);
+      min-width: 150px;
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,170,190,0.38);
+      background: rgba(255,255,255,0.86);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+      display: none;
+      z-index: 9999;
+    }
+    
+    .popover.open{ display: grid; gap: 6px; }
+    
+    .popItem{
+      width: 100%;
+      text-align: left;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.70);
+      border-radius: 12px;
+      padding: 10px 10px;
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.82);
+      cursor: pointer;
+    }
+    
+    .popItem:hover{
+      border-color: rgba(255,170,190,0.55);
+      background: rgba(255,192,203,0.14);
+    }
+
   </style>
 </head>
 
@@ -511,16 +549,16 @@
           <span id="countText">0/0 done</span>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <div class="footer-actions">
-            <select id="copyMode" class="select" aria-label="Copy mode">
-            <option value="all">All</option>
-            <option value="todo">Todo only</option>
-            <option value="done">Done only</option>
-          </select>
 
           <button class="btn secondary" id="carryYesterdayBtn" type="button">Carry over</button>
           <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
           <button class="btn secondary" id="copyTodayBtn" type="button">Copy</button>
-        
+          <div class="popover" id="copyPopover" aria-hidden="true">
+            <button class="popItem" type="button" data-copy="all">All</button>
+            <button class="popItem" type="button" data-copy="todo">Todo only</button>
+            <button class="popItem" type="button" data-copy="done">Done only</button>
+          </div>
+
           <!-- 기능은 남겨두되 화면에서는 숨김 처리할 거라서 DOM에만 유지 -->
           <button class="btn secondary" id="clearDoneBtn" type="button">완료 삭제</button>
           <button class="btn secondary" id="resetBtn" type="button">전체 초기화</button>
@@ -713,6 +751,8 @@
     const copyTodayBtn = document.getElementById("copyTodayBtn");
     const copyModeEl = document.getElementById("copyMode");
 
+    const copyPopover = document.getElementById("copyPopover");
+
 
     const toast = document.getElementById("toast");
 
@@ -863,9 +903,7 @@
       }
     }
 
-    async function copyToday(){
-  const mode = (copyModeEl && copyModeEl.value) ? copyModeEl.value : "all";
-
+    async function copyToday(mode = "all"){
   let filtered = state;
   if(mode === "todo") filtered = state.filter(x => !x.done);
   if(mode === "done") filtered = state.filter(x => x.done);
@@ -1019,6 +1057,21 @@
       inputEl.focus();
     });
 
+    document.addEventListener("click", () => {
+      if(copyPopover) copyPopover.classList.remove("open");
+    });
+    
+    if(copyPopover){
+      copyPopover.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const btn = e.target.closest("[data-copy]");
+        if(!btn) return;
+        const mode = btn.dataset.copy || "all";
+        copyPopover.classList.remove("open");
+        copyToday(mode);
+      });
+    }
+    
     inputEl.addEventListener("keydown", (e) => {
       if(e.key === "Enter"){
         addItem(inputEl.value);
@@ -1048,7 +1101,12 @@
 
     carryYesterdayBtn.addEventListener("click", carryOverYesterday);
     historyBtn.addEventListener("click", openModal);
-    copyTodayBtn.addEventListener("click", copyToday);
+    copyTodayBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if(!copyPopover) return;
+      copyPopover.classList.toggle("open");
+    });
+
 
     closeModalBtn.addEventListener("click", closeModal);
     modalOverlay.addEventListener("click", (e) => {
