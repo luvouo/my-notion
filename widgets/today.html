@@ -20,6 +20,31 @@
 
       --shadow: 0 10px 30px rgba(0,0,0,0.06);
       --radius: 20px;
+
+      /* ===== Design tokens (shared) ===== */
+      --font-display: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+
+      --radius-card: 20px;
+      --radius-control: 14px;
+      --radius-pill: 999px;
+
+      --gap-1: 8px;
+      --gap-2: 10px;
+      --gap-3: 12px;
+
+      --stroke-strong: rgba(255,170,190,0.70);
+      --stroke-soft: rgba(255,170,190,0.45);
+
+      --bg-control: rgba(255,255,255,0.10);
+      --bg-soft: rgba(255,255,255,0.06);
+
+      /* Interaction ring (hover/focus “중간 강도”) */
+      --ring: 0 0 0 3px rgba(255,192,203,0.22);
+      --ring-strong: 0 0 0 3px rgba(255,192,203,0.28);
+
+      /* Control height scale */
+      --h-control: 44px; /* input 기준 높이(시각 기준) */
     }
 
     @font-face{
@@ -102,8 +127,7 @@
 
     .title h1{
       margin:0;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-family: var(--font-display);
       font-size: clamp(15px, 3.8vw, 18px);
       letter-spacing: -0.2px;
       white-space: nowrap;
@@ -137,6 +161,8 @@
       font-size: 14px;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
+      min-height: var(--h-control); /* ✅ 기준 높이 */
+      box-sizing: border-box;
     }
     .input::placeholder{ color: rgba(30,30,30,0.45); }
 
@@ -149,7 +175,7 @@
       font-size: 13px;
       color: rgba(30,30,30,0.85);
       cursor: pointer;
-      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease, box-shadow .18s ease;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       white-space: nowrap;
@@ -169,6 +195,26 @@
       cursor: not-allowed;
     }
 
+    /* ✅ ghost variant (Upcoming/Focus 등에서 재사용) */
+    .btn.ghost{
+      border: 1px solid rgba(0,0,0,0.06);
+      background: transparent;
+      color: rgba(30,30,30,0.62);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease, color .18s ease;
+    }
+    .btn.ghost:hover{
+      border-color: rgba(255,170,190,0.55);
+      box-shadow: var(--ring);
+    }
+    .btn.ghost:active{ transform: scale(0.98); }
+    .btn.ghost:focus-visible{
+      outline: none;
+      box-shadow: var(--ring-strong);
+    }
+
     .list{
       margin:0;
       padding:0;
@@ -181,14 +227,15 @@
       display:flex;
       align-items:center;
       gap: 10px;
-      padding: 8px 10px; 
-      min-height: unset;
+      padding: 8px 10px;
+      min-height: var(--h-control); /* ✅ 기준 높이 */
       border-radius: 14px;
       border: 1px solid rgba(255,170,190,0.30);
       background: var(--glass-2);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       min-width: 0;
+      box-sizing: border-box;
     }
 
     .check{
@@ -208,21 +255,20 @@
     .check:hover{
       background: rgba(255,192,203,0.14);
       border-color: rgba(255,170,190,1);
-      box-shadow: 0 0 0 3px rgba(255,192,203,0.20);
+      box-shadow: var(--ring);
     }
-    
+
     .check:active{
       transform: scale(0.98);
     }
-    
-    /* 키보드 접근(탭으로 체크박스 포커스 갔을 때) */
+
     .check:focus-visible{
       outline: none;
       background: rgba(255,192,203,0.12);
       border-color: rgba(255,170,190,1);
-      box-shadow: 0 0 0 3px rgba(255,192,203,0.28);
+      box-shadow: var(--ring-strong);
     }
-    
+
     .check svg{
       width: 12px;
       height: 12px;
@@ -234,7 +280,7 @@
     .text{
       flex: 1 1 auto;
       min-width: 0;
-      line-height: 1.45;  /* ✅ 입력창 텍스트와 시각적 높이 일치 */
+      line-height: 1.45;
       font-size: 14px;
       white-space: nowrap;
       overflow: hidden;
@@ -250,28 +296,20 @@
       font-size: 14px;
       padding: 6px 8px;
       border-radius: 10px;
-      transition: background .18s ease,
-                  color .18s ease,
-                  box-shadow .18s ease,
-                  transform .08s ease;
+      transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .08s ease;
       -webkit-tap-highlight-color: transparent;
     }
     .del:hover{
       background: rgba(255,192,203,0.14);
       color: rgba(30,30,30,0.78);
-      box-shadow: 0 0 0 3px rgba(255,192,203,0.20);
+      box-shadow: var(--ring);
     }
-    
-    .del:active{
-      transform: scale(0.96);
-    }
-    
-    /* 키보드 접근 */
+    .del:active{ transform: scale(0.96); }
     .del:focus-visible{
       outline: none;
       background: rgba(255,192,203,0.12);
       color: rgba(30,30,30,0.78);
-      box-shadow: 0 0 0 3px rgba(255,192,203,0.28);
+      box-shadow: var(--ring-strong);
     }
 
     .item.done{ opacity: 0.78; }
@@ -291,14 +329,6 @@
       font-size: 12px;
       color: var(--muted);
     }
-
-    .toast{
-      font-size: 12px;
-      color: rgba(30,30,30,0.65);
-      min-height: 0;
-      height: auto;
-    }
-
 
     /* ✅ bottom buttons: right aligned + horizontal scroll on narrow screens */
     .footer-actions{
@@ -333,44 +363,34 @@
       border: 0 !important;
     }
 
-    /* ✅ bottom action buttons font */
+    /* ✅ bottom action buttons font + unified ring */
     #carryYesterdayBtn,
     #historyBtn,
     #copyTodayBtn{
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      transition:
-        color .18s ease,
-        border-color .18s ease,
-        box-shadow .18s ease,
-        background .18s ease,
-        transform .08s ease;
+      font-family: var(--font-display);
+      transition: color .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .08s ease;
     }
 
-    /* ✅ footer 3 buttons hover -> accent color */
     #carryYesterdayBtn:hover,
     #historyBtn:hover,
     #copyTodayBtn:hover{
-      color: var(--accent-1);                 /* ✅ 텍스트만 포인트 */
-      background: rgba(255,255,255,0.08);     /* ✅ 거의 변화 없음(미니멀) */
-      border-color: rgba(255,170,190,0.70);   /* ✅ 살짝만 강조 */
-      box-shadow: 0 0 0 3px rgba(255,192,203,0.22);  /* ✅ 중간 강도 링 */
+      color: var(--accent-1);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,170,190,0.70);
+      box-shadow: var(--ring);
     }
 
-    /* ✅ keyboard focus: match hover tone (medium) */
     #carryYesterdayBtn:focus-visible,
     #historyBtn:focus-visible,
     #copyTodayBtn:focus-visible{
-      outline: none;                           /* 기본 파란 outline 제거 */
+      outline: none;
       color: var(--accent-1);
       background: rgba(255,255,255,0.08);
       border-color: rgba(255,170,190,0.78);
-      box-shadow: 0 0 0 3px rgba(255,192,203,0.28);
+      box-shadow: var(--ring-strong);
     }
 
-
-    
-        /* 선택 날짜 액션 버튼을 더 작고 정돈된 pill로 */
+    /* 선택 날짜 액션 버튼을 더 작고 정돈된 pill로 */
     #carryPickedBtn,
     #copyPickedBtn{
       padding: 9px 10px;
@@ -379,95 +399,83 @@
       line-height: 1;
       display: inline-flex;
       align-items: center;
-      gap: 6px;              /* 아이콘-텍스트 간격 */
+      gap: 6px;
       letter-spacing: -0.1px;
+      font-family: var(--font-display);
     }
 
-       #addBtn{
-      /* 🔹 반응형 크기 */
+    /* ===== Add button (RGBA only, unified ring) ===== */
+    #addBtn{
       height: clamp(28px, 3.2vw, 32px);
       min-width: clamp(28px, 3.2vw, 32px);
-    
       padding: 0;
+
       display: inline-flex;
       align-items: center;
       justify-content: center;
-    
-      /* 🔹 SVG 컬러 */
-      color: #F2C6D8; /* 거의 흰 핑크 */
-    
-      background: #FFFBFD; /* 거의 흰 배경 */
-      border: 1px solid #F3D3E2;
+
+      color: rgba(255,170,190,0.55);              /* 거의 흰 핑크 느낌 */
+      background: rgba(255,255,255,0.75);         /* 거의 흰 배경 */
+      border: 1px solid rgba(255,170,190,0.35);
       border-radius: 999px;
-    
+
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       cursor: pointer;
-    
-      transition:
-        box-shadow 0.2s ease,
-        border-color 0.2s ease,
-        background 0.2s ease,
-        transform 0.15s ease;
+
+      transition: box-shadow .2s ease, border-color .2s ease, background .2s ease, transform .15s ease, color .18s ease;
+    }
+
+    #addBtn:hover{
+      background: transparent;
+      border-color: rgba(255,170,190,0.55);
+      box-shadow: var(--ring);
     }
 
     #addBtn:focus-visible{
       outline: none;
       background: transparent;
       border-color: rgba(255,170,190,0.78);
-      box-shadow: 0 0 0 3px rgba(255,192,203,0.28); /* ✅ 중간 강도 */
+      box-shadow: var(--ring-strong);
     }
 
-    
-    /* 🔹 hover: 배경 제거 + 링만 */
-    #addBtn:hover{
-      background: transparent;
-      border-color: #EFC7D9;
-      box-shadow: 0 0 0 3px rgba(242,198,216,0.25);
-    }
-    
-    /* 🔹 active */
     #addBtn:active{
       transform: scale(0.96);
     }
-    
-    /* 🔹 disabled */
+
     #addBtn:disabled{
       opacity: 0.45;
       cursor: not-allowed;
       background: transparent;
-      border-color: rgba(239,199,217,0.35);
+      border-color: rgba(255,170,190,0.18);
       box-shadow: none;
       transform: none;
     }
-    
     #addBtn:disabled:hover{
       background: transparent;
       box-shadow: none;
     }
 
-        
     /* -------- Modal -------- */
     .modalOverlay{
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.18);
-    
+
       display: none;
       align-items: center;
       justify-content: center;
-    
-      padding: 10px;               /* 기존 18px → 줄여서 공간 확보 */
+
+      padding: 10px;
       z-index: 5000;
-    
-      overflow: hidden;            /* overlay 자체는 스크롤 X */
+
+      overflow: hidden;
     }
     .modalOverlay.open{ display:flex; }
 
-
     .modal{
       width: min(820px, 100%);
-      max-height: calc(100vh - 20px); /* ✅ iframe/뷰포트 내에서 최대 높이 */
-      display: flex;                  /* ✅ 헤더/바디/푸터 레이아웃 고정 */
+      max-height: calc(100vh - 20px);
+      display: flex;
       flex-direction: column;
       border-radius: 18px;
       border: 1px solid rgba(255,170,190,0.38);
@@ -500,6 +508,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      font-family: var(--font-display);
     }
 
     .mhRight{
@@ -509,6 +518,7 @@
       align-items:center;
       justify-content: flex-end;
       flex: 1 1 auto;
+      min-width: 0;
     }
 
     .search{
@@ -519,82 +529,87 @@
       font-size: 12.5px;
       outline: none;
       min-width: min(340px, 100%);
+      flex: 1 1 260px;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
     }
     .search::placeholder{ color: rgba(30,30,30,0.45); }
 
     .modalBody{
       display: grid;
-      grid-template-columns: max-content 1fr; /* ✅ 왼쪽: 내용만큼 */
-    
-      min-height: 0;                 /* ✅ 중요: 자식 overflow 작동 조건 */
-      flex: 1 1 auto;                /* ✅ 남는 영역을 바디가 차지 */
-      overflow: hidden;              /* ✅ 패널들이 스크롤 */
+      grid-template-columns: max-content 1fr;
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
     }
-
 
     .dates{
       border-right: 1px solid rgba(0,0,0,0.06);
       padding: 12px 10px;
       overflow: auto;
-    
-      width: max-content;       /* ✅ 패널 자체도 내용만큼 */
-      max-width: none;          /* ✅ 상한 제거 */
-      min-width: unset;         /* ✅ 하한 제거 */
+
+      width: max-content;
+      max-width: none;
+      min-width: unset;
       min-height: 0;
 
       justify-items: start;
     }
-
 
     .dateBtn{
       width: fit-content;
       max-width: 100%;
       display: grid;
       gap: 4px;
-    
+
       padding: 8px 10px;
       margin-bottom: 10px;
-    
+
       border-radius: 14px;
       border: 1px solid rgba(255,170,190,0.22);
       background: rgba(255,255,255,0.62);
-    
+
       cursor: pointer;
       text-align: left;
       white-space: nowrap;
-    
+
       font-size: 13px;
       color: rgba(30,30,30,0.88);
-    
-      transition: background .18s ease, border-color .18s ease, transform .08s ease;
+
+      transition: background .18s ease, border-color .18s ease, transform .08s ease, box-shadow .18s ease;
       -webkit-tap-highlight-color: transparent;
     }
     .dateBtn:hover{
       border-color: rgba(255,170,190,0.45);
       background: rgba(255,255,255,0.72);
+      box-shadow: var(--ring);
     }
-    .dateBtn:active{
-      transform: scale(0.99);
+    .dateBtn:active{ transform: scale(0.99); }
+
+    .dateBtn:focus-visible{
+      outline: none;
+      box-shadow: var(--ring-strong);
+      border-color: rgba(255,170,190,0.70);
     }
-    
+
     .dateBtn small{
       display: block;
       font-size: 11px;
       color: rgba(30,30,30,0.52);
       margin-top: 0;
     }
-    
+
     .dateBtn.active{
       border-color: rgba(255,170,190,0.70);
       background: rgba(255,192,203,0.14);
       box-shadow: 0 10px 26px rgba(255,170,190,0.12);
     }
 
-
     .preview{
       padding: 12px;
       overflow: auto;
-      min-height: 0;                 /* ✅ 중요 */
+      min-height: 0;
       display: grid;
       gap: 10px;
     }
@@ -604,22 +619,20 @@
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      flex-wrap: nowrap;       /* ✅ 기본은 한 줄 유지 */
+      flex-wrap: nowrap;
       min-width: 0;
     }
-    
+
     .picked{
       font-size: 13px;
       color: rgba(30,30,30,0.82);
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis; /* ✅ 길면 말줄임 */
+      text-overflow: ellipsis;
       min-width: 0;
       flex: 1 1 auto;
     }
 
-        /* 버튼 2개 래퍼(HTML에 인라인 style로 되어있던 부분을 class로 바꾸는 게 베스트지만,
-       지금 구조 그대로 쓸 수 있게 "previewTop 안의 버튼 그룹"을 타겟팅 */
     .previewTop > div:last-child{
       display:flex;
       gap: 8px;
@@ -628,7 +641,6 @@
       flex: 0 0 auto;
     }
 
-    
     .previewBox{
       border: 1px solid rgba(0,0,0,0.06);
       border-radius: 16px;
@@ -646,6 +658,7 @@
       color: rgba(30,30,30,0.86);
       line-height: 1.25;
     }
+
     .badge{
       font-size: 11px;
       padding: 4px 9px;
@@ -684,7 +697,6 @@
       .dates{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
       .search{ min-width: 100%; }
     }
-
 
     @media (max-width: 360px){
       .meta{ display:none; }
@@ -728,96 +740,77 @@
       font-size: 12.5px;
       color: rgba(30,30,30,0.82);
       cursor: pointer;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-family: var(--font-display);
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
     .popItem:hover{
       border-color: rgba(255,170,190,0.55);
       background: rgba(255,192,203,0.14);
+      box-shadow: var(--ring);
+    }
+    .popItem:focus-visible{
+      outline: none;
+      box-shadow: var(--ring-strong);
+      border-color: rgba(255,170,190,0.60);
     }
 
-        /* Fix: Notion embed flex/min-width clipping */
-    .modalHeader, .mhRight, .mhLeft{
-      min-width: 0;
-    }
-    
-    .modalHeader{
-      box-sizing: border-box;
-    }
-    
-    .mhRight{
-      flex: 1 1 360px;   /* 검색이 우선적으로 공간 확보 */
-      min-width: 0;
-    }
-    
-    .search{
-      flex: 1 1 260px;   /* ✅ 줄어들 수 있게 */
-      min-width: 0;      /* ✅ 잘림 방지 핵심 */
-      width: 100%;
-      box-sizing: border-box;
-    }
+    /* Fix: Notion embed flex/min-width clipping */
+    .modalHeader, .mhRight, .mhLeft{ min-width: 0; }
+    .modalHeader{ box-sizing: border-box; }
+    .mhRight{ flex: 1 1 360px; min-width: 0; }
 
-       
     @media (pointer: coarse){
-      #addBtn{
-        position: relative;
-      }
+      #addBtn{ position: relative; }
       #addBtn::after{
         content:"";
         position:absolute;
-        inset:-6px;               /* 터치 히트박스만 확대 */
+        inset:-6px; /* 터치 히트박스만 확대 */
       }
     }
 
-/* ===== Toast overlay (B) ===== */
-.card{ position: relative; }
+    /* ===== Toast overlay (B) ===== */
+    .card{ position: relative; }
 
-.toast{
-  position: absolute;
-  left: 16px;
-  bottom: 12px;
-  z-index: 10;
+    .toast{
+      position: absolute;
+      left: 16px;
+      bottom: 12px;
+      z-index: 10;
 
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
 
-  padding: 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
 
-  color: rgba(30,30,30,0.62);
-  font-size: 12px;
-  line-height: 1;
+      color: rgba(30,30,30,0.62);
+      font-size: 12px;
+      line-height: 1;
 
-  opacity: 0;
-  transform: translateY(4px);
-  pointer-events: none;
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
 
-  transition: opacity .14s ease, transform .14s ease;
-}
+      transition: opacity .14s ease, transform .14s ease;
+    }
 
-.toast:not(:empty){
-  opacity: 1;
-  transform: translateY(0);
-}
+    .toast:not(:empty){
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-.toast::before{
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(255,192,203,0.88);
-  box-shadow: 0 0 0 3px rgba(255,192,203,0.16);
-  flex: 0 0 auto;
-}
-
-
-
-
-
-    
+    .toast::before{
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255,192,203,0.88);
+      box-shadow: 0 0 0 3px rgba(255,192,203,0.16);
+      flex: 0 0 auto;
+    }
   </style>
 </head>
 
@@ -916,12 +909,12 @@
     function formatDateLabel(dateStr){
       const d = ymdToDate(dateStr);
       if(!d) return dateStr;
-    
+
       const yy = String(d.getFullYear()).slice(-2);
       const mm = pad2(d.getMonth() + 1);
       const dd = pad2(d.getDate());
       const wk = ["일","월","화","수","목","금","토"][d.getDay()];
-    
+
       return `${yy}.${mm}.${dd} (${wk})`;
     }
 
@@ -1050,19 +1043,17 @@
     const listEl = document.getElementById("list");
     const inputEl = document.getElementById("todoInput");
     const addBtn = document.getElementById("addBtn");
-    
-              /* ✅ 여기 바로 아래에 추가 */
-          addBtn.innerHTML = `
-          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-            <path d="M12 5v14M5 12h14"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  stroke-linecap="round"/>
-          </svg>
-          `;
-          
-      
-    
+
+    /* add icon */
+    addBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+        <path d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"/>
+      </svg>
+    `;
+
     const countText = document.getElementById("countText");
     const clearDoneBtn = document.getElementById("clearDoneBtn");
     const resetBtn = document.getElementById("resetBtn");
@@ -1079,10 +1070,8 @@
       const hasText = (inputEl.value || "").trim().length > 0;
       addBtn.disabled = !hasText;
     }
-    
     inputEl.addEventListener("input", syncAddButtonState);
     syncAddButtonState(); // 초기 1회
-
 
     // Modal
     const modalOverlay = document.getElementById("modalOverlay");
@@ -1389,14 +1378,11 @@
       const gap = 8;
       const pad = 8;
 
-      // default: above button, right-aligned
       let top = btnRect.top - popRect.height - gap;
       let left = btnRect.right - popRect.width;
 
-      // if not enough space above, place below
       if(top < pad) top = btnRect.bottom + gap;
 
-      // clamp horizontally
       left = Math.max(pad, Math.min(left, window.innerWidth - popRect.width - pad));
 
       copyPopover.style.left = `${left}px`;
@@ -1404,10 +1390,9 @@
     }
 
     function openCopyPopover(){
-      if(modalOverlay.classList.contains("open")) return; // modal 열려있을 때는 방해 금지
+      if(modalOverlay.classList.contains("open")) return;
       copyPopover.classList.add("open");
       copyPopover.setAttribute("aria-hidden", "false");
-      // next frame: ensure size is measurable
       requestAnimationFrame(placePopover);
     }
 
@@ -1427,7 +1412,7 @@
     inputEl.addEventListener("keydown", (e) => {
       if(e.key === "Enter"){
         e.preventDefault();
-        if(!addBtn.disabled) addBtn.click();  // ✅ 버튼과 동일 동작
+        if(!addBtn.disabled) addBtn.click();
       }
     });
 
@@ -1453,14 +1438,12 @@
     carryYesterdayBtn.addEventListener("click", carryOverYesterday);
     historyBtn.addEventListener("click", openModal);
 
-    // ✅ Toggle popover
     copyTodayBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       if(copyPopover.classList.contains("open")) closeCopyPopover();
       else openCopyPopover();
     });
 
-    // ✅ choose copy mode
     copyPopover.addEventListener("click", (e) => {
       e.stopPropagation();
       const btn = e.target.closest("[data-copy]");
@@ -1470,13 +1453,11 @@
       copyToday(mode);
     });
 
-    // ✅ close on outside click / Esc
     document.addEventListener("click", () => closeCopyPopover());
     document.addEventListener("keydown", (e) => {
       if(e.key === "Escape") closeCopyPopover();
     });
 
-    // ✅ reposition on resize/scroll (not heavy)
     window.addEventListener("resize", () => {
       if(copyPopover.classList.contains("open")) placePopover();
     }, { passive: true });
@@ -1485,7 +1466,6 @@
       if(copyPopover.classList.contains("open")) placePopover();
     }, { passive: true });
 
-    // Modal events
     closeModalBtn.addEventListener("click", closeModal);
     modalOverlay.addEventListener("click", (e) => {
       if(e.target === modalOverlay) closeModal();
