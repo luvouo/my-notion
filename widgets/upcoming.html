@@ -531,15 +531,21 @@
 
     /* Footer */
     .footer{
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: 1fr auto;   /* 1행: count(좌) / (우는 비워도 됨) */
+      row-gap: 10px;
+      column-gap: 10px;
+      align-items: start;
+    
       font-size: 12px;
       color: var(--muted);
     }
 
+    .footer-actions{
+      grid-column: 2;   /* 오른쪽 컬럼 */
+      grid-row: 2;      /* 2번째 줄 */
+    }
+    
     /* ✅ footer buttons font (Copy/Clear done) */
     #copyBtn, #clearDoneBtn{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
