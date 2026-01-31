@@ -874,9 +874,8 @@
       left = Math.max(pad, Math.min(left, cardEl.clientWidth - scaledW - pad));
       top  = Math.max(pad, Math.min(top,  cardEl.clientHeight - scaledH - pad));
 
-      // ✅ dpPop은 scale을 쓰므로, 위치는 "스케일 전 좌표"로 넣어야 함
-      dpPop.style.left = `${left / DP_SCALE}px`;
-      dpPop.style.top  = `${top  / DP_SCALE}px`;
+      dpPop.style.left = `${left}px`;
+      dpPop.style.top  = `${top}px`;
     }
 
     dpTrigger.addEventListener("click", (e)=>{
