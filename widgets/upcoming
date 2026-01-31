@@ -1,1 +1,826 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Upcoming — Soft Schedule</title>
 
+  <style>
+    :root{
+      /* Pastel Sky Blue */
+      --accent-1: rgba(170, 220, 255, 0.92);
+      --accent-2: rgba(140, 205, 255, 0.55);
+      --border:   rgba(140, 205, 255, 0.62);
+
+      --text:  rgba(30,30,30,0.92);
+      --muted: rgba(30,30,30,0.38);
+
+      --glass:   rgba(255,255,255,0.10);
+      --glass-2: rgba(255,255,255,0.06);
+
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --radius: 20px;
+    }
+
+    @font-face{
+      font-family: "EnterSanChaek";
+      src: url("../fonts/엔터산책10.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      background: transparent;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: var(--text);
+    }
+
+    .wrap{
+      width: min(620px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2.6vw, 16px);
+      box-sizing: border-box;
+    }
+
+    .card{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(14px, 2.8vw, 18px);
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(120% 80% at 0% 0%, rgba(170,220,255,0.22), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(140,205,255,0.16), transparent 55%);
+      pointer-events:none;
+    }
+
+    .inner{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+    }
+
+    .top{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pearl{
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: block;
+      object-fit: cover;
+      flex: 0 0 auto;
+      box-shadow: 0 0 0 2px rgba(170,220,255,0.20);
+    }
+
+    .title h1{
+      margin:0;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: clamp(15px, 3.8vw, 18px);
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    /* ===== Inputs ===== */
+    .inputRow{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .input{
+      flex: 1 1 220px;
+      min-width: 0;
+      border: 1px solid rgba(140,205,255,0.45);
+      background: rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 12px 12px;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .input::placeholder{ color: rgba(30,30,30,0.45); }
+
+    .dateInput{
+      flex: 0 0 auto;
+      width: 148px;
+      border: 1px solid rgba(140,205,255,0.45);
+      background: rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 11px 10px;
+      outline: none;
+      color: rgba(30,30,30,0.82);
+      font-size: 13px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .dateInput:focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(170,220,255,0.28);
+      border-color: rgba(140,205,255,0.78);
+    }
+
+    .btn{
+      flex: 0 0 auto;
+      border: 1px solid rgba(140,205,255,0.70);
+      background: rgba(170,220,255,0.18);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(30,30,30,0.85);
+      cursor: pointer;
+      transition: transform .08s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .btn:active{ transform: scale(0.98); }
+    .btn:hover{
+      background: rgba(170,220,255,0.24);
+      border-color: rgba(140,205,255,0.88);
+      box-shadow: 0 0 0 3px rgba(170,220,255,0.22);
+    }
+    .btn:focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(170,220,255,0.28);
+      border-color: rgba(140,205,255,0.78);
+    }
+
+    .btn.secondary{
+      border: 1px solid rgba(140,205,255,0.45);
+      background: rgba(255,255,255,0.08);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .btn.secondary:disabled{
+      opacity: 0.55;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* ===== List ===== */
+    .list{
+      margin:0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap: 8px;
+    }
+
+    .item{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(140,205,255,0.28);
+      background: var(--glass-2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      min-width: 0;
+    }
+
+    .check{
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      border-radius: 6px;
+      border: 1.6px solid rgba(140,205,255,0.95);
+      display:grid;
+      place-items:center;
+      flex: 0 0 auto;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+    .check:hover{
+      background: rgba(170,220,255,0.14);
+      border-color: rgba(140,205,255,1);
+      box-shadow: 0 0 0 3px rgba(170,220,255,0.20);
+    }
+    .check:active{ transform: scale(0.98); }
+    .check:focus-visible{
+      outline: none;
+      background: rgba(170,220,255,0.12);
+      border-color: rgba(140,205,255,1);
+      box-shadow: 0 0 0 3px rgba(170,220,255,0.28);
+    }
+    .check svg{
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .text{
+      flex: 1 1 auto;
+      min-width: 0;
+      line-height: 1.45;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pill{
+      flex: 0 0 auto;
+      font-size: 11px;
+      line-height: 1;
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.50);
+      color: rgba(30,30,30,0.62);
+      white-space: nowrap;
+    }
+    .pill.dueSoon{
+      border-color: rgba(140,205,255,0.55);
+      background: rgba(170,220,255,0.16);
+    }
+    .pill.overdue{
+      border-color: rgba(255,170,190,0.55);
+      background: rgba(255,192,203,0.14);
+    }
+    .pill.noDate{
+      background: rgba(0,0,0,0.03);
+    }
+
+    .mini{
+      flex: 0 0 auto;
+      border: 1px solid rgba(140,205,255,0.45);
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: color .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .08s ease;
+      color: rgba(30,30,30,0.78);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      white-space: nowrap;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .mini:hover{
+      color: var(--accent-1);
+      border-color: rgba(140,205,255,0.78);
+      box-shadow: 0 0 0 3px rgba(170,220,255,0.22);
+      background: rgba(255,255,255,0.08);
+    }
+    .mini:active{ transform: scale(0.98); }
+    .mini:focus-visible{
+      outline: none;
+      color: var(--accent-1);
+      border-color: rgba(140,205,255,0.78);
+      box-shadow: 0 0 0 3px rgba(170,220,255,0.28);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .del{
+      flex: 0 0 auto;
+      border: none;
+      background: transparent;
+      color: rgba(30,30,30,0.55);
+      cursor:pointer;
+      font-size: 14px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .08s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .del:hover{
+      background: rgba(170,220,255,0.14);
+      color: rgba(30,30,30,0.78);
+      box-shadow: 0 0 0 3px rgba(170,220,255,0.20);
+    }
+    .del:active{ transform: scale(0.96); }
+    .del:focus-visible{
+      outline: none;
+      background: rgba(170,220,255,0.12);
+      color: rgba(30,30,30,0.78);
+      box-shadow: 0 0 0 3px rgba(170,220,255,0.28);
+    }
+
+    .item.done{ opacity: 0.78; }
+    .item.done .text{ text-decoration: line-through; color: rgba(30,30,30,0.50); }
+    .item.done .check{
+      background: rgba(170,220,255,0.20);
+      border-color: rgba(140,205,255,1);
+    }
+    .item.done .check svg{ opacity: 1; transform: scale(1); }
+
+    /* ===== Footer ===== */
+    .footer{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer-actions{
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+
+      margin-left: auto;
+      padding-left: 8px;
+      padding-right: 2px;
+
+      scrollbar-width: none;
+    }
+    .footer-actions::-webkit-scrollbar{ display: none; }
+    .footer-actions > *{ flex: 0 0 auto; }
+
+    /* ===== Toast overlay (same idea) ===== */
+    .toast{
+      position: absolute;
+      left: 16px;
+      bottom: 12px;
+      z-index: 10;
+
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+
+      color: rgba(30,30,30,0.62);
+      font-size: 12px;
+      line-height: 1;
+
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+
+      transition: opacity .14s ease, transform .14s ease;
+    }
+    .toast:not(:empty){
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast::before{
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(170,220,255,0.92);
+      box-shadow: 0 0 0 3px rgba(170,220,255,0.16);
+      flex: 0 0 auto;
+    }
+
+    @media (max-width: 360px){
+      .meta{ display:none; }
+      .dateInput{ width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="Upcoming Widget">
+      <div class="inner">
+        <div class="top">
+          <div class="title">
+            <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+            <h1>Upcoming</h1>
+          </div>
+          <div class="meta" id="metaText"></div>
+        </div>
+
+        <div class="inputRow">
+          <input id="taskInput" class="input" type="text" placeholder="미래 할 일 (Enter)…" maxlength="80" />
+          <input id="dateInput" class="dateInput" type="date" aria-label="날짜 (선택)" />
+          <button class="btn" id="addBtn" type="button" title="추가" aria-label="추가">Add</button>
+        </div>
+
+        <ul class="list" id="list"></ul>
+
+        <div class="footer">
+          <span id="countText">0 items</span>
+
+          <div class="footer-actions">
+            <button class="btn secondary" id="filterAllBtn" type="button">All</button>
+            <button class="btn secondary" id="filterDatedBtn" type="button">Dated</button>
+            <button class="btn secondary" id="filterNoDateBtn" type="button">No date</button>
+            <button class="btn secondary" id="filterOverdueBtn" type="button">Overdue</button>
+            <button class="btn secondary" id="copyBtn" type="button">Copy</button>
+          </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===== Storage keys ===== */
+    const KEY_UPCOMING = "soft_schedule_upcoming_v1";
+
+    /* Today widget compatible key (so Upcoming -> Today move works) */
+    const PREFIX_DAY = "soft_schedule_today_";
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function ymd(d=new Date()){
+      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+    }
+
+    /* ===== Helpers ===== */
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+    }
+
+    function showToast(msg){
+      toast.textContent = msg;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.textContent = "", 1600);
+    }
+
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try{
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          return ok;
+        }catch(err){
+          document.body.removeChild(ta);
+          return false;
+        }
+      }
+    }
+
+    function isoToYmdDot(iso){ // "2026-02-01" -> "2026.02.01"
+      if(!iso) return "";
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+      if(!m) return "";
+      return `${m[1]}.${m[2]}.${m[3]}`;
+    }
+
+    function ymdDotToDate(dot){ // "2026.02.01" -> Date
+      const m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(dot);
+      if(!m) return null;
+      return new Date(+m[1], +m[2]-1, +m[3]);
+    }
+
+    function daysDiffFromToday(dot){ // dot date - today (days)
+      const d = ymdDotToDate(dot);
+      if(!d) return null;
+      const t0 = new Date(); t0.setHours(0,0,0,0);
+      const t1 = new Date(d); t1.setHours(0,0,0,0);
+      return Math.round((t1 - t0) / 86400000);
+    }
+
+    function loadUpcoming(){
+      try{
+        const raw = localStorage.getItem(KEY_UPCOMING);
+        if(!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      }catch(e){ return []; }
+    }
+
+    function saveUpcoming(items){
+      localStorage.setItem(KEY_UPCOMING, JSON.stringify(items));
+    }
+
+    function loadTodayList(){
+      const key = `${PREFIX_DAY}${ymd(new Date())}`;
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) return { key, items: [] };
+        const parsed = JSON.parse(raw);
+        return { key, items: Array.isArray(parsed) ? parsed : [] };
+      }catch(e){
+        return { key, items: [] };
+      }
+    }
+
+    function saveTodayList(key, items){
+      localStorage.setItem(key, JSON.stringify(items));
+    }
+
+    /* ===== DOM ===== */
+    const metaText = document.getElementById("metaText");
+    const listEl = document.getElementById("list");
+    const taskInput = document.getElementById("taskInput");
+    const dateInput = document.getElementById("dateInput");
+    const addBtn = document.getElementById("addBtn");
+    const countText = document.getElementById("countText");
+    const toast = document.getElementById("toast");
+
+    const filterAllBtn = document.getElementById("filterAllBtn");
+    const filterDatedBtn = document.getElementById("filterDatedBtn");
+    const filterNoDateBtn = document.getElementById("filterNoDateBtn");
+    const filterOverdueBtn = document.getElementById("filterOverdueBtn");
+    const copyBtn = document.getElementById("copyBtn");
+
+    metaText.textContent = ymd(new Date());
+
+    let state = loadUpcoming();
+    let filter = "all"; // all | dated | nodate | overdue
+
+    /* ===== Actions ===== */
+    function syncAddButtonState(){
+      const hasText = (taskInput.value || "").trim().length > 0;
+      addBtn.disabled = !hasText;
+    }
+    taskInput.addEventListener("input", syncAddButtonState);
+    syncAddButtonState();
+
+    function addItem(text, isoDate){
+      const t = (text || "").trim();
+      if(!t) return;
+
+      const due = isoToYmdDot(isoDate || ""); // "YYYY.MM.DD" or ""
+      state.unshift({
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+        text: t,
+        due: due,      // "" means no date
+        done: false,
+        createdAt: Date.now()
+      });
+
+      saveUpcoming(state);
+      render();
+    }
+
+    function toggleItem(id){
+      state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+      saveUpcoming(state);
+      render();
+    }
+
+    function deleteItem(id){
+      state = state.filter(it => it.id !== id);
+      saveUpcoming(state);
+      render();
+    }
+
+    function moveToToday(id){
+      const it = state.find(x => x.id === id);
+      if(!it) return;
+
+      const tx = (it.text || "").trim();
+      if(!tx){
+        showToast("보낼 텍스트가 없어.");
+        return;
+      }
+
+      const { key, items } = loadTodayList();
+      const exists = new Set(items.map(x => (x.text || "").trim()));
+      if(exists.has(tx)){
+        showToast("이미 Today에 있어.");
+        return;
+      }
+
+      items.unshift({
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+        text: tx,
+        done: false
+      });
+
+      saveTodayList(key, items);
+      showToast("Today로 보냈어.");
+    }
+
+    function setFilter(next){
+      filter = next;
+      render();
+    }
+
+    function formatForCopy(items){
+      const lines = [];
+      lines.push(`[Upcoming]`);
+      for(const it of items){
+        const due = it.due ? ` (${it.due})` : "";
+        lines.push(`- [${it.done ? "x" : " "}] ${it.text}${due}`);
+      }
+      return lines.join("\n");
+    }
+
+    async function copyFiltered(){
+      const items = getFilteredSorted();
+      const ok = await copyToClipboard(formatForCopy(items));
+      showToast(ok ? "복사했어." : "복사 실패 (브라우저 권한 확인)");
+    }
+
+    /* ===== View model ===== */
+    function getFilteredSorted(){
+      const now = new Date(); now.setHours(0,0,0,0);
+      const todayDot = ymd(new Date());
+
+      let items = [...state];
+
+      if(filter === "dated"){
+        items = items.filter(x => !!x.due);
+      }else if(filter === "nodate"){
+        items = items.filter(x => !x.due);
+      }else if(filter === "overdue"){
+        items = items.filter(x => {
+          if(!x.due || x.done) return false;
+          const diff = daysDiffFromToday(x.due);
+          return diff !== null && diff < 0;
+        });
+      }
+
+      // sort:
+      // 1) not done first
+      // 2) dated items first (soonest first)
+      // 3) no-date items last (newest first)
+      items.sort((a,b) => {
+        if(a.done !== b.done) return a.done ? 1 : -1;
+
+        const ad = a.due ? 1 : 0;
+        const bd = b.due ? 1 : 0;
+        if(ad !== bd) return bd - ad; // dated first
+
+        if(a.due && b.due){
+          const da = ymdDotToDate(a.due)?.getTime() ?? 0;
+          const db = ymdDotToDate(b.due)?.getTime() ?? 0;
+          if(da !== db) return da - db; // earlier first
+          return (b.createdAt||0) - (a.createdAt||0);
+        }
+
+        return (b.createdAt||0) - (a.createdAt||0);
+      });
+
+      return items;
+    }
+
+    function pillInfo(it){
+      if(!it.due) return { cls: "pill noDate", text: "No date" };
+      const diff = daysDiffFromToday(it.due);
+      if(diff === null) return { cls: "pill", text: it.due };
+      if(it.done) return { cls: "pill", text: it.due };
+
+      if(diff < 0) return { cls: "pill overdue", text: `Overdue · ${it.due}` };
+      if(diff === 0) return { cls: "pill dueSoon", text: `Today · ${it.due}` };
+      if(diff === 1) return { cls: "pill dueSoon", text: `D-1 · ${it.due}` };
+      if(diff <= 7) return { cls: "pill dueSoon", text: `D-${diff} · ${it.due}` };
+      return { cls: "pill", text: it.due };
+    }
+
+    function setActiveFilterButton(){
+      const map = {
+        all: filterAllBtn,
+        dated: filterDatedBtn,
+        nodate: filterNoDateBtn,
+        overdue: filterOverdueBtn
+      };
+      Object.keys(map).forEach(k => {
+        map[k].style.opacity = (k === filter) ? "1" : "0.78";
+      });
+    }
+
+    function render(){
+      setActiveFilterButton();
+      const items = getFilteredSorted();
+
+      listEl.innerHTML = "";
+      for(const it of items){
+        const li = document.createElement("li");
+        li.className = "item" + (it.done ? " done" : "");
+
+        const pill = pillInfo(it);
+
+        li.innerHTML = `
+          <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+          <span class="${pill.cls}">${escapeHtml(pill.text)}</span>
+          <button class="mini" type="button" data-today="${it.id}" title="Today로 보내기">Today</button>
+          <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
+        `;
+        listEl.appendChild(li);
+
+        // show checkmark only when done (re-use same behavior as Today)
+        const svg = li.querySelector(".check svg");
+        if(it.done){
+          svg.style.opacity = "1";
+          svg.style.transform = "scale(1)";
+        }
+      }
+
+      const total = state.length;
+      const shown = items.length;
+      countText.textContent = (filter === "all") ? `${total} items` : `${shown} / ${total}`;
+    }
+
+    /* ===== Events ===== */
+    addBtn.addEventListener("click", () => {
+      addItem(taskInput.value, dateInput.value);
+      taskInput.value = "";
+      dateInput.value = "";
+      taskInput.focus();
+      syncAddButtonState();
+    });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        if(!addBtn.disabled) addBtn.click();
+      }
+    });
+
+    listEl.addEventListener("click", (e) => {
+      const check = e.target.closest(".check");
+      const del = e.target.closest("[data-del]");
+      const toToday = e.target.closest("[data-today]");
+      if(check) toggleItem(check.dataset.id);
+      else if(toToday) moveToToday(toToday.dataset.today);
+      else if(del) deleteItem(del.dataset.del);
+    });
+
+    listEl.addEventListener("keydown", (e) => {
+      const check = e.target.closest(".check");
+      if(!check) return;
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        toggleItem(check.dataset.id);
+      }
+    });
+
+    filterAllBtn.addEventListener("click", () => setFilter("all"));
+    filterDatedBtn.addEventListener("click", () => setFilter("dated"));
+    filterNoDateBtn.addEventListener("click", () => setFilter("nodate"));
+    filterOverdueBtn.addEventListener("click", () => setFilter("overdue"));
+
+    copyBtn.addEventListener("click", copyFiltered);
+
+    render();
+  </script>
+</body>
+</html>
