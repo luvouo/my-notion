@@ -310,41 +310,60 @@
       letter-spacing: -0.1px;
     }
 
-    #addBtn{
-      height: 38px;                 /* ✅ 입력창과 동일 */
-      min-width: 38px;              /* 정사각 느낌 유지 */
-      padding: 0;
+       #addBtn{
+      /* 🔹 반응형 크기 */
+      height: clamp(28px, 3.2vw, 32px);
+      min-width: clamp(28px, 3.2vw, 32px);
     
+      padding: 0;
       display: inline-flex;
       align-items: center;
       justify-content: center;
     
-      font-size: 18px;
-      font-weight: 400;
-      line-height: 1;
-      color: rgba(30,30,30,0.58); /* ✅ 덜 까맣게 */
+      /* 🔹 SVG 컬러 */
+      color: #F2C6D8; /* 거의 흰 핑크 */
     
+      background: #FFFBFD; /* 거의 흰 배경 */
+      border: 1px solid #F3D3E2;
       border-radius: 999px;
-    }
-
-    #addBtn:hover{
-      background: rgba(255,192,203,0.14);
+    
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      cursor: pointer;
+    
+      transition:
+        box-shadow 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.15s ease;
     }
     
-    #addBtn:active{
-      transform: scale(0.97);
+    /* 🔹 hover: 배경 제거 + 링만 */
+    #addBtn:hover{
+      background: transparent;
+      border-color: #EFC7D9;
+      box-shadow: 0 0 0 3px rgba(242,198,216,0.25);
     }
-
+    
+    /* 🔹 active */
+    #addBtn:active{
+      transform: scale(0.96);
+    }
+    
+    /* 🔹 disabled */
     #addBtn:disabled{
       opacity: 0.45;
       cursor: not-allowed;
-      background: rgba(255,255,255,0.06);
-      border-color: rgba(255,170,190,0.30);
+      background: transparent;
+      border-color: rgba(239,199,217,0.35);
+      box-shadow: none;
       transform: none;
     }
+    
     #addBtn:disabled:hover{
-      background: rgba(255,255,255,0.06);
+      background: transparent;
+      box-shadow: none;
     }
+
         
     /* -------- Modal -------- */
     .modalOverlay{
@@ -723,7 +742,7 @@
 
         <div class="inputRow">
           <input id="todoInput" class="input" type="text" placeholder="오늘 할 일 (Enter)…" maxlength="80" />
-          <button class="btn" id="addBtn" type="button" title="할 일 추가">+</button>
+          <button class="btn" id="addBtn" type="button" title="할 일 추가" aria-label="할 일 추가"></button>
         </div>
 
         <ul class="list" id="list"></ul>
@@ -938,6 +957,22 @@
     const listEl = document.getElementById("list");
     const inputEl = document.getElementById("todoInput");
     const addBtn = document.getElementById("addBtn");
+    
+              /* ✅ 여기 바로 아래에 추가 */
+          addBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"/>
+          </svg>
+          `;
+          
+          /* 기존 addBtn 이벤트들(예: 클릭) 아래로 그대로 */
+          addBtn.addEventListener('click', () => {
+            // ...
+          });
+    
     const countText = document.getElementById("countText");
     const clearDoneBtn = document.getElementById("clearDoneBtn");
     const resetBtn = document.getElementById("resetBtn");
