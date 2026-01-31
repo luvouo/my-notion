@@ -734,6 +734,56 @@
       }
     }
 
+/* ===== Toast overlay (A) ===== */
+.card{ position: relative; } /* 이미 relative지만 안전하게 */
+
+.toast{
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;                 /* ✅ 카드 하단에 붙임 */
+  z-index: 10;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.78);
+  border: 1px solid rgba(255,170,190,0.38);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.10);
+
+  color: rgba(30,30,30,0.78);
+  font-size: 12px;
+  line-height: 1;
+
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+
+  transition: opacity .16s ease, transform .16s ease;
+}
+
+/* ✅ 내용이 생기면 표시 */
+.toast:not(:empty){
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ✅ 아이콘(핑크 점) */
+.toast::before{
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,192,203,0.88);
+  box-shadow: 0 0 0 3px rgba(255,192,203,0.20);
+  flex: 0 0 auto;
+}
+
+
     
   </style>
 </head>
