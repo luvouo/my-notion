@@ -551,6 +551,8 @@
       position: absolute;
       left: 16px;
       bottom: 12px;
+      /* ✅ countText와 겹치지 않게 아래로 내림 */
+      transform: translateY(18px);
       z-index: 10;
 
       display: inline-flex;
@@ -574,8 +576,13 @@
     }
     .toast:not(:empty){
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(18px);
     }
+
+    .toast:not(:empty) ~ .footer #countText{
+      opacity: 0.25;
+    }
+    
     .toast::before{
       content: "";
       width: 6px;
