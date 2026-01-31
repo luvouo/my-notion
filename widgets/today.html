@@ -311,14 +311,21 @@
     }
 
     #addBtn{
-      width: 28px;
-      height: 28px;
+      height: 44px;                 /* ✅ 입력창과 동일 */
+      min-width: 44px;              /* 정사각 느낌 유지 */
       padding: 0;
+    
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 999px;   /* 동그란 + 버튼 */
+    
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1;
+    
+      border-radius: 999px;
     }
+
 
     
     /* -------- Modal -------- */
