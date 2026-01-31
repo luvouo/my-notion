@@ -150,11 +150,23 @@
       border-radius: 14px;
       padding: 11px 10px;
       outline: none;
-      color: rgba(30,30,30,0.82);
+      color: rgba(30,30,30,0.45);
       font-size: 13px;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
+
+        /* Chrome / Edge */
+    .dateInput::-webkit-datetime-edit{
+      color: rgba(30,30,30,0.45);
+    }
+    
+    /* 달력 아이콘 */
+    .dateInput::-webkit-calendar-picker-indicator{
+      filter: grayscale(1) brightness(0.55);
+      opacity: 0.8;
+    }
+    
     .dateInput:focus-visible{
       outline: none;
       box-shadow: 0 0 0 3px rgba(170,220,255,0.28);
