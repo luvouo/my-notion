@@ -393,15 +393,20 @@
     }
 
     .dateBtn{
-      width: 100%;
+      width: fit-content;      /* ✅ 내용만큼만 */
+      max-width: 100%;
+      display: block;          /* 버튼을 블록처럼 */
       text-align: left;
-      padding: 9px 9px;
-      white-space: nowrap;
+    
+      padding: 9px 10px;       /* (선택) 살짝 컴팩트 */
+      white-space: nowrap;     /* ✅ 날짜 줄바꿈 방지 */
+    
       border-radius: 12px;
       border: 1px solid rgba(0,0,0,0.06);
       background: rgba(255,255,255,0.75);
       cursor: pointer;
       margin-bottom: 8px;
+    
       font-size: 13px;
       color: rgba(30,30,30,0.85);
     }
@@ -658,6 +663,18 @@
   <script>
     const PREFIX_DAY = "soft_schedule_today_";
     const KEY_ARCHIVE = "soft_schedule_today_archive_v1";
+
+    function formatDateLabel(dateStr){
+      const d = ymdToDate(dateStr);
+      if(!d) return dateStr;
+    
+      const yy = String(d.getFullYear()).slice(-2);
+      const mm = pad2(d.getMonth() + 1);
+      const dd = pad2(d.getDate());
+      const wk = ["일","월","화","수","목","금","토"][d.getDay()];
+    
+      return `${yy}.${mm}.${dd} (${wk})`;
+    }
 
     function pad2(n){ return String(n).padStart(2,"0"); }
     function ymd(d=new Date()){
@@ -1024,7 +1041,8 @@
           btn.className = "dateBtn";
           btn.type = "button";
           btn.dataset.date = d;
-          btn.innerHTML = `${escapeHtml(d)}<small>${done}/${total} done</small>`;
+          const label = formatDateLabel(d);
+          btn.innerHTML = `${escapeHtml(label)}<small>${done}/${total}</small>`;
           datesPanel.appendChild(btn);
         }
       }
@@ -1059,7 +1077,7 @@
       pickedDate = dateStr;
       setActiveDateButton(dateStr);
 
-      pickedDateText.textContent = `선택: ${dateStr}`;
+      pickedDateText.textContent = `선택: ${formatDateLabel(dateStr)}`;
       copyPickedBtn.disabled = false;
       carryPickedBtn.disabled = false;
 
