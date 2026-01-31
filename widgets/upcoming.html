@@ -554,12 +554,21 @@
 
     /* Toast overlay */
     .toast{
-      position: absolute;
-      left: 16px;
-      bottom: 12px;
-      /* ✅ countText와 겹치지 않게 아래로 내림 */
-      transform: translateY(18px);
-      z-index: 10;
+      grid-column: 1 / -1;          /* footer 전체 폭 */
+      margin-top: -2px;             /* done 아래에 살짝 붙게 (원하면 0으로) */
+    
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    
+      color: rgba(30,30,30,0.62);
+      font-size: 12px;
+      line-height: 1;
+    
+      opacity: 0;
+      transition: opacity .14s ease;
+    }
+    .toast:not(:empty){ opacity: 1; }
 
       display: inline-flex;
       align-items: center;
