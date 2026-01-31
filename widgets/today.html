@@ -176,6 +176,23 @@
       opacity: 0.55;
       cursor: not-allowed;
     }
+    .select{
+      border: 1px solid rgba(255,170,190,0.45);
+      background: rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: rgba(30,30,30,0.80);
+      outline: none;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .select:hover{
+      border-color: rgba(255,170,190,0.70);
+      background: rgba(255,255,255,0.10);
+    }
 
     .list{
       margin:0;
@@ -494,6 +511,12 @@
           <span id="countText">0/0 done</span>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <div class="footer-actions">
+            <select id="copyMode" class="select" aria-label="Copy mode">
+            <option value="all">All</option>
+            <option value="todo">Todo only</option>
+            <option value="done">Done only</option>
+          </select>
+
           <button class="btn secondary" id="carryYesterdayBtn" type="button">Carry over</button>
           <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
           <button class="btn secondary" id="copyTodayBtn" type="button">Copy</button>
