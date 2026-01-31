@@ -180,7 +180,8 @@
       display:flex;
       align-items:center;
       gap: 10px;
-      padding: 10px 10px;
+      padding: 12px 10px;   /* ✅ 기존 10px 10px → 입력창(12px)과 통일 */
+      min-height: 44px;     /* ✅ 입력창 체감 높이와 맞추기 */
       border-radius: 14px;
       border: 1px solid rgba(255,170,190,0.30);
       background: var(--glass-2);
@@ -348,6 +349,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      margin-top: 2px; /* ✅ 위치 살짝 아래로 */
     
       /* 🔹 SVG 컬러 */
       color: #F2C6D8; /* 거의 흰 핑크 */
@@ -365,6 +367,14 @@
         background 0.2s ease,
         transform 0.15s ease;
     }
+
+    #addBtn:focus-visible{
+      outline: none;
+      background: transparent;
+      border-color: rgba(255,170,190,0.78);
+      box-shadow: 0 0 0 3px rgba(255,192,203,0.28); /* ✅ 중간 강도 */
+    }
+
     
     /* 🔹 hover: 배경 제거 + 링만 */
     #addBtn:hover{
