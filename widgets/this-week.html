@@ -1,1 +1,1257 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>This Week — Soft Schedule</title>
 
+  <style>
+    :root{
+      /* Pastel Skyblue (low saturation) */
+      --accent-1: rgba(180, 210, 235, 0.92);
+      --accent-2: rgba(165, 200, 230, 0.55);
+      --border:   rgba(160, 195, 225, 0.62);
+
+      --text:  rgba(30,30,30,0.92);
+      --muted: rgba(30,30,30,0.38);
+
+      --glass:   rgba(255,255,255,0.10);
+      --glass-2: rgba(255,255,255,0.06);
+
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --radius: 20px;
+    }
+
+    @font-face{
+      font-family: "EnterSanChaek";
+      src: url("../fonts/엔터산책10.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      background: transparent;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: var(--text);
+    }
+
+    .wrap{
+      width: min(680px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2.6vw, 16px);
+      box-sizing: border-box;
+    }
+
+    .card{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(14px, 2.8vw, 18px);
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(120% 80% at 0% 0%, rgba(180,210,235,0.22), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(165,200,230,0.18), transparent 55%);
+      pointer-events:none;
+    }
+
+    .inner{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+    }
+
+    .top{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pearl{
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: block;
+      object-fit: cover;
+      flex: 0 0 auto;
+      box-shadow: 0 0 0 2px rgba(180,210,235,0.22);
+    }
+
+    .title h1{
+      margin:0;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: clamp(15px, 3.8vw, 18px);
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      margin-left: auto;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+    }
+
+    .navBtn{
+      border: 1px solid rgba(160,195,225,0.45);
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 6px 10px;
+      cursor: pointer;
+      color: rgba(30,30,30,0.70);
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
+      -webkit-tap-highlight-color: transparent;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .navBtn:hover{
+      border-color: rgba(160,195,225,0.70);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
+    }
+    .navBtn:active{ transform: scale(0.98); }
+    .navBtn:focus-visible{
+      outline:none;
+      border-color: rgba(160,195,225,0.78);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+    }
+
+    .inputRow{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .input{
+      flex: 1 1 260px;
+      min-width: 0;
+      border: 1px solid rgba(160,195,225,0.45);
+      background: rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 12px 12px;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .input::placeholder{ color: rgba(30,30,30,0.45); }
+
+    /* day picker (Mon..Sun) */
+    .dayStrip{
+      display:flex;
+      gap: 6px;
+      flex: 0 0 auto;
+      align-items:center;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 0;
+      max-width: 100%;
+    }
+    .dayStrip::-webkit-scrollbar{ display:none; }
+
+    .dayPill{
+      border: 1px solid rgba(160,195,225,0.45);
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: rgba(30,30,30,0.70);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease, background .18s ease;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      line-height: 1;
+    }
+    .dayPill:hover{
+      border-color: rgba(160,195,225,0.70);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
+    }
+    .dayPill:active{ transform: scale(0.98); }
+    .dayPill.active{
+      border-color: rgba(160,195,225,0.85);
+      background: rgba(180,210,235,0.16);
+      box-shadow: 0 10px 26px rgba(160,195,225,0.10);
+    }
+    .dayPill:focus-visible{
+      outline:none;
+      border-color: rgba(160,195,225,0.78);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+    }
+
+    .btn{
+      flex: 0 0 auto;
+      border: 1px solid rgba(160,195,225,0.70);
+      background: rgba(180,210,235,0.18);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(30,30,30,0.85);
+      cursor: pointer;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease, box-shadow .18s ease, color .18s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      white-space: nowrap;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .btn:active{ transform: scale(0.98); }
+    .btn:hover{
+      background: rgba(180,210,235,0.24);
+      border-color: rgba(160,195,225,0.90);
+    }
+    .btn:focus-visible{
+      outline:none;
+      border-color: rgba(160,195,225,0.78);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+    }
+
+    .btn.secondary{
+      border: 1px solid rgba(160,195,225,0.45);
+      background: rgba(255,255,255,0.08);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+    .btn.secondary:disabled{
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* add button: match your + style */
+    #addBtn{
+      height: clamp(28px, 3.2vw, 32px);
+      min-width: clamp(28px, 3.2vw, 32px);
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      color: rgba(160,195,225,0.85);
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(160,195,225,0.48);
+      border-radius: 999px;
+
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      cursor: pointer;
+
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+    }
+    #addBtn:hover{
+      background: transparent;
+      border-color: rgba(160,195,225,0.70);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
+    }
+    #addBtn:active{ transform: scale(0.96); }
+    #addBtn:focus-visible{
+      outline:none;
+      background: transparent;
+      border-color: rgba(160,195,225,0.78);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+    }
+    #addBtn:disabled{
+      opacity: 0.45;
+      cursor: not-allowed;
+      background: transparent;
+      border-color: rgba(160,195,225,0.25);
+      box-shadow: none;
+      transform: none;
+    }
+
+    @media (pointer: coarse){
+      #addBtn{ position: relative; }
+      #addBtn::after{
+        content:"";
+        position:absolute;
+        inset:-6px;
+      }
+    }
+
+    /* sections */
+    .week{
+      display:grid;
+      gap: 10px;
+    }
+
+    .section{
+      display:grid;
+      gap: 8px;
+    }
+
+    .secHead{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 2px 2px;
+    }
+
+    .secTitle{
+      display:flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+    .secTitle strong{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: 13px;
+      letter-spacing: -0.2px;
+      color: rgba(30,30,30,0.82);
+      white-space: nowrap;
+    }
+    .secTitle span{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .list{
+      margin:0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap: 8px;
+    }
+
+    .item{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(160,195,225,0.30);
+      background: var(--glass-2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      min-width: 0;
+    }
+
+    .check{
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      border-radius: 6px;
+      border: 1.6px solid rgba(160,195,225,0.95);
+      display:grid;
+      place-items:center;
+      flex: 0 0 auto;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+    .check:hover{
+      background: rgba(180,210,235,0.14);
+      border-color: rgba(160,195,225,1);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.20);
+    }
+    .check:active{ transform: scale(0.98); }
+    .check:focus-visible{
+      outline:none;
+      background: rgba(180,210,235,0.12);
+      border-color: rgba(160,195,225,1);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+    }
+    .check svg{
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .chip{
+      flex: 0 0 auto;
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(160,195,225,0.36);
+      background: rgba(180,210,235,0.14);
+      color: rgba(30,30,30,0.62);
+      white-space: nowrap;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .chip.someday{
+      border-color: rgba(160,195,225,0.30);
+      background: rgba(255,255,255,0.08);
+      color: rgba(30,30,30,0.58);
+    }
+
+    .text{
+      flex: 1 1 auto;
+      min-width: 0;
+      line-height: 1.45;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .miniBtn{
+      flex: 0 0 auto;
+      border: 1px solid rgba(160,195,225,0.42);
+      background: rgba(255,255,255,0.06);
+      color: rgba(30,30,30,0.68);
+      border-radius: 10px;
+      padding: 6px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease, background .18s ease;
+      -webkit-tap-highlight-color: transparent;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      line-height: 1;
+    }
+    .miniBtn:hover{
+      border-color: rgba(160,195,225,0.70);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.18);
+    }
+    .miniBtn:active{ transform: scale(0.98); }
+    .miniBtn:focus-visible{
+      outline:none;
+      border-color: rgba(160,195,225,0.78);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
+    }
+
+    .del{
+      flex: 0 0 auto;
+      border: none;
+      background: transparent;
+      color: rgba(30,30,30,0.50);
+      cursor:pointer;
+      font-size: 14px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .08s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .del:hover{
+      background: rgba(180,210,235,0.14);
+      color: rgba(30,30,30,0.78);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.20);
+    }
+    .del:active{ transform: scale(0.96); }
+    .del:focus-visible{
+      outline:none;
+      background: rgba(180,210,235,0.12);
+      color: rgba(30,30,30,0.78);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+    }
+
+    .item.done{ opacity: 0.78; }
+    .item.done .text{ text-decoration: line-through; color: rgba(30,30,30,0.50); }
+    .item.done .check{
+      background: rgba(180,210,235,0.20);
+      border-color: rgba(160,195,225,1);
+    }
+    .item.done .check svg{ opacity: 1; transform: scale(1); }
+
+    .footer{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* right aligned buttons */
+    .footer-actions{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap: 8px;
+      width: 100%;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      margin-left: auto;
+      padding-left: 8px;
+      padding-right: 2px;
+      scrollbar-width: none;
+    }
+    .footer-actions::-webkit-scrollbar{ display:none; }
+    .footer-actions > .btn{ flex: 0 0 auto; }
+
+    /* Toast overlay (same structure as Today) */
+    .toast{
+      position: absolute;
+      left: 16px;
+      bottom: 12px;
+      z-index: 10;
+
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+
+      padding: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+
+      color: rgba(30,30,30,0.62);
+      font-size: 12px;
+      line-height: 1;
+
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+
+      transition: opacity .14s ease, transform .14s ease;
+    }
+    .toast:not(:empty){
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast::before{
+      content:"";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(180,210,235,0.95);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
+      flex: 0 0 auto;
+    }
+
+    @media (max-width: 360px){
+      .meta{ display:none; }
+      .btn{ width: 100%; }
+      .input{ flex-basis: 100%; }
+      .dayStrip{ width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="This Week Widget">
+      <div class="inner">
+        <div class="top">
+          <div class="title">
+            <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+            <h1>This Week</h1>
+          </div>
+
+          <div class="meta">
+            <button class="navBtn" id="prevWeekBtn" type="button" aria-label="이전 주">‹</button>
+            <span id="weekMeta"></span>
+            <button class="navBtn" id="nextWeekBtn" type="button" aria-label="다음 주">›</button>
+          </div>
+        </div>
+
+        <!-- input -->
+        <div class="inputRow">
+          <input id="taskInput" class="input" type="text" placeholder="이번 주 할 일…" maxlength="80" />
+          <div class="dayStrip" id="dayStrip" aria-label="요일 선택"></div>
+
+          <button class="btn" id="fromTodayBtn" type="button" title="Today에서 오늘 미완료 가져오기">From Today</button>
+          <button class="btn" id="pullBtn" type="button" title="다음 주 작업을 이번 주로 당기기">Pull</button>
+          <button class="btn" id="pushBtn" type="button" title="이번 주 미완료를 다음 주로 미루기">Push</button>
+
+          <button id="addBtn" type="button" aria-label="할 일 추가" title="할 일 추가"></button>
+        </div>
+
+        <!-- week sections -->
+        <div class="week" id="weekSections"></div>
+
+        <div class="footer">
+          <span id="countText">0/0 done</span>
+
+          <div class="footer-actions">
+            <button class="btn secondary" id="copyBtn" type="button">Copy</button>
+            <button class="btn secondary" id="clearDoneBtn" type="button">Clear done</button>
+          </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================
+       Storage keys
+    ========================= */
+    const KEY_PREFIX = "soft_schedule_this_week_";   // per-week storage
+    const KEY_ARCHIVE = "soft_schedule_this_week_archive_v1"; // reserved (not used yet)
+
+    // Today widget storage prefix (your existing Today)
+    const TODAY_PREFIX = "soft_schedule_today_"; // + YYYY.MM.DD
+
+    /* =========================
+       Date helpers (YYYY.MM.DD)
+    ========================= */
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function ymd(d=new Date()){
+      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+    }
+    function parseYmd(str){
+      const m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(str);
+      if(!m) return null;
+      return { y:+m[1], m:+m[2], d:+m[3] };
+    }
+    function ymdToDate(str){
+      const p = parseYmd(str);
+      if(!p) return null;
+      return new Date(p.y, p.m-1, p.d);
+    }
+    function addDays(dateObj, days){
+      const d = new Date(dateObj);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
+
+    // Monday-start week: 0=Mon .. 6=Sun
+    function getWeekStart(dateObj){
+      const d = new Date(dateObj);
+      const js = d.getDay(); // 0=Sun..6=Sat
+      const mondayIndex = (js + 6) % 7; // Sun->6, Mon->0, Tue->1...
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate() - mondayIndex);
+      return d;
+    }
+    function weekRangeLabel(weekStart){
+      const ws = new Date(weekStart);
+      const we = addDays(ws, 6);
+      return `${ymd(ws)} – ${ymd(we)}`;
+    }
+
+    /* =========================
+       UI helpers
+    ========================= */
+    function showToast(msg){
+      toast.textContent = msg;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.textContent = "", 1600);
+    }
+
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try{
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          return ok;
+        }catch(err){
+          document.body.removeChild(ta);
+          return false;
+        }
+      }
+    }
+
+    function formatForCopy(weekStartStr, sections){
+      const lines = [];
+      lines.push(`[This Week | ${weekStartStr}]`);
+      for(const sec of sections){
+        lines.push(`\n${sec.title}`);
+        for(const it of sec.items){
+          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+        }
+      }
+      return lines.join("\n");
+    }
+
+    /* =========================
+       State + DOM
+    ========================= */
+    const weekMeta = document.getElementById("weekMeta");
+    const prevWeekBtn = document.getElementById("prevWeekBtn");
+    const nextWeekBtn = document.getElementById("nextWeekBtn");
+
+    const taskInput = document.getElementById("taskInput");
+    const dayStrip = document.getElementById("dayStrip");
+    const addBtn = document.getElementById("addBtn");
+
+    const fromTodayBtn = document.getElementById("fromTodayBtn");
+    const pullBtn = document.getElementById("pullBtn");
+    const pushBtn = document.getElementById("pushBtn");
+
+    const weekSections = document.getElementById("weekSections");
+    const countText = document.getElementById("countText");
+    const copyBtn = document.getElementById("copyBtn");
+    const clearDoneBtn = document.getElementById("clearDoneBtn");
+
+    const toast = document.getElementById("toast");
+
+    // plus icon
+    addBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+        <path d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"/>
+      </svg>
+    `;
+
+    // week navigation
+    const baseToday = new Date();
+    let weekOffset = 0; // 0 = this week
+    let selectedDayIndex = 0; // default Monday
+    let state = []; // items for current week
+
+    // item shape: { id, text, done, dateStr|null }
+    function loadWeek(weekStartStr){
+      try{
+        const raw = localStorage.getItem(KEY_PREFIX + weekStartStr);
+        if(!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      }catch(e){ return []; }
+    }
+    function saveWeek(weekStartStr, items){
+      localStorage.setItem(KEY_PREFIX + weekStartStr, JSON.stringify(items));
+    }
+
+    function getCurrentWeekStart(){
+      const ws = getWeekStart(addDays(baseToday, weekOffset * 7));
+      return ws;
+    }
+    function getWeekStartStr(){
+      return ymd(getCurrentWeekStart());
+    }
+    function getDayStrFromIndex(weekStartDate, idx){
+      return ymd(addDays(weekStartDate, idx));
+    }
+
+    function syncAddButtonState(){
+      const hasText = (taskInput.value || "").trim().length > 0;
+      addBtn.disabled = !hasText;
+    }
+    taskInput.addEventListener("input", syncAddButtonState);
+
+    function buildDayStrip(){
+      const ws = getCurrentWeekStart();
+      const labels = ["M","T","W","T","F","S","S"];
+      dayStrip.innerHTML = "";
+      for(let i=0;i<7;i++){
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "dayPill" + (i === selectedDayIndex ? " active" : "");
+        const dStr = getDayStrFromIndex(ws, i);
+        btn.dataset.idx = String(i);
+        btn.title = dStr;
+        btn.textContent = labels[i];
+        btn.addEventListener("click", () => {
+          selectedDayIndex = i;
+          buildDayStrip();
+        });
+        dayStrip.appendChild(btn);
+      }
+    }
+
+    function render(){
+      const ws = getCurrentWeekStart();
+      const wsStr = ymd(ws);
+
+      // meta label
+      weekMeta.textContent = weekRangeLabel(ws);
+
+      // "From Today" only makes sense for the real current week
+      const realWsStr = ymd(getWeekStart(baseToday));
+      fromTodayBtn.disabled = (wsStr !== realWsStr);
+
+      // Build sections Mon..Sun + Someday
+      const labelsFull = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+      const sections = [];
+
+      for(let i=0;i<7;i++){
+        const dateStr = getDayStrFromIndex(ws, i);
+        const items = state.filter(it => it.dateStr === dateStr);
+        sections.push({
+          key: dateStr,
+          title: `${labelsFull[i]} · ${dateStr}`,
+          items
+        });
+      }
+
+      // Someday (no date)
+      const somedayItems = state.filter(it => !it.dateStr);
+      sections.push({
+        key: "someday",
+        title: "Someday",
+        items: somedayItems
+      });
+
+      weekSections.innerHTML = "";
+
+      for(const sec of sections){
+        // skip empty sections except someday if empty too (keep it hidden)
+        if(sec.items.length === 0) continue;
+
+        const box = document.createElement("div");
+        box.className = "section";
+
+        const head = document.createElement("div");
+        head.className = "secHead";
+
+        const left = document.createElement("div");
+        left.className = "secTitle";
+
+        const strong = document.createElement("strong");
+        strong.textContent = sec.key === "someday" ? "Someday" : sec.title.split(" · ")[0];
+
+        const span = document.createElement("span");
+        span.textContent = sec.key === "someday" ? "Date optional" : sec.title.split(" · ")[1];
+
+        left.appendChild(strong);
+        left.appendChild(span);
+
+        const right = document.createElement("div");
+        right.style.display = "flex";
+        right.style.gap = "8px";
+
+        if(sec.key !== "someday"){
+          // per-section quick actions (optional but handy)
+          const toNext = document.createElement("button");
+          toNext.type = "button";
+          toNext.className = "miniBtn";
+          toNext.textContent = "Next";
+          toNext.title = "이 날짜의 미완료를 다음 주로";
+          toNext.addEventListener("click", () => moveDateItemsToNextWeek(sec.key));
+          right.appendChild(toNext);
+        }
+
+        head.appendChild(left);
+        head.appendChild(right);
+
+        const ul = document.createElement("ul");
+        ul.className = "list";
+
+        for(const it of sec.items){
+          const li = document.createElement("li");
+          li.className = "item" + (it.done ? " done" : "");
+
+          const chipHtml = it.dateStr
+            ? `<span class="chip">${it.dateStr}</span>`
+            : `<span class="chip someday">Someday</span>`;
+
+          li.innerHTML = `
+            <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            ${chipHtml}
+            <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+            ${it.dateStr ? `<button class="miniBtn" type="button" data-next="${it.id}" title="다음 주로 미루기">Next</button>` : ``}
+            <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
+          `;
+
+          ul.appendChild(li);
+        }
+
+        box.appendChild(head);
+        box.appendChild(ul);
+        weekSections.appendChild(box);
+      }
+
+      // count
+      const total = state.length;
+      const done = state.filter(x => x.done).length;
+      countText.textContent = `${done}/${total} done`;
+    }
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+    }
+
+    function addItem(text){
+      const t = (text || "").trim();
+      if(!t) return;
+
+      const ws = getCurrentWeekStart();
+      const dayStr = getDayStrFromIndex(ws, selectedDayIndex);
+
+      state.unshift({
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+        text: t,
+        done: false,
+        dateStr: dayStr // This Week 기본은 요일 지정 날짜
+      });
+
+      saveWeek(getWeekStartStr(), state);
+      render();
+      showToast("이번 주에 추가했어.");
+    }
+
+    function toggleItem(id){
+      state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+      saveWeek(getWeekStartStr(), state);
+      render();
+    }
+
+    function deleteItem(id){
+      state = state.filter(it => it.id !== id);
+      saveWeek(getWeekStartStr(), state);
+      render();
+    }
+
+    function clearDone(){
+      const before = state.length;
+      state = state.filter(it => !it.done);
+      saveWeek(getWeekStartStr(), state);
+      render();
+      const removed = before - state.length;
+      showToast(removed ? `완료 ${removed}개 삭제했어.` : "삭제할 완료가 없어.");
+    }
+
+    // Move: a specific date's unfinished items to next week (date +7)
+    function moveDateItemsToNextWeek(dateStr){
+      const ws = getCurrentWeekStart();
+      const wsStr = ymd(ws);
+      const nextWs = addDays(ws, 7);
+      const nextWsStr = ymd(nextWs);
+
+      const nextState = loadWeek(nextWsStr);
+
+      const moving = [];
+      const staying = [];
+
+      for(const it of state){
+        if(it.dateStr === dateStr && !it.done){
+          const dt = ymdToDate(it.dateStr);
+          const nd = dt ? ymd(addDays(dt, 7)) : it.dateStr;
+          moving.push({ ...it, dateStr: nd });
+        }else{
+          staying.push(it);
+        }
+      }
+
+      if(moving.length === 0){
+        showToast("미완료가 없어.");
+        return;
+      }
+
+      // de-dup by text+date
+      const existing = new Set(nextState.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
+      const toAdd = [];
+      for(const it of moving){
+        const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
+        if(existing.has(key)) continue;
+        toAdd.push(it);
+      }
+
+      const merged = [...toAdd, ...nextState];
+      saveWeek(nextWsStr, merged);
+
+      state = staying;
+      saveWeek(wsStr, state);
+      render();
+
+      showToast(`다음 주로 ${toAdd.length}개 미뤘어.`);
+    }
+
+    // Push: this week unfinished -> next week (date +7, someday stays someday)
+    function pushToNextWeek(){
+      const ws = getCurrentWeekStart();
+      const wsStr = ymd(ws);
+      const nextWs = addDays(ws, 7);
+      const nextWsStr = ymd(nextWs);
+
+      const nextState = loadWeek(nextWsStr);
+
+      const moving = [];
+      const staying = [];
+
+      for(const it of state){
+        if(!it.done){
+          if(it.dateStr){
+            const dt = ymdToDate(it.dateStr);
+            const nd = dt ? ymd(addDays(dt, 7)) : it.dateStr;
+            moving.push({ ...it, dateStr: nd });
+          }else{
+            // someday -> keep someday
+            moving.push({ ...it });
+          }
+        }else{
+          staying.push(it);
+        }
+      }
+
+      if(moving.length === 0){
+        showToast("미완료가 없어.");
+        return;
+      }
+
+      const existing = new Set(nextState.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
+      const toAdd = [];
+      for(const it of moving){
+        const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
+        if(existing.has(key)) continue;
+        toAdd.push(it);
+      }
+
+      saveWeek(nextWsStr, [...toAdd, ...nextState]);
+
+      state = staying; // keep done items only
+      saveWeek(wsStr, state);
+      render();
+
+      showToast(`다음 주로 ${toAdd.length}개 미뤘어.`);
+    }
+
+    // Pull: next week unfinished -> this week (date -7, someday stays someday)
+    function pullFromNextWeek(){
+      const ws = getCurrentWeekStart();
+      const wsStr = ymd(ws);
+      const nextWs = addDays(ws, 7);
+      const nextWsStr = ymd(nextWs);
+
+      const nextState = loadWeek(nextWsStr);
+
+      const moving = [];
+      const stayingNext = [];
+
+      for(const it of nextState){
+        if(!it.done){
+          if(it.dateStr){
+            const dt = ymdToDate(it.dateStr);
+            const nd = dt ? ymd(addDays(dt, -7)) : it.dateStr;
+            moving.push({ ...it, dateStr: nd });
+          }else{
+            moving.push({ ...it });
+          }
+        }else{
+          stayingNext.push(it);
+        }
+      }
+
+      if(moving.length === 0){
+        showToast("당겨올 미완료가 없어.");
+        return;
+      }
+
+      const existing = new Set(state.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
+      const toAdd = [];
+      for(const it of moving){
+        const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
+        if(existing.has(key)) continue;
+        toAdd.push(it);
+      }
+
+      state = [...toAdd, ...state];
+      saveWeek(wsStr, state);
+
+      saveWeek(nextWsStr, stayingNext);
+      render();
+
+      showToast(`이번 주로 ${toAdd.length}개 당겼어.`);
+    }
+
+    // From Today: import today's unfinished from Today widget into this week's "today date"
+    function fromToday(){
+      const wsStr = getWeekStartStr();
+      const realWsStr = ymd(getWeekStart(baseToday));
+      if(wsStr !== realWsStr){
+        showToast("현재 주에서만 가능해.");
+        return;
+      }
+
+      const todayStr = ymd(new Date());
+      const key = TODAY_PREFIX + todayStr;
+      let todayItems = [];
+      try{
+        const raw = localStorage.getItem(key);
+        if(raw) todayItems = JSON.parse(raw) || [];
+        if(!Array.isArray(todayItems)) todayItems = [];
+      }catch(e){ todayItems = []; }
+
+      const unfinished = todayItems.filter(x => x && !x.done && (x.text||"").trim());
+      if(unfinished.length === 0){
+        showToast("오늘 미완료가 없어.");
+        return;
+      }
+
+      const existing = new Set(state.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
+      const toAdd = [];
+      for(const it of unfinished){
+        const text = (it.text||"").trim();
+        const key2 = `${text}|${todayStr}`;
+        if(existing.has(key2)) continue;
+        toAdd.push({
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+          text,
+          done: false,
+          dateStr: todayStr
+        });
+      }
+
+      if(toAdd.length === 0){
+        showToast("이미 이번 주에 있어.");
+        return;
+      }
+
+      state = [...toAdd, ...state];
+      saveWeek(getWeekStartStr(), state);
+      render();
+      showToast(`오늘에서 ${toAdd.length}개 가져왔어.`);
+    }
+
+    /* =========================
+       Events
+    ========================= */
+    function mount(){
+      buildDayStrip();
+
+      // load initial week
+      const wsStr = getWeekStartStr();
+      state = loadWeek(wsStr);
+
+      // select day pill = today index (Mon..Sun) when on current week
+      const ws = getCurrentWeekStart();
+      const today = new Date();
+      const wsReal = getWeekStart(today);
+      if(ymd(ws) === ymd(wsReal)){
+        const js = today.getDay(); // 0 Sun..6 Sat
+        selectedDayIndex = (js + 6) % 7; // Mon=0..Sun=6
+        buildDayStrip();
+      }
+
+      // plus button
+      syncAddButtonState();
+      addBtn.addEventListener("click", () => {
+        addItem(taskInput.value);
+        taskInput.value = "";
+        taskInput.focus();
+        syncAddButtonState();
+      });
+
+      taskInput.addEventListener("keydown", (e) => {
+        if(e.key === "Enter"){
+          e.preventDefault();
+          if(!addBtn.disabled) addBtn.click();
+        }
+      });
+
+      dayStrip.addEventListener("keydown", (e) => {
+        // optional: left/right to move selection
+      });
+
+      // list actions (toggle/delete/next)
+      weekSections.addEventListener("click", (e) => {
+        const check = e.target.closest(".check");
+        const del = e.target.closest("[data-del]");
+        const next = e.target.closest("[data-next]");
+
+        if(check){
+          toggleItem(check.dataset.id);
+        }else if(del){
+          deleteItem(del.dataset.del);
+        }else if(next){
+          const id = next.dataset.next;
+          const it = state.find(x => x.id === id);
+          if(it && it.dateStr){
+            moveDateItemsToNextWeek(it.dateStr);
+          }
+        }
+      });
+
+      weekSections.addEventListener("keydown", (e) => {
+        const check = e.target.closest(".check");
+        if(!check) return;
+        if(e.key === "Enter" || e.key === " "){
+          e.preventDefault();
+          toggleItem(check.dataset.id);
+        }
+      });
+
+      clearDoneBtn.addEventListener("click", clearDone);
+
+      copyBtn.addEventListener("click", async () => {
+        const ws = getCurrentWeekStart();
+        const wsStr = ymd(ws);
+
+        const labelsFull = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+        const sections = [];
+        for(let i=0;i<7;i++){
+          const dateStr = ymd(addDays(ws, i));
+          const items = state.filter(it => it.dateStr === dateStr);
+          if(items.length) sections.push({ title: `${labelsFull[i]} · ${dateStr}`, items });
+        }
+        const somedayItems = state.filter(it => !it.dateStr);
+        if(somedayItems.length) sections.push({ title: "Someday", items: somedayItems });
+
+        const text = formatForCopy(wsStr, sections);
+        const ok = await copyToClipboard(text);
+        showToast(ok ? "복사했어." : "복사 실패 (브라우저 권한 확인)");
+      });
+
+      pushBtn.addEventListener("click", pushToNextWeek);
+      pullBtn.addEventListener("click", pullFromNextWeek);
+      fromTodayBtn.addEventListener("click", fromToday);
+
+      // week nav
+      prevWeekBtn.addEventListener("click", () => {
+        weekOffset -= 1;
+        const wsStr = getWeekStartStr();
+        state = loadWeek(wsStr);
+        buildDayStrip();
+        render();
+      });
+
+      nextWeekBtn.addEventListener("click", () => {
+        weekOffset += 1;
+        const wsStr = getWeekStartStr();
+        state = loadWeek(wsStr);
+        buildDayStrip();
+        render();
+      });
+
+      render();
+    }
+
+    mount();
+  </script>
+</body>
+</html>
