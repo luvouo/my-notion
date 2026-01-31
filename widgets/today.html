@@ -180,8 +180,8 @@
       display:flex;
       align-items:center;
       gap: 10px;
-      padding: 12px 10px;   /* ✅ 기존 10px 10px → 입력창(12px)과 통일 */
-      min-height: 44px;     /* ✅ 입력창 체감 높이와 맞추기 */
+      padding: 8px 10px; 
+      min-height: unset;
       border-radius: 14px;
       border: 1px solid rgba(255,170,190,0.30);
       background: var(--glass-2);
@@ -193,6 +193,7 @@
     .check{
       width: 18px;
       height: 18px;
+      margin-top: 1px; /* ✅ 시각적 중심 맞춤 */
       border-radius: 6px;
       border: 1.6px solid rgba(255,170,190,0.95);
       display:grid;
@@ -213,6 +214,7 @@
     .text{
       flex: 1 1 auto;
       min-width: 0;
+      line-height: 1.45;  /* ✅ 입력창 텍스트와 시각적 높이 일치 */
       font-size: 14px;
       white-space: nowrap;
       overflow: hidden;
