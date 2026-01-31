@@ -173,6 +173,25 @@
       border-color: rgba(140,205,255,0.78);
     }
 
+    .dateWrap{
+      position: relative;
+      flex: 0 0 auto;
+    }
+    
+    .dateHint{
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      font-size: 13px;
+      color: rgba(30,30,30,0.45);
+    }
+    .dateWrap.hasValue .dateHint{
+      display: none;
+    }
+    
+
     .btn{
       flex: 0 0 auto;
       border: 1px solid rgba(140,205,255,0.70);
@@ -581,6 +600,15 @@
     function saveTodayList(key, items){
       localStorage.setItem(key, JSON.stringify(items));
     }
+
+    function syncDateHint(){
+      const wrap = dateInput.closest(".dateWrap");
+      if(dateInput.value) wrap.classList.add("hasValue");
+      else wrap.classList.remove("hasValue");
+    }
+    dateInput.addEventListener("change", syncDateHint);
+    syncDateHint();
+    
 
     /* ===== DOM ===== */
     const metaText = document.getElementById("metaText");
