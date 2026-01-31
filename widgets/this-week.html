@@ -7,15 +7,15 @@
 
   <style>
     :root{
-      /* Pastel Skyblue (low saturation) */
+      /* Pastel Skyblue (slightly desaturated) */
       --accent-1: rgba(180, 210, 235, 0.92);
-      --accent-2: rgba(165, 200, 230, 0.55);
+      --accent-2: rgba(160, 195, 225, 0.52);
       --border:   rgba(160, 195, 225, 0.62);
 
-      --text:  rgba(30,30,30,0.92);
+      --text: rgba(30,30,30,0.92);
       --muted: rgba(30,30,30,0.38);
 
-      --glass:   rgba(255,255,255,0.10);
+      --glass: rgba(255,255,255,0.10);
       --glass-2: rgba(255,255,255,0.06);
 
       --shadow: 0 10px 30px rgba(0,0,0,0.06);
@@ -64,7 +64,7 @@
       inset:-2px;
       background:
         radial-gradient(120% 80% at 0% 0%, rgba(180,210,235,0.22), transparent 55%),
-        radial-gradient(80% 80% at 100% 20%, rgba(165,200,230,0.18), transparent 55%);
+        radial-gradient(80% 80% at 100% 20%, rgba(160,195,225,0.16), transparent 55%);
       pointer-events:none;
     }
 
@@ -97,7 +97,7 @@
       display: block;
       object-fit: cover;
       flex: 0 0 auto;
-      box-shadow: 0 0 0 2px rgba(180,210,235,0.22);
+      box-shadow: 0 0 0 2px rgba(180,210,235,0.18);
     }
 
     .title h1{
@@ -116,36 +116,11 @@
       color: var(--muted);
       white-space: nowrap;
       margin-left: auto;
-      display:flex;
-      align-items:center;
-      gap: 8px;
-    }
-
-    .navBtn{
-      border: 1px solid rgba(160,195,225,0.45);
-      background: rgba(255,255,255,0.08);
-      border-radius: 999px;
-      padding: 6px 10px;
-      cursor: pointer;
-      color: rgba(30,30,30,0.70);
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
-      -webkit-tap-highlight-color: transparent;
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      font-size: 12px;
-      line-height: 1;
-    }
-    .navBtn:hover{
-      border-color: rgba(160,195,225,0.70);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
-    }
-    .navBtn:active{ transform: scale(0.98); }
-    .navBtn:focus-visible{
-      outline:none;
-      border-color: rgba(160,195,225,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
     }
 
+    /* ===== Input row ===== */
     .inputRow{
       display:flex;
       gap: 10px;
@@ -168,51 +143,6 @@
     }
     .input::placeholder{ color: rgba(30,30,30,0.45); }
 
-    /* day picker (Mon..Sun) */
-    .dayStrip{
-      display:flex;
-      gap: 6px;
-      flex: 0 0 auto;
-      align-items:center;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      padding: 2px 0;
-      max-width: 100%;
-    }
-    .dayStrip::-webkit-scrollbar{ display:none; }
-
-    .dayPill{
-      border: 1px solid rgba(160,195,225,0.45);
-      background: rgba(255,255,255,0.08);
-      border-radius: 999px;
-      padding: 8px 10px;
-      font-size: 12px;
-      color: rgba(30,30,30,0.70);
-      cursor: pointer;
-      white-space: nowrap;
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease, background .18s ease;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      line-height: 1;
-    }
-    .dayPill:hover{
-      border-color: rgba(160,195,225,0.70);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
-    }
-    .dayPill:active{ transform: scale(0.98); }
-    .dayPill.active{
-      border-color: rgba(160,195,225,0.85);
-      background: rgba(180,210,235,0.16);
-      box-shadow: 0 10px 26px rgba(160,195,225,0.10);
-    }
-    .dayPill:focus-visible{
-      outline:none;
-      border-color: rgba(160,195,225,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
-    }
-
     .btn{
       flex: 0 0 auto;
       border: 1px solid rgba(160,195,225,0.70);
@@ -222,7 +152,7 @@
       font-size: 13px;
       color: rgba(30,30,30,0.85);
       cursor: pointer;
-      transition: transform .08s ease, background .2s ease, border-color .2s ease, box-shadow .18s ease, color .18s ease;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease, box-shadow .18s ease;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       white-space: nowrap;
@@ -231,13 +161,14 @@
     }
     .btn:active{ transform: scale(0.98); }
     .btn:hover{
-      background: rgba(180,210,235,0.24);
+      background: rgba(180,210,235,0.26);
       border-color: rgba(160,195,225,0.90);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.18);
     }
     .btn:focus-visible{
       outline:none;
-      border-color: rgba(160,195,225,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+      border-color: rgba(160,195,225,0.90);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
     }
 
     .btn.secondary{
@@ -246,13 +177,20 @@
       padding: 10px 12px;
       border-radius: 12px;
       font-size: 12px;
+      box-shadow: none;
     }
-    .btn.secondary:disabled{
-      opacity: 0.55;
-      cursor: not-allowed;
+    .btn.secondary:hover{
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(160,195,225,0.70);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.20);
+    }
+    .btn.secondary:focus-visible{
+      outline:none;
+      border-color: rgba(160,195,225,0.78);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
     }
 
-    /* add button: match your + style */
+    /* Add button (plus) */
     #addBtn{
       height: clamp(28px, 3.2vw, 32px);
       min-width: clamp(28px, 3.2vw, 32px);
@@ -261,27 +199,27 @@
       align-items: center;
       justify-content: center;
 
-      color: rgba(160,195,225,0.85);
-      background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(160,195,225,0.48);
+      color: rgba(160,195,225,0.95);
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(160,195,225,0.40);
       border-radius: 999px;
 
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       cursor: pointer;
 
-      transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+      transition: box-shadow .2s ease, border-color .2s ease, background .2s ease, transform .15s ease;
     }
     #addBtn:hover{
       background: transparent;
-      border-color: rgba(160,195,225,0.70);
+      border-color: rgba(160,195,225,0.60);
       box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
     }
     #addBtn:active{ transform: scale(0.96); }
     #addBtn:focus-visible{
-      outline:none;
+      outline: none;
       background: transparent;
       border-color: rgba(160,195,225,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.24);
     }
     #addBtn:disabled{
       opacity: 0.45;
@@ -291,25 +229,23 @@
       box-shadow: none;
       transform: none;
     }
-
-    @media (pointer: coarse){
-      #addBtn{ position: relative; }
-      #addBtn::after{
-        content:"";
-        position:absolute;
-        inset:-6px;
-      }
+    #addBtn:disabled:hover{
+      background: transparent;
+      box-shadow: none;
     }
 
-    /* sections */
-    .week{
-      display:grid;
+    /* ===== Sections ===== */
+    .sections{
+      display: grid;
       gap: 10px;
+      margin-top: 2px;
     }
 
     .section{
-      display:grid;
-      gap: 8px;
+      border: 1px solid rgba(160,195,225,0.18);
+      background: rgba(255,255,255,0.04);
+      border-radius: 16px;
+      overflow: hidden;
     }
 
     .secHead{
@@ -317,68 +253,76 @@
       align-items:center;
       justify-content: space-between;
       gap: 10px;
-      padding: 2px 2px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(160,195,225,0.12);
+      cursor: pointer;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      background: rgba(255,255,255,0.03);
     }
 
     .secTitle{
       display:flex;
       align-items: baseline;
-      gap: 8px;
+      gap: 10px;
       min-width: 0;
-    }
-    .secTitle strong{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      font-size: 13px;
-      letter-spacing: -0.2px;
-      color: rgba(30,30,30,0.82);
-      white-space: nowrap;
     }
-    .secTitle span{
+
+    .secTitle .name{
+      font-size: 13px;
+      color: rgba(30,30,30,0.86);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+
+    .secTitle .date{
       font-size: 12px;
-      color: var(--muted);
+      color: rgba(30,30,30,0.45);
       white-space: nowrap;
     }
 
-    /* ===== Section Collapse ===== */
-    .section.collapsed .list{ display:none; }
-    .section.collapsed .secHead{ opacity: 0.92; }
-    
-    .secHead{
-      cursor: pointer;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    .secToggle{
+    .secRight{
+      display:flex;
+      align-items:center;
+      gap: 8px;
       flex: 0 0 auto;
-      border: 1px solid rgba(160,195,225,0.42);
+    }
+
+    .miniBtn{
+      border: 1px solid rgba(160,195,225,0.35);
       background: rgba(255,255,255,0.06);
-      color: rgba(30,30,30,0.68);
+      color: rgba(30,30,30,0.70);
       border-radius: 10px;
       padding: 6px 8px;
       font-size: 12px;
       line-height: 1;
       cursor: pointer;
       transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease, background .18s ease;
+      -webkit-tap-highlight-color: transparent;
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
-    .secToggle:hover{
-      border-color: rgba(160,195,225,0.70);
+    .miniBtn:hover{
+      border-color: rgba(160,195,225,0.60);
       box-shadow: 0 0 0 3px rgba(180,210,235,0.18);
     }
-    .secToggle:active{ transform: scale(0.98); }
-    .secToggle:focus-visible{
+    .miniBtn:active{ transform: scale(0.98); }
+    .miniBtn:focus-visible{
       outline:none;
-      border-color: rgba(160,195,225,0.78);
+      border-color: rgba(160,195,225,0.75);
       box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
     }
 
-    
+    /* collapse toggle */
+    .section.collapsed .listWrap{ display:none; }
+
+    /* ===== List items ===== */
     .list{
       margin:0;
-      padding:0;
+      padding: 10px 10px 12px 10px;
       list-style:none;
       display:grid;
       gap: 8px;
@@ -390,7 +334,7 @@
       gap: 10px;
       padding: 8px 10px;
       border-radius: 14px;
-      border: 1px solid rgba(160,195,225,0.30);
+      border: 1px solid rgba(160,195,225,0.22);
       background: var(--glass-2);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -411,16 +355,16 @@
       transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
     }
     .check:hover{
-      background: rgba(180,210,235,0.14);
+      background: rgba(180,210,235,0.12);
       border-color: rgba(160,195,225,1);
       box-shadow: 0 0 0 3px rgba(180,210,235,0.20);
     }
     .check:active{ transform: scale(0.98); }
     .check:focus-visible{
       outline:none;
-      background: rgba(180,210,235,0.12);
+      background: rgba(180,210,235,0.10);
       border-color: rgba(160,195,225,1);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.26);
     }
     .check svg{
       width: 12px;
@@ -428,24 +372,6 @@
       opacity: 0;
       transform: scale(0.9);
       transition: opacity .18s ease, transform .18s ease;
-    }
-
-    .chip{
-      flex: 0 0 auto;
-      font-size: 11px;
-      padding: 4px 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(160,195,225,0.36);
-      background: rgba(180,210,235,0.14);
-      color: rgba(30,30,30,0.62);
-      white-space: nowrap;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-    .chip.someday{
-      border-color: rgba(160,195,225,0.30);
-      background: rgba(255,255,255,0.08);
-      color: rgba(30,30,30,0.58);
     }
 
     .text{
@@ -458,55 +384,31 @@
       text-overflow: ellipsis;
     }
 
-    .miniBtn{
-      flex: 0 0 auto;
-      border: 1px solid rgba(160,195,225,0.42);
-      background: rgba(255,255,255,0.06);
-      color: rgba(30,30,30,0.68);
-      border-radius: 10px;
-      padding: 6px 8px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease, background .18s ease;
-      -webkit-tap-highlight-color: transparent;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      line-height: 1;
-    }
-    .miniBtn:hover{
-      border-color: rgba(160,195,225,0.70);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.18);
-    }
-    .miniBtn:active{ transform: scale(0.98); }
-    .miniBtn:focus-visible{
-      outline:none;
-      border-color: rgba(160,195,225,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
-    }
-
     .del{
       flex: 0 0 auto;
       border: none;
       background: transparent;
-      color: rgba(30,30,30,0.50);
+      color: rgba(30,30,30,0.55);
       cursor:pointer;
       font-size: 14px;
       padding: 6px 8px;
       border-radius: 10px;
       transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .08s ease;
       -webkit-tap-highlight-color: transparent;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
     .del:hover{
-      background: rgba(180,210,235,0.14);
+      background: rgba(180,210,235,0.12);
       color: rgba(30,30,30,0.78);
       box-shadow: 0 0 0 3px rgba(180,210,235,0.20);
     }
     .del:active{ transform: scale(0.96); }
     .del:focus-visible{
       outline:none;
-      background: rgba(180,210,235,0.12);
+      background: rgba(180,210,235,0.10);
       color: rgba(30,30,30,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.26);
     }
 
     .item.done{ opacity: 0.78; }
@@ -517,50 +419,29 @@
     }
     .item.done .check svg{ opacity: 1; transform: scale(1); }
 
+    /* ===== Footer ===== */
     .footer{
       display:flex;
       justify-content: space-between;
-      align-items:center;
+      align-items:flex-start;
       gap: 10px;
       flex-wrap: wrap;
       font-size: 12px;
       color: var(--muted);
     }
 
-    /* right aligned buttons */
-    .footer-actions{
+    .countWrap{
       display:flex;
-      justify-content:flex-end;
-      align-items:center;
-      gap: 8px;
-      width: 100%;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      margin-left: auto;
-      padding-left: 8px;
-      padding-right: 2px;
-      scrollbar-width: none;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 120px;
     }
-    .footer-actions::-webkit-scrollbar{ display:none; }
-    .footer-actions > .btn{ flex: 0 0 auto; }
 
-    /* Toast overlay (same structure as Today) */
+    /* Toast (left bottom, separated from count) */
     .toast{
-      position: absolute;
-      left: 16px;
-      bottom: 12px;
-      z-index: 10;
-
       display: inline-flex;
       align-items: center;
       gap: 8px;
-
-      padding: 0;
-      background: transparent;
-      border: none;
-      box-shadow: none;
 
       color: rgba(30,30,30,0.62);
       font-size: 12px;
@@ -571,29 +452,43 @@
       pointer-events: none;
 
       transition: opacity .14s ease, transform .14s ease;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
     .toast:not(:empty){
       opacity: 1;
       transform: translateY(0);
     }
     .toast::before{
-      content:"";
+      content: "";
       width: 6px;
       height: 6px;
       border-radius: 999px;
-      background: rgba(180,210,235,0.95);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
+      background: rgba(180,210,235,0.90);
+      box-shadow: 0 0 0 3px rgba(180,210,235,0.16);
       flex: 0 0 auto;
     }
 
-    @media (max-width: 360px){
-      .meta{ display:none; }
-      .btn{ width: 100%; }
-      .input{ flex-basis: 100%; }
-      .dayStrip{ width: 100%; }
-    }
+    .footer-actions{
+      display:flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
 
-    /* ===== Modal (reuse Today-like) ===== */
+      margin-left: auto;
+      padding-left: 8px;
+      padding-right: 2px;
+
+      scrollbar-width: none;
+    }
+    .footer-actions::-webkit-scrollbar{ display:none; }
+    .footer-actions > .btn{ flex: 0 0 auto; }
+
+    /* ===== Modal ===== */
     .modalOverlay{
       position: fixed;
       inset: 0;
@@ -606,7 +501,7 @@
       overflow: hidden;
     }
     .modalOverlay.open{ display:flex; }
-    
+
     .modal{
       width: min(820px, 100%);
       max-height: calc(100vh - 20px);
@@ -620,7 +515,7 @@
       box-shadow: 0 18px 50px rgba(0,0,0,0.18);
       overflow: hidden;
     }
-    
+
     .modalHeader{
       display:flex;
       align-items:center;
@@ -629,6 +524,8 @@
       padding: 14px 14px;
       border-bottom: 1px solid rgba(0,0,0,0.06);
       flex-wrap: wrap;
+      min-width: 0;
+      box-sizing: border-box;
     }
     .mhLeft{
       display:flex;
@@ -667,7 +564,7 @@
       box-sizing: border-box;
     }
     .search::placeholder{ color: rgba(30,30,30,0.45); }
-    
+
     .modalBody{
       display: grid;
       grid-template-columns: max-content 1fr;
@@ -687,18 +584,24 @@
       max-width: 100%;
       display: grid;
       gap: 4px;
+
       padding: 8px 10px;
       margin-bottom: 10px;
+
       border-radius: 14px;
       border: 1px solid rgba(160,195,225,0.22);
       background: rgba(255,255,255,0.62);
+
       cursor: pointer;
       text-align: left;
       white-space: nowrap;
+
       font-size: 13px;
       color: rgba(30,30,30,0.88);
+
       transition: background .18s ease, border-color .18s ease, transform .08s ease;
       -webkit-tap-highlight-color: transparent;
+
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
@@ -707,6 +610,7 @@
       background: rgba(255,255,255,0.72);
     }
     .dateBtn:active{ transform: scale(0.99); }
+
     .dateBtn small{
       display:block;
       font-size: 11px;
@@ -717,7 +621,7 @@
       background: rgba(180,210,235,0.14);
       box-shadow: 0 10px 26px rgba(160,195,225,0.12);
     }
-    
+
     .preview{
       padding: 12px;
       overflow: auto;
@@ -751,6 +655,7 @@
       justify-content: flex-end;
       flex: 0 0 auto;
     }
+
     .previewBox{
       border: 1px solid rgba(0,0,0,0.06);
       border-radius: 16px;
@@ -766,6 +671,8 @@
       font-size: 13px;
       color: rgba(30,30,30,0.86);
       line-height: 1.25;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
     .badge{
       font-size: 11px;
@@ -788,7 +695,7 @@
       border-radius: 6px;
       padding: 0 3px;
     }
-    
+
     .modalFooter{
       padding: 12px 14px;
       border-top: 1px solid rgba(0,0,0,0.06);
@@ -799,16 +706,21 @@
       align-items:center;
       font-size: 12px;
       color: rgba(30,30,30,0.55);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
-    
+
     @media (max-width: 420px){
       .modalBody{ grid-template-columns: 1fr; }
       .dates{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
       .search{ min-width: 100%; }
     }
 
-
-    
+    @media (max-width: 360px){
+      .meta{ display:none; }
+      .btn{ width: 100%; }
+      .input{ flex-basis: 100%; }
+    }
   </style>
 </head>
 
@@ -821,31 +733,27 @@
             <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
             <h1>This Week</h1>
           </div>
-
-          <div class="meta">
-            <button class="navBtn" id="prevWeekBtn" type="button" aria-label="이전 주">‹</button>
-            <span id="weekMeta"></span>
-            <button class="navBtn" id="nextWeekBtn" type="button" aria-label="다음 주">›</button>
-          </div>
+          <div class="meta" id="metaText"></div>
         </div>
 
-        <!-- input -->
+        <!-- Input -->
         <div class="inputRow">
-          <input id="taskInput" class="input" type="text" placeholder="이번 주 할 일…" maxlength="80" />
-          <div class="dayStrip" id="dayStrip" aria-label="요일 선택"></div>
-
-         <button class="btn secondary" id="fromTodayBtn" type="button" title="Today에서 오늘 미완료 가져오기">From Today</button>
-          <button class="btn secondary" id="pullBtn" type="button" title="다음 주 작업을 이번 주로 당기기">Pull</button>
-          <button class="btn secondary" id="pushBtn" type="button" title="이번 주 미완료를 다음 주로 미루기">Push</button>
-
-          <button id="addBtn" type="button" aria-label="할 일 추가" title="할 일 추가"></button>
+          <input id="todoInput" class="input" type="text" placeholder="이번 주 할 일…" maxlength="80" />
+          <button class="btn" id="fromTodayBtn" type="button" title="Today에서 오늘 미완료 가져오기">From Today</button>
+          <button class="btn" id="pullBtn" type="button" title="다음 주 작업을 이번 주로 당기기">Pull</button>
+          <button class="btn" id="pushBtn" type="button" title="이번 주 미완료를 다음 주로 미루기">Push</button>
+          <button class="btn" id="addBtn" type="button" title="할 일 추가" aria-label="할 일 추가"></button>
         </div>
 
-        <!-- week sections -->
-        <div class="week" id="weekSections"></div>
+        <!-- Sections -->
+        <div class="sections" id="weekSections"></div>
 
+        <!-- Footer -->
         <div class="footer">
-          <span id="countText">0/0 done</span>
+          <div class="countWrap">
+            <span id="countText">0/0 done</span>
+            <div class="toast" id="toast"></div>
+          </div>
 
           <div class="footer-actions">
             <button class="btn secondary" id="historyWeekBtn" type="button">History / Archive</button>
@@ -854,43 +762,65 @@
           </div>
         </div>
 
-        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week History / Archive Modal -->
+  <div class="modalOverlay" id="weekModalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Week History / Archive">
+      <div class="modalHeader">
+        <div class="mhLeft">
+          <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+          <strong>Week History / Archive</strong>
+        </div>
+        <div class="mhRight">
+          <input id="weekSearchInput" class="search" type="text" placeholder="검색: 주 시작일(YYYY.MM.DD) 또는 할 일 키워드…" />
+          <button class="btn secondary" id="weekClearSearchBtn" type="button">Clear</button>
+          <button class="btn secondary" id="weekCloseModalBtn" type="button">Close</button>
+        </div>
+      </div>
+
+      <div class="modalBody">
+        <div class="dates" id="weeksPanel"></div>
+
+        <div class="preview">
+          <div class="previewTop">
+            <div class="picked" id="pickedWeekText">주를 선택해줘</div>
+            <div>
+              <button class="btn secondary" id="weekPullBtn" type="button" disabled>Pull</button>
+              <button class="btn secondary" id="weekCopyBtn" type="button" disabled>Copy</button>
+            </div>
+          </div>
+
+          <div class="previewBox" id="weekPreviewBox">
+            <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+              왼쪽에서 주를 선택하면, 그 주의 기록을 보여줘.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modalFooter">
+        <span id="weekArchiveMeta">저장: 자동(주별)</span>
+        <span id="weekArchiveCount">0 / 0 weeks</span>
       </div>
     </div>
   </div>
 
   <script>
-    /* =========================
+    /* ===============================
        Storage keys
-    ========================= */
-    const KEY_PREFIX = "soft_schedule_this_week_";   // per-week storage
+    =============================== */
+    const KEY_PREFIX_WEEK = "soft_schedule_this_week_";     // per weekStart
+    const KEY_TODAY = "soft_schedule_today_";               // per date
+    const KEY_TODAY_ARCHIVE = "soft_schedule_today_archive_v1";
+    const UI_PREFIX = "soft_schedule_this_week_ui_";        // per weekStart UI
+    const KEY_NEXT_WEEK_PREFIX = "soft_schedule_next_week_"; // for push/pull (simple)
 
-    const UI_PREFIX = "soft_schedule_this_week_ui_"; // per-week UI state
-
-      function loadUI(weekStartStr){
-        try{
-          const raw = localStorage.getItem(UI_PREFIX + weekStartStr);
-          if(!raw) return { collapsed: {} };
-          const parsed = JSON.parse(raw);
-          if(!parsed || typeof parsed !== "object") return { collapsed: {} };
-          if(!parsed.collapsed || typeof parsed.collapsed !== "object") parsed.collapsed = {};
-          return parsed;
-        }catch(e){
-          return { collapsed: {} };
-        }
-      }
-      function saveUI(weekStartStr, ui){
-        localStorage.setItem(UI_PREFIX + weekStartStr, JSON.stringify(ui));
-      }
-
-    const KEY_ARCHIVE = "soft_schedule_this_week_archive_v1"; // reserved (not used yet)
-
-    // Today widget storage prefix (your existing Today)
-    const TODAY_PREFIX = "soft_schedule_today_"; // + YYYY.MM.DD
-
-    /* =========================
-       Date helpers (YYYY.MM.DD)
-    ========================= */
+    /* ===============================
+       Date helpers
+    =============================== */
     function pad2(n){ return String(n).padStart(2,"0"); }
     function ymd(d=new Date()){
       return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
@@ -905,30 +835,56 @@
       if(!p) return null;
       return new Date(p.y, p.m-1, p.d);
     }
-    function addDays(dateObj, days){
-      const d = new Date(dateObj);
-      d.setDate(d.getDate() + days);
+    function addDays(date, n){
+      const d = new Date(date);
+      d.setDate(d.getDate() + n);
       return d;
     }
 
-    // Monday-start week: 0=Mon .. 6=Sun
-    function getWeekStart(dateObj){
-      const d = new Date(dateObj);
-      const js = d.getDay(); // 0=Sun..6=Sat
-      const mondayIndex = (js + 6) % 7; // Sun->6, Mon->0, Tue->1...
-      d.setHours(0,0,0,0);
-      d.setDate(d.getDate() - mondayIndex);
-      return d;
+    // weekStart: Monday (local)
+    function getWeekStart(d=new Date()){
+      const x = new Date(d);
+      x.setHours(0,0,0,0);
+      const day = x.getDay(); // 0 Sun,1 Mon...
+      const diff = (day === 0) ? -6 : (1 - day);
+      x.setDate(x.getDate() + diff);
+      return x;
     }
-    function weekRangeLabel(weekStart){
-      const ws = new Date(weekStart);
+    function getWeekStartStr(d=new Date()){
+      return ymd(getWeekStart(d));
+    }
+
+    function formatWeekMeta(weekStartDate){
+      const ws = new Date(weekStartDate);
       const we = addDays(ws, 6);
-      return `${ymd(ws)} – ${ymd(we)}`;
+      return `${ymd(ws)} ~ ${ymd(we)}`;
     }
 
-    /* =========================
-       UI helpers
-    ========================= */
+    /* ===============================
+       HTML / security helpers
+    =============================== */
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+    }
+
+    function highlight(text, query){
+      const t = String(text);
+      const q = String(query || "").trim();
+      if(!q) return escapeHtml(t);
+      const idx = t.toLowerCase().indexOf(q.toLowerCase());
+      if(idx === -1) return escapeHtml(t);
+      const before = escapeHtml(t.slice(0, idx));
+      const mid = escapeHtml(t.slice(idx, idx + q.length));
+      const after = escapeHtml(t.slice(idx + q.length));
+      return `${before}<span class="mark">${mid}</span>${after}`;
+    }
+
     function showToast(msg){
       toast.textContent = msg;
       clearTimeout(showToast._t);
@@ -957,41 +913,75 @@
       }
     }
 
-    function formatForCopy(weekStartStr, sections){
-      const lines = [];
-      lines.push(`[This Week | ${weekStartStr}]`);
-      for(const sec of sections){
-        lines.push(`\n${sec.title}`);
-        for(const it of sec.items){
-          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
-        }
+    /* ===============================
+       State load/save
+    =============================== */
+    function loadJson(key, fallback){
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) return fallback;
+        const parsed = JSON.parse(raw);
+        return parsed ?? fallback;
+      }catch(e){
+        return fallback;
       }
-      return lines.join("\n");
+    }
+    function saveJson(key, value){
+      localStorage.setItem(key, JSON.stringify(value));
     }
 
-    /* =========================
-       State + DOM
-    ========================= */
-    const weekMeta = document.getElementById("weekMeta");
-    const prevWeekBtn = document.getElementById("prevWeekBtn");
-    const nextWeekBtn = document.getElementById("nextWeekBtn");
+    function loadWeek(weekStartStr){
+      const key = KEY_PREFIX_WEEK + weekStartStr;
+      const arr = loadJson(key, []);
+      return Array.isArray(arr) ? arr : [];
+    }
+    function saveWeek(weekStartStr, items){
+      const key = KEY_PREFIX_WEEK + weekStartStr;
+      saveJson(key, items);
+    }
 
-    const taskInput = document.getElementById("taskInput");
-    const dayStrip = document.getElementById("dayStrip");
+    function loadUI(weekStartStr){
+      const key = UI_PREFIX + weekStartStr;
+      const ui = loadJson(key, { collapsed: {} });
+      if(!ui || typeof ui !== "object") return { collapsed: {} };
+      if(!ui.collapsed || typeof ui.collapsed !== "object") ui.collapsed = {};
+      return ui;
+    }
+    function saveUI(weekStartStr, ui){
+      const key = UI_PREFIX + weekStartStr;
+      saveJson(key, ui);
+    }
+
+    /* ===============================
+       Today archive helpers (pull from Today)
+    =============================== */
+    function loadTodayArchive(){
+      const obj = loadJson(KEY_TODAY_ARCHIVE, {});
+      return (obj && typeof obj === "object") ? obj : {};
+    }
+    function loadToday(dateStr){
+      const key = KEY_TODAY + dateStr;
+      const items = loadJson(key, []);
+      return Array.isArray(items) ? items : [];
+    }
+
+    /* ===============================
+       UI elements
+    =============================== */
+    const metaText = document.getElementById("metaText");
+    const weekSections = document.getElementById("weekSections");
+    const inputEl = document.getElementById("todoInput");
     const addBtn = document.getElementById("addBtn");
-
     const fromTodayBtn = document.getElementById("fromTodayBtn");
     const pullBtn = document.getElementById("pullBtn");
     const pushBtn = document.getElementById("pushBtn");
 
-    const weekSections = document.getElementById("weekSections");
     const countText = document.getElementById("countText");
+    const toast = document.getElementById("toast");
     const copyBtn = document.getElementById("copyBtn");
     const clearDoneBtn = document.getElementById("clearDoneBtn");
 
-    const toast = document.getElementById("toast");
-
-    // ===== Week History / Archive DOM =====
+    // modal
     const historyWeekBtn = document.getElementById("historyWeekBtn");
     const weekModalOverlay = document.getElementById("weekModalOverlay");
     const weekCloseModalBtn = document.getElementById("weekCloseModalBtn");
@@ -1003,11 +993,6 @@
     const weekArchiveCount = document.getElementById("weekArchiveCount");
     const weekSearchInput = document.getElementById("weekSearchInput");
     const weekClearSearchBtn = document.getElementById("weekClearSearchBtn");
-    
-    let pickedWeek = null;
-    let weekSearchQuery = "";
-
-    
 
     // plus icon
     addBtn.innerHTML = `
@@ -1019,104 +1004,101 @@
       </svg>
     `;
 
-    // week navigation
-    const baseToday = new Date();
-    let weekOffset = 0; // 0 = this week
-    let selectedDayIndex = 0; // default Monday
-    let state = []; // items for current week
+    /* ===============================
+       Weekly model
+       Each item: { id, text, done, dateStr }  dateStr = 'YYYY.MM.DD' in current week
+    =============================== */
+    const labels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
-    // item shape: { id, text, done, dateStr|null }
-    function loadWeek(weekStartStr){
-      try{
-        const raw = localStorage.getItem(KEY_PREFIX + weekStartStr);
-        if(!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
-      }catch(e){ return []; }
-    }
-    function saveWeek(weekStartStr, items){
-      localStorage.setItem(KEY_PREFIX + weekStartStr, JSON.stringify(items));
-    }
+    let weekStart = getWeekStart(new Date());
+    let weekStartStr = getWeekStartStr(new Date());
+    let state = loadWeek(weekStartStr);
 
-    function getCurrentWeekStart(){
-      const ws = getWeekStart(addDays(baseToday, weekOffset * 7));
-      return ws;
-    }
-    function getWeekStartStr(){
-      return ymd(getCurrentWeekStart());
-    }
-    function getDayStrFromIndex(weekStartDate, idx){
-      return ymd(addDays(weekStartDate, idx));
-    }
+    metaText.textContent = formatWeekMeta(weekStart);
 
     function syncAddButtonState(){
-      const hasText = (taskInput.value || "").trim().length > 0;
+      const hasText = (inputEl.value || "").trim().length > 0;
       addBtn.disabled = !hasText;
     }
-    taskInput.addEventListener("input", syncAddButtonState);
+    inputEl.addEventListener("input", syncAddButtonState);
+    syncAddButtonState();
 
-    function buildDayStrip(){
-      const ws = getCurrentWeekStart();
-      const labels = ["M","T","W","T","F","S","S"];
-      dayStrip.innerHTML = "";
-      for(let i=0;i<7;i++){
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "dayPill" + (i === selectedDayIndex ? " active" : "");
-        const dStr = getDayStrFromIndex(ws, i);
-        btn.dataset.idx = String(i);
-        btn.title = dStr;
-        btn.textContent = labels[i];
-        btn.addEventListener("click", () => {
-          selectedDayIndex = i;
-          buildDayStrip();
-        });
-        dayStrip.appendChild(btn);
+    function addItem(text){
+      const t = (text || "").trim();
+      if(!t) return;
+      // default: add to "Mon" (this week) if today is in this week, else add to first day
+      // simpler: add to today’s weekday if inside the current week; otherwise Mon
+      const today = new Date();
+      const ws = new Date(weekStart);
+      const we = addDays(ws, 6);
+      let targetDate = ws;
+      if(today >= ws && today <= we){
+        const day = today.getDay(); // 0..6
+        const idx = (day === 0) ? 6 : (day - 1); // Mon=0..Sun=6
+        targetDate = addDays(ws, idx);
       }
+      const dateStr = ymd(targetDate);
+
+      state.unshift({
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+        text: t,
+        done: false,
+        dateStr
+      });
+      saveWeek(weekStartStr, state);
+      render();
+      showToast("추가했어.");
+    }
+
+    function toggleItem(id){
+      state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+      saveWeek(weekStartStr, state);
+      render();
+    }
+
+    function deleteItem(id){
+      state = state.filter(it => it.id !== id);
+      saveWeek(weekStartStr, state);
+      render();
+    }
+
+    function clearDone(){
+      state = state.filter(it => !it.done);
+      saveWeek(weekStartStr, state);
+      render();
+      showToast("완료를 정리했어.");
+    }
+
+    /* ===============================
+       Render sections + collapse
+    =============================== */
+    function getSections(){
+      const ws = new Date(weekStart);
+
+      const secs = [];
+      for(let i=0;i<7;i++){
+        const dateStr = ymd(addDays(ws, i));
+        secs.push({
+          key: dateStr,
+          name: labels[i],
+          dateStr,
+          items: state.filter(it => it.dateStr === dateStr)
+        });
+      }
+      return secs;
     }
 
     function render(){
-      const ws = getCurrentWeekStart();
-      const wsStr = ymd(ws);
+      const ui = loadUI(weekStartStr);
 
-      // meta label
-      weekMeta.textContent = weekRangeLabel(ws);
-
-      // "From Today" only makes sense for the real current week
-      const realWsStr = ymd(getWeekStart(baseToday));
-      fromTodayBtn.disabled = (wsStr !== realWsStr);
-
-      // Build sections Mon..Sun + Someday
-      const labelsFull = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-      const sections = [];
-
-      for(let i=0;i<7;i++){
-        const dateStr = getDayStrFromIndex(ws, i);
-        const items = state.filter(it => it.dateStr === dateStr);
-        sections.push({
-          key: dateStr,
-          title: `${labelsFull[i]} · ${dateStr}`,
-          items
-        });
-      }
-
-      // Someday (no date)
-      const somedayItems = state.filter(it => !it.dateStr);
-      sections.push({
-        key: "someday",
-        title: "Someday",
-        items: somedayItems
-      });
-
+      const sections = getSections();
       weekSections.innerHTML = "";
 
-      const ui = loadUI(wsStr);
+      let total = state.length;
+      let done = state.filter(x => x.done).length;
 
-      
       for(const sec of sections){
-        // skip empty sections except someday if empty too (keep it hidden)
-        if(sec.items.length === 0) continue;
-
+        // keep section even if empty: consistent weekly grid
         const box = document.createElement("div");
         box.className = "section" + (ui.collapsed[sec.key] ? " collapsed" : "");
         box.dataset.key = sec.key;
@@ -1124,119 +1106,344 @@
         const head = document.createElement("div");
         head.className = "secHead";
 
-        const tgl = document.createElement("button");
-        tgl.type = "button";
-        tgl.className = "secToggle";
-        tgl.dataset.toggle = sec.key;
-        tgl.setAttribute("aria-label", "섹션 접기/펴기");
-        tgl.textContent = ui.collapsed[sec.key] ? "Show" : "Hide";
-        right.prepend(tgl);
-
-        
         const left = document.createElement("div");
         left.className = "secTitle";
-
-        const strong = document.createElement("strong");
-        strong.textContent = sec.key === "someday" ? "Someday" : sec.title.split(" · ")[0];
-
-        const span = document.createElement("span");
-        span.textContent = sec.key === "someday" ? "Date optional" : sec.title.split(" · ")[1];
-
-        left.appendChild(strong);
-        left.appendChild(span);
+        left.innerHTML = `
+          <span class="name">${escapeHtml(sec.name)}</span>
+          <span class="date">${escapeHtml(sec.dateStr)}</span>
+        `;
 
         const right = document.createElement("div");
-        right.style.display = "flex";
-        right.style.gap = "8px";
+        right.className = "secRight";
 
-        if(sec.key !== "someday"){
-          // per-section quick actions (optional but handy)
-          const toNext = document.createElement("button");
-          toNext.type = "button";
-          toNext.className = "miniBtn";
-          toNext.textContent = "Next";
-          toNext.title = "이 날짜의 미완료를 다음 주로";
-          toNext.addEventListener("click", () => moveDateItemsToNextWeek(sec.key));
-          right.appendChild(toNext);
-        }
+        const count = document.createElement("button");
+        count.type = "button";
+        count.className = "miniBtn";
+        count.dataset.toggle = sec.key;
+        const cDone = sec.items.filter(x => x.done).length;
+        count.textContent = ui.collapsed[sec.key] ? `Show (${cDone}/${sec.items.length})` : `Hide (${cDone}/${sec.items.length})`;
+        right.appendChild(count);
 
         head.appendChild(left);
         head.appendChild(right);
 
+        const listWrap = document.createElement("div");
+        listWrap.className = "listWrap";
+
         const ul = document.createElement("ul");
         ul.className = "list";
+        ul.dataset.list = sec.key;
 
-        for(const it of sec.items){
+        if(sec.items.length === 0){
+          // keep it visually light (optional)
           const li = document.createElement("li");
-          li.className = "item" + (it.done ? " done" : "");
-
-          const chipHtml = it.dateStr
-            ? `<span class="chip">${it.dateStr}</span>`
-            : `<span class="chip someday">Someday</span>`;
-
-          li.innerHTML = `
-            <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            ${chipHtml}
-            <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
-            ${it.dateStr ? `<button class="miniBtn" type="button" data-next="${it.id}" title="다음 주로 미루기">Next</button>` : ``}
-            <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
-          `;
-
+          li.style.cssText = "color: rgba(30,30,30,0.40); font-size: 12px; padding: 6px 10px; font-family: EnterSanChaek, ui-sans-serif, system-ui;";
+          li.textContent = "—";
           ul.appendChild(li);
+        }else{
+          for(const it of sec.items){
+            const li = document.createElement("li");
+            li.className = "item" + (it.done ? " done" : "");
+            li.innerHTML = `
+              <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+              <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
+            `;
+            ul.appendChild(li);
+          }
         }
 
+        listWrap.appendChild(ul);
+
         box.appendChild(head);
-        box.appendChild(ul);
+        box.appendChild(listWrap);
         weekSections.appendChild(box);
       }
 
-      // count
-      const total = state.length;
-      const done = state.filter(x => x.done).length;
       countText.textContent = `${done}/${total} done`;
     }
 
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, (m) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      }[m]));
+    /* ===============================
+       Copy format
+    =============================== */
+    function formatForCopy(weekStartStr, sections){
+      const lines = [];
+      lines.push(`[This Week | ${weekStartStr}]`);
+      for(const s of sections){
+        lines.push("");
+        lines.push(`## ${s.title}`);
+        for(const it of s.items){
+          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+        }
+      }
+      return lines.join("\n");
     }
 
-    function highlight(text, query){
-      const t = String(text);
-      const q = String(query || "").trim();
-      if(!q) return escapeHtml(t);
-      const idx = t.toLowerCase().indexOf(q.toLowerCase());
-      if(idx === -1) return escapeHtml(t);
-      const before = escapeHtml(t.slice(0, idx));
-      const mid = escapeHtml(t.slice(idx, idx + q.length));
-      const after = escapeHtml(t.slice(idx + q.length));
-      return `${before}<span class="mark">${mid}</span>${after}`;
+    async function copyWeek(){
+      const ws = new Date(weekStart);
+      const secs = [];
+
+      for(let i=0;i<7;i++){
+        const dateStr = ymd(addDays(ws, i));
+        const items = state.filter(it => it.dateStr === dateStr);
+        if(items.length){
+          secs.push({ title: `${labels[i]} · ${dateStr}`, items });
+        }
+      }
+
+      // if no dated items, still copy empty skeleton
+      if(secs.length === 0){
+        for(let i=0;i<7;i++){
+          const dateStr = ymd(addDays(ws, i));
+          secs.push({ title: `${labels[i]} · ${dateStr}`, items: [] });
+        }
+      }
+
+      const text = formatForCopy(weekStartStr, secs);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "복사했어." : "복사 실패 (브라우저 권한 확인)");
     }
-    
+
+    /* ===============================
+       From Today (pull unfinished from Today)
+    =============================== */
+    function pullFromToday(){
+      const todayStr = ymd(new Date());
+
+      // try archive first
+      const archive = loadTodayArchive();
+      let todayItems = archive[todayStr];
+
+      // fallback: today key
+      if(!Array.isArray(todayItems)){
+        todayItems = loadToday(todayStr);
+      }
+      if(!Array.isArray(todayItems) || todayItems.length === 0){
+        showToast("Today 기록이 없어.");
+        return;
+      }
+
+      const unfinished = todayItems.filter(x => !x.done && (x.text||"").trim());
+      if(unfinished.length === 0){
+        showToast("Today 미완료가 없어.");
+        return;
+      }
+
+      // map to this week: put into today's weekday section (if within week), else Mon
+      const ws = new Date(weekStart);
+      const we = addDays(ws, 6);
+      const now = new Date();
+      let targetDate = ws;
+      if(now >= ws && now <= we){
+        const day = now.getDay(); // 0..6
+        const idx = (day === 0) ? 6 : (day - 1);
+        targetDate = addDays(ws, idx);
+      }
+      const targetDateStr = ymd(targetDate);
+
+      const existing = new Set(state.map(it => (it.text||"").trim() + "|" + (it.dateStr||"")));
+      const toAdd = [];
+
+      for(const it of unfinished){
+        const tx = (it.text || "").trim();
+        if(!tx) continue;
+        const key = tx + "|" + targetDateStr;
+        if(existing.has(key)) continue;
+        toAdd.push({
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+          text: tx,
+          done: false,
+          dateStr: targetDateStr
+        });
+      }
+
+      if(toAdd.length === 0){
+        showToast("이미 이번 주에 있어.");
+        return;
+      }
+
+      state = [...toAdd, ...state];
+      saveWeek(weekStartStr, state);
+      render();
+      showToast(`Today에서 ${toAdd.length}개 가져왔어.`);
+    }
+
+    /* ===============================
+       Pull / Push (between this week and next week)
+    =============================== */
+    function getNextWeekStartStr(){
+      const next = addDays(new Date(weekStart), 7);
+      return ymd(next);
+    }
+    function loadNextWeek(nextWsStr){
+      const key = KEY_NEXT_WEEK_PREFIX + nextWsStr;
+      const arr = loadJson(key, []);
+      return Array.isArray(arr) ? arr : [];
+    }
+    function saveNextWeek(nextWsStr, items){
+      const key = KEY_NEXT_WEEK_PREFIX + nextWsStr;
+      saveJson(key, items);
+    }
+
+    function pushToNextWeek(){
+      const nextWsStr = getNextWeekStartStr();
+      const nextItems = loadNextWeek(nextWsStr);
+
+      const unfinished = state.filter(it => !it.done && (it.text||"").trim());
+      if(unfinished.length === 0){
+        showToast("미룰 미완료가 없어.");
+        return;
+      }
+
+      // move: keep weekday offset (Mon->Mon etc.)
+      const ws = new Date(weekStart);
+      const nextWs = addDays(ws, 7);
+
+      const moved = [];
+      const remain = [];
+
+      for(const it of state){
+        if(it.done || !(it.text||"").trim()){
+          remain.push(it);
+          continue;
+        }
+        const d = ymdToDate(it.dateStr);
+        if(!d){
+          // if date invalid, send to next Monday
+          moved.push({ ...it, id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())), dateStr: ymd(nextWs) });
+          continue;
+        }
+        const offset = Math.round((d.getTime() - ws.getTime()) / 86400000);
+        const newDate = addDays(nextWs, Math.max(0, Math.min(6, offset)));
+        moved.push({ ...it, id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())), dateStr: ymd(newDate) });
+      }
+
+      // merge to next, prevent dup by text|dateStr
+      const existing = new Set(nextItems.map(it => (it.text||"").trim() + "|" + (it.dateStr||"")));
+      const merged = [...nextItems];
+
+      let added = 0;
+      for(const it of moved){
+        const key = (it.text||"").trim() + "|" + (it.dateStr||"");
+        if(existing.has(key)) continue;
+        existing.add(key);
+        merged.unshift(it);
+        added++;
+      }
+
+      // keep only done in current (optional): we keep done + others? Here: remove unfinished; keep done.
+      const keep = state.filter(it => it.done);
+      state = keep;
+      saveWeek(weekStartStr, state);
+      saveNextWeek(nextWsStr, merged);
+
+      render();
+      showToast(`다음 주로 ${added}개 미뤘어.`);
+    }
+
+    function pullFromNextWeek(){
+      const nextWsStr = getNextWeekStartStr();
+      const nextItems = loadNextWeek(nextWsStr);
+
+      if(!Array.isArray(nextItems) || nextItems.length === 0){
+        showToast("다음 주 기록이 없어.");
+        return;
+      }
+
+      const unfinished = nextItems.filter(it => !it.done && (it.text||"").trim());
+      if(unfinished.length === 0){
+        showToast("당겨올 미완료가 없어.");
+        return;
+      }
+
+      const ws = new Date(weekStart);
+      const nextWs = addDays(ws, 7);
+
+      const existing = new Set(state.map(it => (it.text||"").trim() + "|" + (it.dateStr||"")));
+      const toAdd = [];
+      const remainNext = [];
+
+      // pull everything unfinished (and remove them from next list)
+      for(const it of nextItems){
+        if(it.done){
+          remainNext.push(it);
+          continue;
+        }
+        const tx = (it.text||"").trim();
+        if(!tx){
+          remainNext.push(it);
+          continue;
+        }
+
+        // keep weekday offset in reverse
+        const d = ymdToDate(it.dateStr);
+        let target = ws;
+        if(d){
+          const offset = Math.round((d.getTime() - nextWs.getTime()) / 86400000);
+          target = addDays(ws, Math.max(0, Math.min(6, offset)));
+        }
+        const dateStr = ymd(target);
+        const key = tx + "|" + dateStr;
+        if(existing.has(key)){
+          // already exists in current: just drop it from next
+          continue;
+        }
+        existing.add(key);
+        toAdd.push({
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+          text: tx,
+          done: false,
+          dateStr
+        });
+      }
+
+      if(toAdd.length === 0){
+        showToast("이미 이번 주에 있어.");
+        return;
+      }
+
+      state = [...toAdd, ...state];
+      saveWeek(weekStartStr, state);
+      saveNextWeek(nextWsStr, remainNext);
+
+      render();
+      showToast(`다음 주에서 ${toAdd.length}개 당겼어.`);
+    }
+
+    /* ===============================
+       Section collapse click handling
+    =============================== */
+    function toggleSectionCollapse(sectionKey){
+      const ui = loadUI(weekStartStr);
+      ui.collapsed[sectionKey] = !ui.collapsed[sectionKey];
+      saveUI(weekStartStr, ui);
+      render();
+    }
+
+    /* ===============================
+       Week History / Archive modal
+    =============================== */
+    let pickedWeek = null;
+    let weekSearchQuery = "";
+
     function listWeekKeys(){
       const weeks = [];
       for(let i=0;i<localStorage.length;i++){
         const k = localStorage.key(i);
         if(!k) continue;
-        if(!k.startsWith(KEY_PREFIX)) continue;
-        const weekStartStr = k.slice(KEY_PREFIX.length);
-        if(!parseYmd(weekStartStr)) continue;
-        weeks.push(weekStartStr);
+        if(!k.startsWith(KEY_PREFIX_WEEK)) continue;
+        const ws = k.slice(KEY_PREFIX_WEEK.length);
+        if(!parseYmd(ws)) continue;
+        weeks.push(ws);
       }
-      // newest first
       weeks.sort((a,b) => ymdToDate(b).getTime() - ymdToDate(a).getTime());
       return weeks;
     }
-    
+
     function weekMatchesQuery(weekStartStr, items, q){
       if(!q) return true;
       const lowerQ = q.toLowerCase();
@@ -1247,17 +1454,83 @@
       }
       return false;
     }
-    
+
+    function setActiveWeekButton(ws){
+      const btns = weeksPanel.querySelectorAll(".dateBtn");
+      btns.forEach(b => b.classList.toggle("active", b.dataset.week === ws));
+    }
+
+    function renderWeekPreview(ws){
+      const items = loadWeek(ws);
+      const q = (weekSearchQuery || "").trim();
+
+      pickedWeek = ws;
+      setActiveWeekButton(ws);
+
+      pickedWeekText.textContent = `선택: ${ws}`;
+      weekCopyBtn.disabled = false;
+      weekPullBtn.disabled = false;
+
+      let view = items;
+      if(q){
+        const lowerQ = q.toLowerCase();
+        view = items.filter(it =>
+          String(it.text || "").toLowerCase().includes(lowerQ) ||
+          String(it.dateStr || "").toLowerCase().includes(lowerQ) ||
+          ws.toLowerCase().includes(lowerQ)
+        );
+      }
+
+      if(!view || view.length === 0){
+        weekPreviewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">표시할 항목이 없어.</div>`;
+        return;
+      }
+
+      // group by dateStr
+      const groups = new Map();
+      for(const it of view){
+        const k = it.dateStr || "No date";
+        if(!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(it);
+      }
+
+      const keys = Array.from(groups.keys()).sort((a,b)=>{
+        const da = ymdToDate(a);
+        const db = ymdToDate(b);
+        if(da && db) return da.getTime() - db.getTime();
+        if(da) return -1;
+        if(db) return 1;
+        return String(a).localeCompare(String(b));
+      });
+
+      const html = keys.map(k=>{
+        const rows = groups.get(k).map(it=>{
+          const badgeCls = it.done ? "badge done" : "badge";
+          const badgeText = it.done ? "done" : "todo";
+          const txt = highlight(it.text || "", q);
+          const deco = it.done ? `style="text-decoration:line-through; color:rgba(30,30,30,0.55);"` : "";
+          return `<div class="pItem"><span class="${badgeCls}">${badgeText}</span><span ${deco}>${txt}</span></div>`;
+        }).join("");
+
+        return `<div style="display:grid; gap:8px;">
+          <div style="font-family: EnterSanChaek, ui-sans-serif, system-ui; font-size:12px; color:rgba(30,30,30,0.70);">${escapeHtml(String(k))}</div>
+          <div style="display:grid; gap:8px;">${rows}</div>
+        </div>`;
+      }).join("");
+
+      weekPreviewBox.innerHTML = html;
+    }
+
     function buildWeeks(){
       const q = (weekSearchQuery || "").trim();
       const all = listWeekKeys();
       const filtered = [];
-    
+
       for(const ws of all){
         const items = loadWeek(ws);
         if(weekMatchesQuery(ws, items, q)) filtered.push(ws);
       }
-    
+
       weeksPanel.innerHTML = "";
       if(filtered.length === 0){
         weeksPanel.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">검색 결과가 없어.</div>`;
@@ -1266,7 +1539,7 @@
           const items = loadWeek(ws);
           const total = items.length;
           const done = items.filter(x => x.done).length;
-    
+
           const btn = document.createElement("button");
           btn.className = "dateBtn";
           btn.type = "button";
@@ -1275,9 +1548,9 @@
           weeksPanel.appendChild(btn);
         }
       }
-    
+
       weekArchiveCount.textContent = `${filtered.length} / ${all.length} weeks`;
-    
+
       if(pickedWeek && !filtered.includes(pickedWeek)){
         pickedWeek = null;
         pickedWeekText.textContent = "주를 선택해줘";
@@ -1289,78 +1562,14 @@
         renderWeekPreview(pickedWeek);
       }
     }
-    
-    function setActiveWeekButton(ws){
-      const btns = weeksPanel.querySelectorAll(".dateBtn");
-      btns.forEach(b => b.classList.toggle("active", b.dataset.week === ws));
-    }
-    
-    function renderWeekPreview(ws){
-      const items = loadWeek(ws);
-      const q = (weekSearchQuery || "").trim();
-    
-      pickedWeek = ws;
-      setActiveWeekButton(ws);
-    
-      pickedWeekText.textContent = `선택: ${ws}`;
-      weekCopyBtn.disabled = false;
-      weekPullBtn.disabled = false;
-    
-      let view = items;
-      if(q){
-        const lowerQ = q.toLowerCase();
-        view = items.filter(it =>
-          String(it.text || "").toLowerCase().includes(lowerQ) ||
-          String(it.dateStr || "").toLowerCase().includes(lowerQ) ||
-          ws.toLowerCase().includes(lowerQ)
-        );
-      }
-    
-      if(!view || view.length === 0){
-        weekPreviewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">표시할 항목이 없어.</div>`;
-        return;
-      }
-    
-      // group: dateStr(week days) then someday
-      const groups = new Map();
-      for(const it of view){
-        const k = it.dateStr || "Someday";
-        if(!groups.has(k)) groups.set(k, []);
-        groups.get(k).push(it);
-      }
-    
-      const keys = Array.from(groups.keys()).sort((a,b)=>{
-        if(a === "Someday") return 1;
-        if(b === "Someday") return -1;
-        const da = ymdToDate(a), db = ymdToDate(b);
-        return (da && db) ? da.getTime() - db.getTime() : String(a).localeCompare(String(b));
-      });
-    
-      const html = keys.map(k=>{
-        const rows = groups.get(k).map(it=>{
-          const badgeCls = it.done ? "badge done" : "badge";
-          const badgeText = it.done ? "done" : "todo";
-          const txt = highlight(it.text || "", q);
-          const deco = it.done ? `style="text-decoration:line-through; color:rgba(30,30,30,0.55);"` : "";
-          return `<div class="pItem"><span class="${badgeCls}">${badgeText}</span><span ${deco}>${txt}</span></div>`;
-        }).join("");
-    
-        return `<div style="display:grid; gap:8px;">
-          <div style="font-family:EnterSanChaek, ui-sans-serif, system-ui; font-size:12px; color:rgba(30,30,30,0.70);">${escapeHtml(String(k))}</div>
-          <div style="display:grid; gap:8px;">${rows}</div>
-        </div>`;
-      }).join("");
-    
-      weekPreviewBox.innerHTML = html;
-    }
-    
+
     function openWeekModal(){
       weekSearchQuery = (weekSearchInput.value || "").trim();
       buildWeeks();
-    
+
       weekModalOverlay.classList.add("open");
       weekModalOverlay.setAttribute("aria-hidden", "false");
-    
+
       pickedWeek = null;
       pickedWeekText.textContent = "주를 선택해줘";
       weekCopyBtn.disabled = true;
@@ -1369,233 +1578,73 @@
         왼쪽에서 주를 선택하면, 그 주의 기록을 보여줘.
       </div>`;
     }
-    
+
     function closeWeekModal(){
       weekModalOverlay.classList.remove("open");
       weekModalOverlay.setAttribute("aria-hidden", "true");
     }
 
+    async function copyPickedWeek(){
+      if(!pickedWeek) return;
+      const items = loadWeek(pickedWeek);
 
-    
+      const ws = ymdToDate(pickedWeek);
+      const sections = [];
 
-    function addItem(text){
-      const t = (text || "").trim();
-      if(!t) return;
-
-      const ws = getCurrentWeekStart();
-      const dayStr = getDayStrFromIndex(ws, selectedDayIndex);
-
-      state.unshift({
-        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
-        text: t,
-        done: false,
-        dateStr: dayStr // This Week 기본은 요일 지정 날짜
-      });
-
-      saveWeek(getWeekStartStr(), state);
-      render();
-      showToast("이번 주에 추가했어.");
-    }
-
-    function toggleItem(id){
-      state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
-      saveWeek(getWeekStartStr(), state);
-      render();
-    }
-
-    function deleteItem(id){
-      state = state.filter(it => it.id !== id);
-      saveWeek(getWeekStartStr(), state);
-      render();
-    }
-
-    function clearDone(){
-      const before = state.length;
-      state = state.filter(it => !it.done);
-      saveWeek(getWeekStartStr(), state);
-      render();
-      const removed = before - state.length;
-      showToast(removed ? `완료 ${removed}개 삭제했어.` : "삭제할 완료가 없어.");
-    }
-
-    // Move: a specific date's unfinished items to next week (date +7)
-    function moveDateItemsToNextWeek(dateStr){
-      const ws = getCurrentWeekStart();
-      const wsStr = ymd(ws);
-      const nextWs = addDays(ws, 7);
-      const nextWsStr = ymd(nextWs);
-
-      const nextState = loadWeek(nextWsStr);
-
-      const moving = [];
-      const staying = [];
-
-      for(const it of state){
-        if(it.dateStr === dateStr && !it.done){
-          const dt = ymdToDate(it.dateStr);
-          const nd = dt ? ymd(addDays(dt, 7)) : it.dateStr;
-          moving.push({ ...it, dateStr: nd });
-        }else{
-          staying.push(it);
+      if(ws){
+        for(let i=0;i<7;i++){
+          const dateStr = ymd(addDays(ws, i));
+          const sItems = items.filter(it => it.dateStr === dateStr);
+          if(sItems.length) sections.push({ title: `${labels[i]} · ${dateStr}`, items: sItems });
         }
       }
 
-      if(moving.length === 0){
-        showToast("미완료가 없어.");
-        return;
+      if(sections.length === 0){
+        sections.push({ title: "No items", items: [] });
       }
 
-      // de-dup by text+date
-      const existing = new Set(nextState.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
-      const toAdd = [];
-      for(const it of moving){
-        const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
-        if(existing.has(key)) continue;
-        toAdd.push(it);
-      }
-
-      const merged = [...toAdd, ...nextState];
-      saveWeek(nextWsStr, merged);
-
-      state = staying;
-      saveWeek(wsStr, state);
-      render();
-
-      showToast(`다음 주로 ${toAdd.length}개 미뤘어.`);
+      const text = formatForCopy(pickedWeek, sections);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "선택 주 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
     }
 
-    // Push: this week unfinished -> next week (date +7, someday stays someday)
-    function pushToNextWeek(){
-      const ws = getCurrentWeekStart();
-      const wsStr = ymd(ws);
-      const nextWs = addDays(ws, 7);
-      const nextWsStr = ymd(nextWs);
+    function pullPickedWeekIntoCurrent(){
+      if(!pickedWeek) return;
 
-      const nextState = loadWeek(nextWsStr);
-
-      const moving = [];
-      const staying = [];
-
-      for(const it of state){
-        if(!it.done){
-          if(it.dateStr){
-            const dt = ymdToDate(it.dateStr);
-            const nd = dt ? ymd(addDays(dt, 7)) : it.dateStr;
-            moving.push({ ...it, dateStr: nd });
-          }else{
-            // someday -> keep someday
-            moving.push({ ...it });
-          }
-        }else{
-          staying.push(it);
-        }
-      }
-
-      if(moving.length === 0){
-        showToast("미완료가 없어.");
-        return;
-      }
-
-      const existing = new Set(nextState.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
-      const toAdd = [];
-      for(const it of moving){
-        const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
-        if(existing.has(key)) continue;
-        toAdd.push(it);
-      }
-
-      saveWeek(nextWsStr, [...toAdd, ...nextState]);
-
-      state = staying; // keep done items only
-      saveWeek(wsStr, state);
-      render();
-
-      showToast(`다음 주로 ${toAdd.length}개 미뤘어.`);
-    }
-
-    // Pull: next week unfinished -> this week (date -7, someday stays someday)
-    function pullFromNextWeek(){
-      const ws = getCurrentWeekStart();
-      const wsStr = ymd(ws);
-      const nextWs = addDays(ws, 7);
-      const nextWsStr = ymd(nextWs);
-
-      const nextState = loadWeek(nextWsStr);
-
-      const moving = [];
-      const stayingNext = [];
-
-      for(const it of nextState){
-        if(!it.done){
-          if(it.dateStr){
-            const dt = ymdToDate(it.dateStr);
-            const nd = dt ? ymd(addDays(dt, -7)) : it.dateStr;
-            moving.push({ ...it, dateStr: nd });
-          }else{
-            moving.push({ ...it });
-          }
-        }else{
-          stayingNext.push(it);
-        }
-      }
-
-      if(moving.length === 0){
+      const src = loadWeek(pickedWeek);
+      const unfinished = src.filter(x => x && !x.done && (x.text||"").trim());
+      if(unfinished.length === 0){
         showToast("당겨올 미완료가 없어.");
         return;
       }
 
       const existing = new Set(state.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
       const toAdd = [];
-      for(const it of moving){
-        const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
-        if(existing.has(key)) continue;
-        toAdd.push(it);
-      }
-
-      state = [...toAdd, ...state];
-      saveWeek(wsStr, state);
-
-      saveWeek(nextWsStr, stayingNext);
-      render();
-
-      showToast(`이번 주로 ${toAdd.length}개 당겼어.`);
-    }
-
-    // From Today: import today's unfinished from Today widget into this week's "today date"
-    function fromToday(){
-      const wsStr = getWeekStartStr();
-      const realWsStr = ymd(getWeekStart(baseToday));
-      if(wsStr !== realWsStr){
-        showToast("현재 주에서만 가능해.");
-        return;
-      }
-
-      const todayStr = ymd(new Date());
-      const key = TODAY_PREFIX + todayStr;
-      let todayItems = [];
-      try{
-        const raw = localStorage.getItem(key);
-        if(raw) todayItems = JSON.parse(raw) || [];
-        if(!Array.isArray(todayItems)) todayItems = [];
-      }catch(e){ todayItems = []; }
-
-      const unfinished = todayItems.filter(x => x && !x.done && (x.text||"").trim());
-      if(unfinished.length === 0){
-        showToast("오늘 미완료가 없어.");
-        return;
-      }
-
-      const existing = new Set(state.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
-      const toAdd = [];
       for(const it of unfinished){
-        const text = (it.text||"").trim();
-        const key2 = `${text}|${todayStr}`;
-        if(existing.has(key2)) continue;
+        const tx = (it.text||"").trim();
+        if(!tx) continue;
+
+        // if source item has dateStr, clamp into current week by weekday offset
+        let dateStr = ymd(new Date(weekStart));
+        const srcWs = ymdToDate(pickedWeek);
+        const curWs = new Date(weekStart);
+        const d = ymdToDate(it.dateStr || "");
+        if(srcWs && d){
+          const offset = Math.round((d.getTime() - srcWs.getTime()) / 86400000);
+          dateStr = ymd(addDays(curWs, Math.max(0, Math.min(6, offset))));
+        }else{
+          dateStr = ymd(curWs);
+        }
+
+        const key = `${tx}|${dateStr}`;
+        if(existing.has(key)) continue;
+        existing.add(key);
+
         toAdd.push({
           id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
-          text,
+          text: tx,
           done: false,
-          dateStr: todayStr
+          dateStr
         });
       }
 
@@ -1605,268 +1654,105 @@
       }
 
       state = [...toAdd, ...state];
-      saveWeek(getWeekStartStr(), state);
+      saveWeek(weekStartStr, state);
       render();
-      showToast(`오늘에서 ${toAdd.length}개 가져왔어.`);
+      showToast(`이번 주로 ${toAdd.length}개 당겼어.`);
     }
 
-    /* =========================
+    /* ===============================
        Events
-    ========================= */
-    function mount(){
-      buildDayStrip();
-
-      // load initial week
-      const wsStr = getWeekStartStr();
-      state = loadWeek(wsStr);
-
-      // select day pill = today index (Mon..Sun) when on current week
-      const ws = getCurrentWeekStart();
-      const today = new Date();
-      const wsReal = getWeekStart(today);
-      if(ymd(ws) === ymd(wsReal)){
-        const js = today.getDay(); // 0 Sun..6 Sat
-        selectedDayIndex = (js + 6) % 7; // Mon=0..Sun=6
-        buildDayStrip();
-      }
-
-      // plus button
+    =============================== */
+    addBtn.addEventListener("click", () => {
+      addItem(inputEl.value);
+      inputEl.value = "";
+      inputEl.focus();
       syncAddButtonState();
-      addBtn.addEventListener("click", () => {
-        addItem(taskInput.value);
-        taskInput.value = "";
-        taskInput.focus();
-        syncAddButtonState();
-      });
+    });
 
-      taskInput.addEventListener("keydown", (e) => {
-        if(e.key === "Enter"){
-          e.preventDefault();
-          if(!addBtn.disabled) addBtn.click();
-        }
-      });
+    inputEl.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        if(!addBtn.disabled) addBtn.click();
+      }
+    });
 
-      dayStrip.addEventListener("keydown", (e) => {
-        // optional: left/right to move selection
-      });
+    fromTodayBtn.addEventListener("click", pullFromToday);
+    pullBtn.addEventListener("click", pullFromNextWeek);
+    pushBtn.addEventListener("click", pushToNextWeek);
 
-      // list actions (toggle/delete/next)
-      weekSections.addEventListener("click", (e) => {
-              // section collapse toggle
+    copyBtn.addEventListener("click", copyWeek);
+    clearDoneBtn.addEventListener("click", clearDone);
+
+    // list interactions (delegation)
+    weekSections.addEventListener("click", (e) => {
       const toggleBtn = e.target.closest("[data-toggle]");
-      const head = e.target.closest(".secHead");
-      if(toggleBtn || (head && !e.target.closest(".miniBtn") && !e.target.closest(".del") && !e.target.closest(".check"))){
-        const wsStr = getWeekStartStr();
-        const ui = loadUI(wsStr);
-      
-        const key = toggleBtn ? toggleBtn.dataset.toggle : head.closest(".section")?.dataset.key;
-        if(!key) return;
-      
-        ui.collapsed[key] = !ui.collapsed[key];
-        saveUI(wsStr, ui);
-      
-        // 즉시 UI 반영
-        render();
+      if(toggleBtn){
+        e.stopPropagation();
+        toggleSectionCollapse(toggleBtn.dataset.toggle);
         return;
       }
 
-        const check = e.target.closest(".check");
-        const del = e.target.closest("[data-del]");
-        const next = e.target.closest("[data-next]");
+      const check = e.target.closest(".check");
+      const del = e.target.closest("[data-del]");
+      if(check){
+        toggleItem(check.dataset.id);
+        return;
+      }
+      if(del){
+        deleteItem(del.dataset.del);
+        return;
+      }
 
-        if(check){
-          toggleItem(check.dataset.id);
-        }else if(del){
-          deleteItem(del.dataset.del);
-        }else if(next){
-          const id = next.dataset.next;
-          const it = state.find(x => x.id === id);
-          if(it && it.dateStr){
-            moveDateItemsToNextWeek(it.dateStr);
-          }
-        }
-      });
+      // click on header area toggles too
+      const head = e.target.closest(".secHead");
+      if(head){
+        const k = head.closest(".section")?.dataset.key;
+        if(k) toggleSectionCollapse(k);
+        return;
+      }
+    });
 
-      weekSections.addEventListener("keydown", (e) => {
-        const check = e.target.closest(".check");
-        if(!check) return;
-        if(e.key === "Enter" || e.key === " "){
-          e.preventDefault();
-          toggleItem(check.dataset.id);
-        }
-      });
+    weekSections.addEventListener("keydown", (e) => {
+      const check = e.target.closest(".check");
+      if(!check) return;
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        toggleItem(check.dataset.id);
+      }
+    });
 
-      clearDoneBtn.addEventListener("click", clearDone);
+    // modal events
+    historyWeekBtn.addEventListener("click", openWeekModal);
+    weekCloseModalBtn.addEventListener("click", closeWeekModal);
+    weekModalOverlay.addEventListener("click", (e)=>{ if(e.target === weekModalOverlay) closeWeekModal(); });
 
-      copyBtn.addEventListener("click", async () => {
-        const ws = getCurrentWeekStart();
-        const wsStr = ymd(ws);
+    weeksPanel.addEventListener("click", (e)=>{
+      const btn = e.target.closest(".dateBtn");
+      if(!btn) return;
+      renderWeekPreview(btn.dataset.week);
+    });
 
-        const labelsFull = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-        const sections = [];
-        for(let i=0;i<7;i++){
-          const dateStr = ymd(addDays(ws, i));
-          const items = state.filter(it => it.dateStr === dateStr);
-          if(items.length) sections.push({ title: `${labelsFull[i]} · ${dateStr}`, items });
-        }
-        const somedayItems = state.filter(it => !it.dateStr);
-        if(somedayItems.length) sections.push({ title: "Someday", items: somedayItems });
+    weekSearchInput.addEventListener("input", ()=>{
+      weekSearchQuery = (weekSearchInput.value || "").trim();
+      buildWeeks();
+    });
 
-        const text = formatForCopy(wsStr, sections);
-        const ok = await copyToClipboard(text);
-        showToast(ok ? "복사했어." : "복사 실패 (브라우저 권한 확인)");
-      });
+    weekClearSearchBtn.addEventListener("click", ()=>{
+      weekSearchInput.value = "";
+      weekSearchQuery = "";
+      buildWeeks();
+      showToast("검색을 초기화했어.");
+    });
 
-      pushBtn.addEventListener("click", pushToNextWeek);
-      pullBtn.addEventListener("click", pullFromNextWeek);
-      fromTodayBtn.addEventListener("click", fromToday);
+    weekCopyBtn.addEventListener("click", copyPickedWeek);
+    weekPullBtn.addEventListener("click", pullPickedWeekIntoCurrent);
 
-      // week nav
-      prevWeekBtn.addEventListener("click", () => {
-        weekOffset -= 1;
-        const wsStr = getWeekStartStr();
-        state = loadWeek(wsStr);
-        buildDayStrip();
-        render();
-      });
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape" && weekModalOverlay.classList.contains("open")) closeWeekModal();
+    });
 
-      nextWeekBtn.addEventListener("click", () => {
-        weekOffset += 1;
-        const wsStr = getWeekStartStr();
-        state = loadWeek(wsStr);
-        buildDayStrip();
-        render();
-      });
-
-      render();
-    }
-
-historyWeekBtn.addEventListener("click", openWeekModal);
-weekCloseModalBtn.addEventListener("click", closeWeekModal);
-weekModalOverlay.addEventListener("click", (e)=>{ if(e.target === weekModalOverlay) closeWeekModal(); });
-
-weeksPanel.addEventListener("click", (e)=>{
-  const btn = e.target.closest(".dateBtn");
-  if(!btn) return;
-  renderWeekPreview(btn.dataset.week);
-});
-
-weekSearchInput.addEventListener("input", ()=>{
-  weekSearchQuery = (weekSearchInput.value || "").trim();
-  buildWeeks();
-});
-
-weekClearSearchBtn.addEventListener("click", ()=>{
-  weekSearchInput.value = "";
-  weekSearchQuery = "";
-  buildWeeks();
-  showToast("검색을 초기화했어.");
-});
-
-weekCopyBtn.addEventListener("click", async ()=>{
-  if(!pickedWeek) return;
-  const items = loadWeek(pickedWeek);
-
-  // copy format: same as weekly copy
-  const ws = ymdToDate(pickedWeek);
-  const wsStr = pickedWeek;
-
-  const labelsFull = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  const sections = [];
-  if(ws){
-    for(let i=0;i<7;i++){
-      const dateStr = ymd(addDays(ws, i));
-      const sItems = items.filter(it => it.dateStr === dateStr);
-      if(sItems.length) sections.push({ title: `${labelsFull[i]} · ${dateStr}`, items: sItems });
-    }
-  }
-  const somedayItems = items.filter(it => !it.dateStr);
-  if(somedayItems.length) sections.push({ title: "Someday", items: somedayItems });
-
-  const text = formatForCopy(wsStr, sections);
-  const ok = await copyToClipboard(text);
-  showToast(ok ? "선택 주 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
-});
-
-weekPullBtn.addEventListener("click", ()=>{
-  if(!pickedWeek) return;
-
-  // Pull: 선택 주의 미완료 -> 현재 보고 있는 주로 합치기(중복 제거)
-  const src = loadWeek(pickedWeek);
-  const unfinished = src.filter(x => x && !x.done && (x.text||"").trim());
-  if(unfinished.length === 0){
-    showToast("당겨올 미완료가 없어.");
-    return;
-  }
-
-  const curWsStr = getWeekStartStr();
-  const existing = new Set(state.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
-  const toAdd = [];
-
-  for(const it of unfinished){
-    const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
-    if(existing.has(key)) continue;
-    toAdd.push({ ...it, id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())) });
-  }
-
-  if(toAdd.length === 0){
-    showToast("이미 이번 주에 있어.");
-    return;
-  }
-
-  state = [...toAdd, ...state];
-  saveWeek(curWsStr, state);
-  render();
-  showToast(`이번 주로 ${toAdd.length}개 당겼어.`);
-});
-
-
-    
-    mount();
+    // init
+    render();
   </script>
-
-<!-- Week History / Archive Modal -->
-<div class="modalOverlay" id="weekModalOverlay" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Week History / Archive">
-    <div class="modalHeader">
-      <div class="mhLeft">
-        <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
-        <strong>Week History / Archive</strong>
-      </div>
-      <div class="mhRight">
-        <input id="weekSearchInput" class="search" type="text" placeholder="검색: 주 시작일(YYYY.MM.DD) 또는 할 일 키워드…" />
-        <button class="btn secondary" id="weekClearSearchBtn" type="button">Clear</button>
-        <button class="btn secondary" id="weekCloseModalBtn" type="button">Close</button>
-      </div>
-    </div>
-
-    <div class="modalBody">
-      <div class="dates" id="weeksPanel"></div>
-
-      <div class="preview">
-        <div class="previewTop">
-          <div class="picked" id="pickedWeekText">주를 선택해줘</div>
-          <div>
-            <button class="btn secondary" id="weekPullBtn" type="button" disabled>Pull</button>
-            <button class="btn secondary" id="weekCopyBtn" type="button" disabled>Copy</button>
-          </div>
-        </div>
-
-        <div class="previewBox" id="weekPreviewBox">
-          <div style="color: rgba(30,30,30,0.55); font-size:12px;">
-            왼쪽에서 주를 선택하면, 그 주의 기록을 보여줘.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modalFooter">
-      <span id="weekArchiveMeta">저장: 자동(주별)</span>
-      <span id="weekArchiveCount">0 / 0 weeks</span>
-    </div>
-  </div>
-</div>
-
-  
 </body>
 </html>
