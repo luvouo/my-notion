@@ -539,6 +539,28 @@
       border-color: rgba(255,170,190,0.55);
       background: rgba(255,192,203,0.14);
     }
+
+        /* Fix: Notion embed flex/min-width clipping */
+    .modalHeader, .mhRight, .mhLeft{
+      min-width: 0;
+    }
+    
+    .modalHeader{
+      box-sizing: border-box;
+    }
+    
+    .mhRight{
+      flex: 1 1 360px;   /* 검색이 우선적으로 공간 확보 */
+      min-width: 0;
+    }
+    
+    .search{
+      flex: 1 1 260px;   /* ✅ 줄어들 수 있게 */
+      min-width: 0;      /* ✅ 잘림 방지 핵심 */
+      width: 100%;
+      box-sizing: border-box;
+    }
+
   </style>
 </head>
 
