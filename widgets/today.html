@@ -309,6 +309,17 @@
       gap: 6px;              /* 아이콘-텍스트 간격 */
       letter-spacing: -0.1px;
     }
+
+    #addBtn{
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;   /* 동그란 + 버튼 */
+    }
+
     
     /* -------- Modal -------- */
     .modalOverlay{
@@ -648,7 +659,7 @@
 
         <div class="inputRow">
           <input id="todoInput" class="input" type="text" placeholder="오늘 할 일 (Enter)…" maxlength="80" />
-          <button class="btn" id="addBtn" type="button">추가</button>
+          <button class="btn" id="addBtn" type="button">+</button>
         </div>
 
         <ul class="list" id="list"></ul>
@@ -702,8 +713,8 @@
           <div class="previewTop">
             <div class="picked" id="pickedDateText">날짜를 선택해줘</div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn secondary" id="carryPickedBtn" type="button" disabled>↩︎ Carry</button>
-              <button class="btn secondary" id="copyPickedBtn" type="button" disabled>⎘ Copy</button>
+              <button class="btn secondary" id="carryPickedBtn" type="button" disabled>Carry</button>
+              <button class="btn secondary" id="copyPickedBtn" type="button" disabled>Copy</button>
             </div>
           </div>
 
