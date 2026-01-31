@@ -375,7 +375,7 @@
 
     .modalBody{
       display: grid;
-      grid-template-columns: auto 1fr; /* ✅ 왼쪽은 내용만큼, 오른쪽은 남는 폭 */
+      grid-template-columns: max-content 1fr; /* ✅ 왼쪽: 내용만큼 */
     
       min-height: 0;                 /* ✅ 중요: 자식 overflow 작동 조건 */
       flex: 1 1 auto;                /* ✅ 남는 영역을 바디가 차지 */
@@ -385,12 +385,15 @@
 
     .dates{
       border-right: 1px solid rgba(0,0,0,0.06);
-      padding: 12px;
+      padding: 12px 10px;
       overflow: auto;
-      width: max-content;   /* ✅ 내용만큼 */
-      max-width: 170px;     /* ✅ 너무 커지지 않게 상한 */
-      min-width: 150px;     /* ✅ 너무 좁아져서 깨지지 않게 하한 */
+    
+      width: max-content;       /* ✅ 패널 자체도 내용만큼 */
+      max-width: none;          /* ✅ 상한 제거 */
+      min-width: unset;         /* ✅ 하한 제거 */
+      min-height: 0;
     }
+
 
     .dateBtn{
       width: fit-content;      /* ✅ 내용만큼만 */
