@@ -464,6 +464,209 @@
       .meta{ display:none; }
       .dateInput{ width: 100%; }
     }
+
+        /* ===== Date Picker (Custom) ===== */
+    .dp{ position: relative; }
+    
+    .dpTrigger{
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 12px 12px;
+    
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    
+    .dpText{
+      font-size: 14px;
+      color: var(--muted); /* ✅ "미래 할 일…" placeholder와 동일 톤으로 쓰기 */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .dpIcon{
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    .dpTrigger:hover{
+      border-color: rgba(150,190,220,0.75);
+      box-shadow: 0 0 0 3px rgba(165,205,235,0.20);
+    }
+    
+    .dpTrigger:focus-visible{
+      outline: none;
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,205,235,0.28);
+    }
+    
+    /* Popover */
+    .dpPop{
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: min(320px, 100%);
+      z-index: 9999;
+    
+      border-radius: 16px;
+      border: 1px solid rgba(150,190,220,0.45);
+      background: rgba(255,255,255,0.86);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+      padding: 10px;
+    }
+    
+    .dpHeader{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 4px 2px 8px;
+    }
+    
+    .dpTitle{
+      font-size: 13px;
+      color: rgba(30,30,30,0.78); /* ✅ 상단 날짜: 진한 그레이 */
+      letter-spacing: -0.2px;
+    }
+    
+    .dpNav{
+      width: 34px;
+      height: 30px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.60);
+      color: rgba(30,30,30,0.70);
+      cursor: pointer;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
+    }
+    .dpNav:hover{
+      border-color: rgba(150,190,220,0.65);
+      box-shadow: 0 0 0 3px rgba(165,205,235,0.20);
+    }
+    .dpNav:active{ transform: scale(0.98); }
+    .dpNav:focus-visible{
+      outline: none;
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,205,235,0.28);
+    }
+    
+    .dpDow{
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      padding: 2px 2px 6px;
+      font-size: 11px;
+      letter-spacing: 0.2px;
+      color: rgba(30,30,30,0.72); /* ✅ 요일: 진한 그레이 */
+    }
+    .dpDow span:nth-child(1),
+    .dpDow span:nth-child(7){
+      color: rgba(30,30,30,0.72); /* ✅ 주말도 진한 그레이 */
+    }
+    
+    .dpGrid{
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      padding: 2px;
+    }
+    
+    .dpDay{
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.55);
+      color: rgba(30,30,30,0.78);
+      font-size: 12px;
+      cursor: pointer;
+    
+      display: grid;
+      place-items: center;
+    
+      transition: box-shadow .18s ease, border-color .18s ease, background .18s ease, transform .08s ease;
+    }
+    .dpDay[disabled]{
+      opacity: 0.35;
+      cursor: default;
+    }
+    .dpDay:hover:not([disabled]){
+      border-color: rgba(150,190,220,0.65);
+      box-shadow: 0 0 0 3px rgba(165,205,235,0.18);
+    }
+    .dpDay:active:not([disabled]){ transform: scale(0.98); }
+    .dpDay:focus-visible{
+      outline: none;
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,205,235,0.28);
+    }
+    
+    /* Today dot */
+    .dpDay.today::after{
+      content:"";
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(30,30,30,0.58);
+      margin-top: 2px;
+    }
+    
+    /* Selected */
+    .dpDay.selected{
+      background: rgba(165,205,235,0.24); /* ✅ accent */
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,205,235,0.22);
+    }
+    
+    /* Footer buttons */
+    .dpFooter{
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 10px;
+    }
+    
+    .dpAction{
+      flex: 1 1 auto;
+      height: 34px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.60);
+      color: rgba(30,30,30,0.78); /* ✅ Back / Today 텍스트 진한 그레이 */
+      font-size: 12px;
+      cursor: pointer;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
+    }
+    .dpAction:hover{
+      border-color: rgba(150,190,220,0.65);
+      box-shadow: 0 0 0 3px rgba(165,205,235,0.20);
+    }
+    .dpAction:active{ transform: scale(0.98); }
+    .dpAction:focus-visible{
+      outline: none;
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,205,235,0.28);
+    }
+    
+    .dpAction.primary{
+      background: rgba(165,205,235,0.18);
+      border-color: rgba(150,190,220,0.70);
+    }
+
+    
   </style>
 </head>
 
@@ -662,6 +865,148 @@
     const filterNoDateBtn = document.getElementById("filterNoDateBtn");
     const filterOverdueBtn = document.getElementById("filterOverdueBtn");
     const copyBtn = document.getElementById("copyBtn");
+
+        // ===== Custom Date Picker =====
+    const dpRoot = document.getElementById("datePicker");
+    const dpTrigger = document.getElementById("dpTrigger");
+    const dpPop = document.getElementById("dpPop");
+    const dpText = document.getElementById("dpText");
+    const dpTitle = document.getElementById("dpTitle");
+    const dpGrid = document.getElementById("dpGrid");
+    const dpPrev = document.getElementById("dpPrev");
+    const dpNext = document.getElementById("dpNext");
+    const dpBack = document.getElementById("dpBack");
+    const dpToday = document.getElementById("dpToday");
+    
+    // selectedDate: "YYYY-MM-DD" or null
+    let selectedDate = null;
+    
+    // viewDate: first day of current viewed month
+    let view = new Date();
+    view.setDate(1);
+    
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function fmtYMD(d){
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    }
+    function fmtYM(d){
+      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}`;
+    }
+    function isSameDay(a, b){
+      return a.getFullYear()===b.getFullYear() &&
+             a.getMonth()===b.getMonth() &&
+             a.getDate()===b.getDate();
+    }
+    
+    function openDP(){
+      dpPop.hidden = false;
+      dpTrigger.setAttribute("aria-expanded", "true");
+      renderDP();
+      // 첫 포커스: 이전 달 버튼
+      requestAnimationFrame(()=> dpPrev.focus());
+    }
+    
+    function closeDP(){
+      dpPop.hidden = true;
+      dpTrigger.setAttribute("aria-expanded", "false");
+    }
+    
+    function setSelected(dateObjOrNull, {close=true} = {}){
+      if(!dateObjOrNull){
+        selectedDate = null;
+        dpText.textContent = "날짜 선택";
+        // placeholder 느낌 유지: muted 색은 CSS가 처리
+      }else{
+        selectedDate = fmtYMD(dateObjOrNull);
+        // 표시 텍스트는 위젯 스타일에 맞게 바꾸고 싶으면 여기에서 포맷
+        dpText.textContent = `${dateObjOrNull.getFullYear()}.${pad2(dateObjOrNull.getMonth()+1)}.${pad2(dateObjOrNull.getDate())}`;
+      }
+      renderDP();
+      if(close) closeDP();
+    }
+    
+    function renderDP(){
+      dpTitle.textContent = fmtYM(view);
+      dpGrid.innerHTML = "";
+    
+      const today = new Date();
+      const first = new Date(view.getFullYear(), view.getMonth(), 1);
+      const last  = new Date(view.getFullYear(), view.getMonth()+1, 0);
+      const daysInMonth = last.getDate();
+    
+      // Start on Sunday (S M T W T F S)
+      const startDow = first.getDay(); // 0..6, Sunday=0
+    
+      // Fill leading blanks
+      for(let i=0;i<startDow;i++){
+        const blank = document.createElement("button");
+        blank.type = "button";
+        blank.className = "dpDay";
+        blank.disabled = true;
+        blank.setAttribute("aria-hidden", "true");
+        blank.textContent = "";
+        dpGrid.appendChild(blank);
+      }
+    
+      // Days
+      for(let day=1; day<=daysInMonth; day++){
+        const d = new Date(view.getFullYear(), view.getMonth(), day);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "dpDay";
+        btn.textContent = String(day);
+        btn.setAttribute("role", "gridcell");
+    
+        if(isSameDay(d, today)) btn.classList.add("today");
+        if(selectedDate && selectedDate === fmtYMD(d)) btn.classList.add("selected");
+    
+        btn.addEventListener("click", ()=> setSelected(d, {close:true}));
+        dpGrid.appendChild(btn);
+      }
+    }
+    
+    dpTrigger.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      if(dpPop.hidden) openDP();
+      else closeDP();
+    });
+    
+    dpPrev.addEventListener("click", ()=>{
+      view = new Date(view.getFullYear(), view.getMonth()-1, 1);
+      renderDP();
+    });
+    
+    dpNext.addEventListener("click", ()=>{
+      view = new Date(view.getFullYear(), view.getMonth()+1, 1);
+      renderDP();
+    });
+    
+    dpBack.addEventListener("click", ()=>{
+      setSelected(null, {close:true}); // Back = 선택 해제 + 닫기
+    });
+    
+    dpToday.addEventListener("click", ()=>{
+      const t = new Date();
+      view = new Date(t.getFullYear(), t.getMonth(), 1);
+      setSelected(t, {close:true});
+    });
+    
+    // Close on outside click
+    document.addEventListener("click", ()=>{
+      if(!dpPop.hidden) closeDP();
+    });
+    
+    // Prevent closing when clicking inside popover
+    dpPop.addEventListener("click", (e)=> e.stopPropagation());
+    
+    // Esc to close
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape" && !dpPop.hidden){
+        closeDP();
+        dpTrigger.focus();
+      }
+    });
+
 
     metaText.textContent = ymd(new Date());
 
