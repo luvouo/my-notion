@@ -741,6 +741,58 @@
       box-sizing: border-box;
     }
 
+      /* ===== Archive manage UI ===== */
+      .weekRow{
+        display:flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      
+      .weekPick{
+        width: 16px;
+        height: 16px;
+        accent-color: rgba(140,190,232,0.90);
+        cursor: pointer;
+        flex: 0 0 auto;
+      }
+      
+      .weekRow .weekBtn{
+        margin-bottom: 0; /* 기존 weekBtn은 margin-bottom:10px; 이라서 줄맞춤 깨짐 방지 */
+      }
+      
+      .weekTools{
+        display:flex;
+        gap: 6px;
+        align-items:center;
+        flex: 0 0 auto;
+      }
+      
+      .iconBtn{
+        width: 30px;
+        height: 30px;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.08);
+        background: rgba(255,255,255,0.70);
+        cursor: pointer;
+        display:grid;
+        place-items:center;
+        color: rgba(30,30,30,0.70);
+        transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .iconBtn:hover{
+        border-color: rgba(140,190,232,0.55);
+        box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
+      }
+      .iconBtn:active{ transform: scale(0.98); }
+      
+      .pinOn{
+        border-color: rgba(140,190,232,0.55);
+        box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+      }
+
+    
     .mhLeft{
       display:flex;
       gap: 10px;
@@ -1025,6 +1077,10 @@
         <div class="mhRight">
           <input id="searchInput" class="search" type="text" placeholder="검색: 주차(YYYY.MM.DD~) 또는 할 일 키워드…" />
           <button class="btn secondary" id="clearSearchBtn" type="button">검색 초기화</button>
+          <button class="btn secondary" id="exportSelectedBtn" type="button">Export Selected</button>
+          <button class="btn secondary" id="deleteSelectedBtn" type="button">Delete Selected</button>
+          <button class="btn secondary" id="clearSelectedBtn" type="button">Clear Select</button>
+
           <button class="btn secondary" id="closeModalBtn" type="button">닫기</button>
         </div>
       </div>
@@ -1063,6 +1119,22 @@
     import { getWorkspaceId } from "../core/auth-lite.js";
     
     /* ========= storage keys ========= */
+    const WEEK_ARCHIVE_META_KEY = "soft_schedule_week_archive_meta_v1";
+    
+    function loadWeekArchiveMeta(){
+      try{
+        const raw = localStorage.getItem(WEEK_ARCHIVE_META_KEY);
+        if(!raw) return {};
+        const parsed = JSON.parse(raw);
+        return (parsed && typeof parsed === "object") ? parsed : {};
+      }catch(e){ return {}; }
+    }
+    
+    function saveWeekArchiveMeta(meta){
+      localStorage.setItem(WEEK_ARCHIVE_META_KEY, JSON.stringify(meta || {}));
+    }
+
+    
     const WEEK_PREFIX = "soft_schedule_week_";
     const WEEK_ARCHIVE_KEY = "soft_schedule_week_archive_v1";
 
@@ -1116,7 +1188,7 @@
         document.body.appendChild(ta);
         ta.select();
         try{
-          const ok = document.execCommand("copy");
+          const ok = document.execCommand("");
           document.body.removeChild(ta);
           return ok;
         }catch(err){
@@ -1358,6 +1430,10 @@
     const archiveCount = document.getElementById("archiveCount");
     const searchInput = document.getElementById("searchInput");
     const clearSearchBtn = document.getElementById("clearSearchBtn");
+    const exportSelectedBtn = document.getElementById("exportSelectedBtn");
+    const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
+    const clearSelectedBtn  = document.getElementById("clearSelectedBtn");
+
 
         /* ========= workspace init (Today 연동용) ========= */
     function setTodayControlsEnabled(enabled){
@@ -1948,6 +2024,99 @@
     }, { passive: true });
 
     /* ========= Copy ========= */
+    function downloadText(filename, text){
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    
+    function exportWeekAsJson(weekId, data, meta){
+      const payload = {
+        weekId,
+        label: meta && meta.label ? meta.label : "",
+        pinned: meta && meta.pinned === true,
+        exportedAt: new Date().toISOString(),
+        data: normalizeWeekState(data)
+      };
+      const fnameBase = weekId.replaceAll(".", "-").replaceAll("~", "-").replaceAll(" ", "");
+      downloadText(`week-${fnameBase}.json`, JSON.stringify(payload, null, 2));
+      showToast("JSON으로 내보냈어.");
+    }
+    
+    function exportSelectedWeeks(){
+      const ids = Array.from(selectedWeeks);
+      if(ids.length === 0){
+        showToast("선택된 주차가 없어.");
+        return;
+      }
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        weeks: ids.map(id => ({
+          weekId: id,
+          label: archiveMeta && archiveMeta[id] && archiveMeta[id].label ? archiveMeta[id].label : "",
+          pinned: archiveMeta && archiveMeta[id] && archiveMeta[id].pinned === true,
+          data: normalizeWeekState(weekArchive[id])
+        }))
+      };
+      downloadText(`week-archive-selected.json`, JSON.stringify(payload, null, 2));
+      showToast(`${ids.length}개를 내보냈어.`);
+    }
+    
+    function deleteSelectedWeeks(){
+      const ids = Array.from(selectedWeeks);
+      if(ids.length === 0){
+        showToast("선택된 주차가 없어.");
+        return;
+      }
+      const ok = confirm(`선택한 ${ids.length}개 주차를 아카이브에서 삭제할까?`);
+      if(!ok) return;
+    
+      for(const id of ids){
+        delete weekArchive[id];
+        if(archiveMeta && archiveMeta[id]) delete archiveMeta[id];
+        if(pickedWeekId === id) pickedWeekId = null;
+      }
+      saveWeekArchive(weekArchive);
+      saveWeekArchiveMeta(archiveMeta);
+    
+      selectedWeeks = new Set();
+      buildWeeks();
+      syncBulkButtons();
+    
+      // 프리뷰 초기화
+      pickedWeekText.textContent = "주차를 선택해줘";
+      restoreWeekBtn.disabled = true;
+      copyWeekBtn.disabled = true;
+      previewBox.innerHTML = `
+        <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+          왼쪽에서 주차를 선택하면, 그 주의 기록을 보여줘.
+        </div>
+      `;
+    
+      showToast("선택 주차를 삭제했어.");
+    }
+    
+    function clearSelectedWeeks(){
+      selectedWeeks = new Set();
+      buildWeeks();
+      syncBulkButtons();
+      showToast("선택을 해제했어.");
+    }
+    
+    function syncBulkButtons(){
+      const n = selectedWeeks.size;
+      exportSelectedBtn.disabled = (n === 0);
+      deleteSelectedBtn.disabled = (n === 0);
+      clearSelectedBtn.disabled  = (n === 0);
+    }
+
+    
     function formatWeekForCopy(weekId, data){
       const lines = [];
       lines.push(`[This Week | ${weekId}]`);
@@ -2014,13 +2183,21 @@
     });
 
     /* ========= History / Archive modal ========= */
+    let archiveMeta = {};          // weekId -> { label, pinned }
+    let selectedWeeks = new Set(); // bulk selection
+
     let pickedWeekId = null;
     let searchQuery = "";
 
     function openModal(){
       weekArchive = loadWeekArchive();
+      archiveMeta = loadWeekArchiveMeta();
+      
+      selectedWeeks = new Set(); // ✅ 모달 열 때 선택 초기화
+      
       searchQuery = (searchInput.value || "").trim();
       buildWeeks();
+
       modalOverlay.classList.add("open");
       modalOverlay.setAttribute("aria-hidden", "false");
 
@@ -2037,6 +2214,8 @@
           왼쪽에서 주차를 선택하면, 그 주의 기록을 보여줘.
         </div>
       `;
+
+      syncBulkButtons();
     }
 
     function closeModal(){
@@ -2048,6 +2227,11 @@
       if(!q) return true;
       const lowerQ = q.toLowerCase();
       if(String(weekId).toLowerCase().includes(lowerQ)) return true;
+
+      // label 검색 포함
+      const meta = archiveMeta && archiveMeta[weekId];
+      if(meta && meta.label && String(meta.label).toLowerCase().includes(lowerQ)) return true;
+
 
       const days = (data && data.days) ? data.days : {};
       for(let i=0;i<7;i++){
@@ -2081,14 +2265,19 @@
       const q = (searchQuery || "").trim();
       const ids = Object.keys(weekArchive || {});
       ids.sort((a,b) => {
-        const as = a.split("~")[0].trim();
-        const bs = b.split("~")[0].trim();
-        const ad = ymdToDate(as);
-        const bd = ymdToDate(bs);
-        const at = ad ? ad.getTime() : 0;
-        const bt = bd ? bd.getTime() : 0;
-        return bt - at;
-      });
+      const ap = archiveMeta && archiveMeta[a] && archiveMeta[a].pinned === true;
+      const bp = archiveMeta && archiveMeta[b] && archiveMeta[b].pinned === true;
+      if(ap !== bp) return ap ? -1 : 1; // pinned 먼저
+    
+      const as = a.split("~")[0].trim();
+      const bs = b.split("~")[0].trim();
+      const ad = ymdToDate(as);
+      const bd = ymdToDate(bs);
+      const at = ad ? ad.getTime() : 0;
+      const bt = bd ? bd.getTime() : 0;
+      return bt - at;
+    });
+
 
       const filtered = ids.filter(id => weekMatchesQuery(id, weekArchive[id], q));
 
@@ -2101,17 +2290,134 @@
         `;
       }else{
         for(const id of filtered){
-          const data = weekArchive[id];
-          const { total, done } = getCountsForWeek(data);
-
-          const btn = document.createElement("button");
-          btn.className = "weekBtn";
-          btn.type = "button";
-          btn.dataset.week = id;
-          btn.innerHTML = `${escapeHtml(id)}<small>${done}/${total}</small>`;
-          weeksPanel.appendChild(btn);
-        }
+        const data = weekArchive[id];
+        const { total, done } = getCountsForWeek(data);
+      
+        const meta = (archiveMeta && archiveMeta[id]) ? archiveMeta[id] : { label: "", pinned: false };
+        const label = (meta.label || "").trim();
+        const pinned = meta.pinned === true;
+      
+        const row = document.createElement("div");
+        row.className = "weekRow";
+      
+        // checkbox (bulk select)
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.className = "weekPick";
+        cb.checked = selectedWeeks.has(id);
+        cb.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+        });
+        cb.addEventListener("change", () => {
+          if(cb.checked) selectedWeeks.add(id);
+          else selectedWeeks.delete(id);
+          syncBulkButtons();
+        });
+      
+        // main button (pick preview)
+        const btn = document.createElement("button");
+        btn.className = "weekBtn";
+        btn.type = "button";
+        btn.dataset.week = id;
+      
+        // 표시: label 있으면 label 우선, 없으면 weekId
+        const titleLine = label ? `${escapeHtml(label)}` : `${escapeHtml(id)}`;
+        const subLine = label ? `<small>${escapeHtml(id)} · ${done}/${total}</small>` : `<small>${done}/${total}</small>`;
+        btn.innerHTML = `${titleLine}${subLine}`;
+      
+        // tools
+        const tools = document.createElement("div");
+        tools.className = "weekTools";
+      
+        // pin
+        const pinBtn = document.createElement("button");
+        pinBtn.type = "button";
+        pinBtn.className = "iconBtn" + (pinned ? " pinOn" : "");
+        pinBtn.title = pinned ? "Unpin" : "Pin";
+        pinBtn.textContent = "📌";
+        pinBtn.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          const m = archiveMeta[id] || (archiveMeta[id] = { label: "", pinned: false });
+          m.pinned = !m.pinned;
+          saveWeekArchiveMeta(archiveMeta);
+          buildWeeks();
+        });
+      
+        // rename label
+        const renBtn = document.createElement("button");
+        renBtn.type = "button";
+        renBtn.className = "iconBtn";
+        renBtn.title = "Rename label";
+        renBtn.textContent = "✎";
+        renBtn.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          const cur = (archiveMeta[id] && archiveMeta[id].label) ? archiveMeta[id].label : "";
+          const next = prompt("라벨(비우면 제거):", cur);
+          if(next === null) return;
+          const m = archiveMeta[id] || (archiveMeta[id] = { label: "", pinned: false });
+          m.label = String(next || "").trim();
+          if(!m.label) delete m.label; // 깔끔하게
+          saveWeekArchiveMeta(archiveMeta);
+          buildWeeks();
+        });
+      
+        // export (download json)
+        const expBtn = document.createElement("button");
+        expBtn.type = "button";
+        expBtn.className = "iconBtn";
+        expBtn.title = "Export JSON";
+        expBtn.textContent = "⬇";
+        expBtn.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          exportWeekAsJson(id, weekArchive[id], archiveMeta[id]);
+        });
+      
+        // delete
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "iconBtn";
+        delBtn.title = "Delete week";
+        delBtn.textContent = "🗑";
+        delBtn.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          const ok = confirm(`아카이브에서 삭제할까?\n\n${id}`);
+          if(!ok) return;
+          delete weekArchive[id];
+          if(archiveMeta && archiveMeta[id]) delete archiveMeta[id];
+          saveWeekArchive(weekArchive);
+          saveWeekArchiveMeta(archiveMeta);
+      
+          // 선택/프리뷰 상태도 정리
+          selectedWeeks.delete(id);
+          if(pickedWeekId === id){
+            pickedWeekId = null;
+            pickedWeekText.textContent = "주차를 선택해줘";
+            restoreWeekBtn.disabled = true;
+            copyWeekBtn.disabled = true;
+            previewBox.innerHTML = `
+              <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+                왼쪽에서 주차를 선택하면, 그 주의 기록을 보여줘.
+              </div>
+            `;
+          }
+      
+          buildWeeks();
+          syncBulkButtons();
+          showToast("삭제했어.");
+        });
+      
+        tools.appendChild(pinBtn);
+        tools.appendChild(renBtn);
+        tools.appendChild(expBtn);
+        tools.appendChild(delBtn);
+      
+        row.appendChild(cb);
+        row.appendChild(btn);
+        row.appendChild(tools);
+      
+        weeksPanel.appendChild(row);
       }
+
 
       archiveCount.textContent = `${filtered.length} / ${ids.length} weeks`;
 
@@ -2217,6 +2523,9 @@
 
     historyBtn.addEventListener("click", openModal);
     closeModalBtn.addEventListener("click", closeModal);
+    exportSelectedBtn.addEventListener("click", exportSelectedWeeks);
+    deleteSelectedBtn.addEventListener("click", deleteSelectedWeeks);
+    clearSelectedBtn.addEventListener("click", clearSelectedWeeks);
     modalOverlay.addEventListener("click", (e) => {
       if(e.target === modalOverlay) closeModal();
     });
