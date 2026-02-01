@@ -968,8 +968,102 @@
     // ✅ workspace_id 확보 (없으면 게이트 화면에서 끝)
     const workspace_id = await requireWorkspaceId();
     if (!workspace_id) {
-      // 사용자가 패스코드를 넣고 새로고침하기 전까지 종료
-      throw new Error("passcode required");
+          // 사용자가 패스코드를 넣고 새로고침하기 전까지 종료
+          throw new Error("passcode required");
+          // ===== Supabase: Today Sync Layer (items table) =====
+    function nowIso(){ return new Date().toISOString(); }
+    
+    function parseYmdParts(str){
+      const m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(str);
+      if(!m) return null;
+      return { y:+m[1], m:+m[2], d:+m[3] };
+    }
+    
+    /** dateStr("YYYY.MM.DD") -> [startIso, endIso) 로컬 자정 기준 */
+    function dayRangeIso(dateStr){
+      const p = parseYmdParts(dateStr);
+      if(!p) throw new Error("bad dateStr");
+      const start = new Date(p.y, p.m-1, p.d, 0,0,0,0);
+      const end = new Date(p.y, p.m-1, p.d+1, 0,0,0,0);
+      return { startIso: start.toISOString(), endIso: end.toISOString() };
+    }
+    
+    function rowToItem(row){
+      return {
+        id: row.id,
+        text: row.title || "",
+        done: row.status === "done"
+      };
+    }
+    
+    function itemToRow({ id, text, done }, dateStr){
+      const { startIso } = dayRangeIso(dateStr); // 그 날 00:00 로 고정
+      return {
+        id,
+        workspace_id,
+        title: (text || "").trim(),
+        status: done ? "done" : "todo",
+        due_at: startIso,
+        deleted: false,
+        updated_at: nowIso(),
+        pinned: false,
+        priority: 0
+      };
+    }
+    
+    async function sbLoadDay(dateStr){
+      const { startIso, endIso } = dayRangeIso(dateStr);
+      const rows = await sbFetch("items", {
+        query: {
+          select: "id,title,status",
+          workspace_id: `eq.${workspace_id}`,
+          deleted: "eq.false",
+          due_at: `gte.${startIso}`,
+          // endIso 미만
+          and: `(due_at.lt.${endIso})`,
+          order: "updated_at.desc"
+        }
+      });
+      return rows.map(rowToItem);
+    }
+    
+    async function sbUpsertRow(row){
+      // on_conflict=id 로 upsert
+      return await sbFetch("items?on_conflict=id", { method:"POST", body:[row] });
+    }
+    
+    async function sbPatchRow(id, patch){
+      return await sbFetch(`items?id=eq.${id}`, { method:"PATCH", body: patch });
+    }
+    
+    async function sbSoftDelete(id){
+      return await sbPatchRow(id, { deleted: true, updated_at: nowIso() });
+    }
+    
+    async function sbLoadArchiveAll(){
+      // 히스토리/아카이브: 이 workspace의 전체(또는 상당량) 로드
+      // 너무 많아지면 나중에 기간 제한/페이지네이션 추가.
+      const rows = await sbFetch("items", {
+        query: {
+          select: "id,title,status,due_at,deleted,updated_at",
+          workspace_id: `eq.${workspace_id}`,
+          deleted: "eq.false",
+          order: "due_at.desc",
+          limit: "2000"
+        }
+      });
+    
+      const archive = {}; // { "YYYY.MM.DD": [{id,text,done}...] }
+      for(const r of rows){
+        if(!r.due_at) continue;
+        const d = new Date(r.due_at);
+        const dateStr =
+          `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;
+        (archive[dateStr] ||= []).push(rowToItem(r));
+      }
+      return archive;
+    }
+
       const USE_SUPABASE = true; // ✅ 서버 동기화 ON/OFF 스위치
 
     }
@@ -1172,8 +1266,15 @@ console.log("env ok?", window.__ENV__);
 
     metaText.textContent = todayStr;
 
-    let archive = USE_SUPABASE ? {} : autoArchivePastDays(todayStr);
-    let state   = USE_SUPABASE ? [] : loadDay(KEY_TODAY);
+    let archive = {};              // History/Archive용 (모달 열 때 로드)
+    let state = [];                // 오늘 리스트
+    let pickedDate = null;
+    let searchQuery = "";
+    
+    // ✅ Supabase에서 오늘 데이터 로드 후 렌더
+    state = await sbLoadDay(todayStr);
+    render();
+
 
     let pickedDate = null;
     let searchQuery = "";
@@ -1196,23 +1297,37 @@ console.log("env ok?", window.__ENV__);
     function addItem(text){
       const t = (text || "").trim();
       if(!t) return;
-      state.unshift({
+    
+      const it = {
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
         done: false
-      });
-      saveDay(KEY_TODAY, state);
+      };
+    
+      // UI 먼저 반영(체감 빠름)
+      state.unshift(it);
       render();
+    
+      // Supabase upsert
+      await sbUpsertRow(itemToRow(it, todayStr));
     }
     function toggleItem(id){
       state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
-      saveDay(KEY_TODAY, state);
       render();
+    
+      const it = state.find(x => x.id === id);
+      if(!it) return;
+    
+      await sbPatchRow(id, {
+        status: it.done ? "done" : "todo",
+        updated_at: nowIso()
+      });
     }
+    
     function deleteItem(id){
       state = state.filter(it => it.id !== id);
-      saveDay(KEY_TODAY, state);
       render();
+      await sbSoftDelete(id);
     }
     function clearDone(){
       state = state.filter(it => !it.done);
@@ -1334,6 +1449,26 @@ console.log("env ok?", window.__ENV__);
     }
 
     function openModal(){
+      // 로딩 표시 (간단)
+      datesPanel.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">불러오는 중…</div>`;
+      previewBox.innerHTML = "";
+    
+      archive = await sbLoadArchiveAll(); // ✅ 서버에서 전체 히스토리 로드
+      searchQuery = (searchInput.value || "").trim();
+      buildDates();
+    
+      modalOverlay.classList.add("open");
+      modalOverlay.setAttribute("aria-hidden", "false");
+    
+      pickedDate = null;
+      pickedDateText.textContent = "날짜를 선택해줘";
+      copyPickedBtn.disabled = true;
+      carryPickedBtn.disabled = true;
+      previewBox.innerHTML = `
+        <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+          왼쪽에서 날짜를 선택하면, 그날의 Today 기록을 보여줘.
+        </div>
+      `;
       if (!USE_SUPABASE) {
         archive = loadArchive();
       }
@@ -1527,7 +1662,8 @@ console.log("env ok?", window.__ENV__);
     if (resetBtn) resetBtn.addEventListener("click", resetAll);
 
     carryYesterdayBtn.addEventListener("click", carryOverYesterday);
-    historyBtn.addEventListener("click", openModal);
+    historyBtn.addEventListener("click", () => openModal());
+
 
     copyTodayBtn.addEventListener("click", (e) => {
       e.stopPropagation();
