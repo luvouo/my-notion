@@ -903,827 +903,748 @@
   </div>
 
   <script src="../env.js"></script>
-  <script type="module">
-    
-    import { getWorkspaceId, savePasscode } from "../core/auth-lite.js";
+<script type="module">
+  import { getWorkspaceId, savePasscode } from "../core/auth-lite.js";
+  import { sbFetch } from "../core/supabase-rest.js";
 
-    /**
-     * today.html이 폴더 안에 있어서 "../core/..."로 잡았어.
-     * (네 파일에서 font 경로가 ../fonts 인 걸로 봐서 한 단계 위가 repo root일 확률이 높음)
-     * 만약 core 폴더가 다른 위치면 경로만 수정하면 됨.
-     */
-    
-    async function requireWorkspaceId() {
-      // 1) 저장된 패스코드가 있으면 바로 workspace_id 생성
-      let ws = await getWorkspaceId();
-      if (ws) return ws;
-    
-      // 2) 없으면 "현재 카드"를 패스코드 입력 화면으로 교체
-      const inner = document.querySelector(".wrap");
-      if (!inner) throw new Error("Cannot find .wrap");
-    
-      inner.innerHTML = `
-        <div class="card" role="application" aria-label="Passcode Gate">
-          <div class="inner" style="gap: 10px;">
-            <div class="top">
-              <div class="title">
-                <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
-                <h1>Passcode</h1>
-              </div>
-              <div class="meta">sync</div>
+  // =====================
+  // 0) Passcode → workspace_id 게이트
+  // =====================
+  async function requireWorkspaceId() {
+    let ws = await getWorkspaceId();
+    if (ws) return ws;
+
+    const wrap = document.querySelector(".wrap");
+    if (!wrap) throw new Error("Cannot find .wrap");
+
+    wrap.innerHTML = `
+      <div class="card" role="application" aria-label="Passcode Gate">
+        <div class="inner" style="gap: 10px;">
+          <div class="top">
+            <div class="title">
+              <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+              <h1>Passcode</h1>
             </div>
-    
-            <div class="inputRow">
-              <input id="passInput" class="input" type="password" placeholder="패스코드 입력…" />
-              <button class="btn" id="passBtn" type="button" style="min-width:90px;">확인</button>
-            </div>
-    
-            <div style="font-size:12px; color: var(--muted); line-height:1.4;">
-              같은 패스코드를 사용하는 모든 위젯/기기가 같은 데이터를 보게 돼.
-            </div>
+            <div class="meta">sync</div>
+          </div>
+
+          <div class="inputRow">
+            <input id="passInput" class="input" type="password" placeholder="패스코드 입력…" />
+            <button class="btn" id="passBtn" type="button" style="min-width:90px;">확인</button>
+          </div>
+
+          <div style="font-size:12px; color: var(--muted); line-height:1.4;">
+            같은 패스코드를 쓰는 모든 위젯/기기가 같은 데이터를 보게 돼.
           </div>
         </div>
-      `;
-    
-      const passInput = document.getElementById("passInput");
-      const passBtn = document.getElementById("passBtn");
-    
-      const submit = async () => {
-        const pass = (passInput.value || "").trim();
-        if (!pass) return;
-        savePasscode(pass);
-        // 저장 후 새로고침(가장 안전)
-        location.reload();
-      };
-    
-      passBtn.addEventListener("click", submit);
-      passInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") submit();
-      });
-    
-      // 여기서 멈춤(새로고침 후 다시 진입)
-      return null;
-    }
-    
-    // ✅ workspace_id 확보 (없으면 게이트 화면에서 끝)
-    const workspace_id = await requireWorkspaceId();
-    if (!workspace_id) {
-          // 사용자가 패스코드를 넣고 새로고침하기 전까지 종료
-          throw new Error("passcode required");
-          // ===== Supabase: Today Sync Layer (items table) =====
-    function nowIso(){ return new Date().toISOString(); }
-    
-    function parseYmdParts(str){
-      const m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(str);
-      if(!m) return null;
-      return { y:+m[1], m:+m[2], d:+m[3] };
-    }
-    
-    /** dateStr("YYYY.MM.DD") -> [startIso, endIso) 로컬 자정 기준 */
-    function dayRangeIso(dateStr){
-      const p = parseYmdParts(dateStr);
-      if(!p) throw new Error("bad dateStr");
-      const start = new Date(p.y, p.m-1, p.d, 0,0,0,0);
-      const end = new Date(p.y, p.m-1, p.d+1, 0,0,0,0);
-      return { startIso: start.toISOString(), endIso: end.toISOString() };
-    }
-    
-    function rowToItem(row){
-      return {
-        id: row.id,
-        text: row.title || "",
-        done: row.status === "done"
-      };
-    }
-    
-    function itemToRow({ id, text, done }, dateStr){
-      const { startIso } = dayRangeIso(dateStr); // 그 날 00:00 로 고정
-      return {
-        id,
-        workspace_id,
-        title: (text || "").trim(),
-        status: done ? "done" : "todo",
-        due_at: startIso,
-        deleted: false,
-        updated_at: nowIso(),
-        pinned: false,
-        priority: 0
-      };
-    }
-    
-    async function sbLoadDay(dateStr){
-      const { startIso, endIso } = dayRangeIso(dateStr);
-      const rows = await sbFetch("items", {
-        query: {
-          select: "id,title,status",
-          workspace_id: `eq.${workspace_id}`,
-          deleted: "eq.false",
-          due_at: `gte.${startIso}`,
-          // endIso 미만
-          and: `(due_at.lt.${endIso})`,
-          order: "updated_at.desc"
-        }
-      });
-      return rows.map(rowToItem);
-    }
-    
-    async function sbUpsertRow(row){
-      // on_conflict=id 로 upsert
-      return await sbFetch("items?on_conflict=id", { method:"POST", body:[row] });
-    }
-    
-    async function sbPatchRow(id, patch){
-      return await sbFetch(`items?id=eq.${id}`, { method:"PATCH", body: patch });
-    }
-    
-    async function sbSoftDelete(id){
-      return await sbPatchRow(id, { deleted: true, updated_at: nowIso() });
-    }
-    
-    async function sbLoadArchiveAll(){
-      // 히스토리/아카이브: 이 workspace의 전체(또는 상당량) 로드
-      // 너무 많아지면 나중에 기간 제한/페이지네이션 추가.
-      const rows = await sbFetch("items", {
-        query: {
-          select: "id,title,status,due_at,deleted,updated_at",
-          workspace_id: `eq.${workspace_id}`,
-          deleted: "eq.false",
-          order: "due_at.desc",
-          limit: "2000"
-        }
-      });
-    
-      const archive = {}; // { "YYYY.MM.DD": [{id,text,done}...] }
-      for(const r of rows){
-        if(!r.due_at) continue;
-        const d = new Date(r.due_at);
-        const dateStr =
-          `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;
-        (archive[dateStr] ||= []).push(rowToItem(r));
-      }
-      return archive;
-    }
-
-      const USE_SUPABASE = true; // ✅ 서버 동기화 ON/OFF 스위치
-
-    }
-
-console.log("env ok?", window.__ENV__);
-
-    
-    const PREFIX_DAY = `soft_schedule_today_${workspace_id}_`;
-    const KEY_ARCHIVE = `soft_schedule_today_${workspace_id}_archive_v1`;
-
-
-    function formatDateLabel(dateStr){
-      const d = ymdToDate(dateStr);
-      if(!d) return dateStr;
-
-      const yy = String(d.getFullYear()).slice(-2);
-      const mm = pad2(d.getMonth() + 1);
-      const dd = pad2(d.getDate());
-      const wk = ["일","월","화","수","목","금","토"][d.getDay()];
-
-      return `${yy}.${mm}.${dd} (${wk})`;
-    }
-
-    function pad2(n){ return String(n).padStart(2,"0"); }
-    function ymd(d=new Date()){
-      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
-    }
-    function parseYmd(str){
-      const m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(str);
-      if(!m) return null;
-      return { y:+m[1], m:+m[2], d:+m[3] };
-    }
-    function ymdToDate(str){
-      const p = parseYmd(str);
-      if(!p) return null;
-      return new Date(p.y, p.m-1, p.d);
-    }
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, (m) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      }[m]));
-    }
-    function showToast(msg){
-      toast.textContent = msg;
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(()=> toast.textContent = "", 1600);
-    }
-    async function copyToClipboard(text){
-      try{
-        await navigator.clipboard.writeText(text);
-        return true;
-      }catch(e){
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.left = "-9999px";
-        document.body.appendChild(ta);
-        ta.select();
-        try{
-          const ok = document.execCommand("copy");
-          document.body.removeChild(ta);
-          return ok;
-        }catch(err){
-          document.body.removeChild(ta);
-          return false;
-        }
-      }
-    }
-    function formatForCopy(dateStr, items){
-      const lines = [];
-      lines.push(`[Today | ${dateStr}]`);
-      for(const it of items){
-        lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
-      }
-      return lines.join("\n");
-    }
-    function highlight(text, query){
-      const t = String(text);
-      const q = String(query || "").trim();
-      if(!q) return escapeHtml(t);
-      const idx = t.toLowerCase().indexOf(q.toLowerCase());
-      if(idx === -1) return escapeHtml(t);
-      const before = escapeHtml(t.slice(0, idx));
-      const mid = escapeHtml(t.slice(idx, idx + q.length));
-      const after = escapeHtml(t.slice(idx + q.length));
-      return `${before}<span class="mark">${mid}</span>${after}`;
-    }
-
-    function loadArchive(){
-      if (USE_SUPABASE) return {}; // ✅ 서버 모드에서는 로컬 아카이브 안 씀
-      try{
-        const raw = localStorage.getItem(KEY_ARCHIVE);
-        if(!raw) return {};
-        const parsed = JSON.parse(raw);
-        return (parsed && typeof parsed === "object") ? parsed : {};
-      }catch(e){ return {}; }
-      
-      try{
-        const raw = localStorage.getItem(KEY_ARCHIVE);
-        if(!raw) return {};
-        const parsed = JSON.parse(raw);
-        return (parsed && typeof parsed === "object") ? parsed : {};
-      }catch(e){ return {}; }
-    }
-    function saveArchive(archive){
-      if (USE_SUPABASE) return; // ✅ 서버 모드에서는 저장 안 함
-      localStorage.setItem(KEY_ARCHIVE, JSON.stringify(archive));
-    }
-
-    function autoArchivePastDays(todayStr){
-      if (USE_SUPABASE) return {}; // ✅ 서버 모드에서는 로컬 자동 아카이브 안 함
-      const archive = loadArchive();
-      const keys = [];
-      for(let i=0;i<localStorage.length;i++){
-        const k = localStorage.key(i);
-        if(!k) continue;
-        if(k === KEY_ARCHIVE) continue;
-        if(!k.startsWith(PREFIX_DAY)) continue;
-        const dateStr = k.slice(PREFIX_DAY.length);
-        if(dateStr === todayStr) continue;
-        if(!parseYmd(dateStr)) continue;
-        keys.push({ k, dateStr });
-      }
-
-      let moved = 0;
-      for(const {k, dateStr} of keys){
-        if(archive[dateStr]){
-          try{ localStorage.removeItem(k); }catch(e){}
-          continue;
-        }
-        try{
-          const raw = localStorage.getItem(k);
-          const items = raw ? JSON.parse(raw) : null;
-          if(Array.isArray(items)){
-            archive[dateStr] = items;
-            moved++;
-          }
-          localStorage.removeItem(k);
-        }catch(e){}
-      }
-
-      if(moved > 0) saveArchive(archive);
-      return archive;
-    }
-
-    const todayStr = ymd(new Date());
-    const yesterdayStr = ymd(new Date(Date.now() - 86400000));
-    const KEY_TODAY = `${PREFIX_DAY}${todayStr}`;
-
-    // Main
-    const metaText = document.getElementById("metaText");
-    const listEl = document.getElementById("list");
-    const inputEl = document.getElementById("todoInput");
-    const addBtn = document.getElementById("addBtn");
-
-    /* add icon */
-    addBtn.innerHTML = `
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-        <path d="M12 5v14M5 12h14"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linecap="round"/>
-      </svg>
+      </div>
     `;
 
-    const countText = document.getElementById("countText");
-    const clearDoneBtn = document.getElementById("clearDoneBtn");
-    const resetBtn = document.getElementById("resetBtn");
+    const passInput = document.getElementById("passInput");
+    const passBtn = document.getElementById("passBtn");
 
-    const carryYesterdayBtn = document.getElementById("carryYesterdayBtn");
-    const historyBtn = document.getElementById("historyBtn");
-    const copyTodayBtn = document.getElementById("copyTodayBtn");
-    const copyPopover = document.getElementById("copyPopover");
+    const submit = async () => {
+      const pass = (passInput.value || "").trim();
+      if (!pass) return;
+      savePasscode(pass);
+      location.reload();
+    };
 
-    const toast = document.getElementById("toast");
+    passBtn.addEventListener("click", submit);
+    passInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") submit();
+    });
 
-    // ===== Add button enable/disable sync =====
-    function syncAddButtonState(){
-      const hasText = (inputEl.value || "").trim().length > 0;
-      addBtn.disabled = !hasText;
+    return null;
+  }
+
+  const workspace_id = await requireWorkspaceId();
+  if (!workspace_id) throw new Error("passcode required");
+
+  // =====================
+  // 1) 기존 로컬 함수는 남겨두되 "서버 모드"에서 호출 안 하게 처리
+  // =====================
+  const USE_SUPABASE = true; // ✅ 오늘부터 서버 연결 ON
+
+  const PREFIX_DAY = `soft_schedule_today_${workspace_id}_`;
+  const KEY_ARCHIVE = `soft_schedule_today_${workspace_id}_archive_v1`;
+
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function ymd(d=new Date()){
+    return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+  }
+  function parseYmd(str){
+    const m = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(str);
+    if(!m) return null;
+    return { y:+m[1], m:+m[2], d:+m[3] };
+  }
+  function ymdToDate(str){
+    const p = parseYmd(str);
+    if(!p) return null;
+    return new Date(p.y, p.m-1, p.d);
+  }
+  function formatDateLabel(dateStr){
+    const d = ymdToDate(dateStr);
+    if(!d) return dateStr;
+    const yy = String(d.getFullYear()).slice(-2);
+    const mm = pad2(d.getMonth() + 1);
+    const dd = pad2(d.getDate());
+    const wk = ["일","월","화","수","목","금","토"][d.getDay()];
+    return `${yy}.${mm}.${dd} (${wk})`;
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, (m) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[m]));
+  }
+
+  function showToast(msg){
+    toast.textContent = msg;
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toast.textContent = "", 1600);
+  }
+
+  async function copyToClipboard(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      return true;
+    }catch(e){
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      try{
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        return ok;
+      }catch(err){
+        document.body.removeChild(ta);
+        return false;
+      }
     }
-    inputEl.addEventListener("input", syncAddButtonState);
-    syncAddButtonState(); // 초기 1회
+  }
 
-    // Modal
-    const modalOverlay = document.getElementById("modalOverlay");
-    const closeModalBtn = document.getElementById("closeModalBtn");
-    const datesPanel = document.getElementById("datesPanel");
-    const pickedDateText = document.getElementById("pickedDateText");
-    const previewBox = document.getElementById("previewBox");
-    const copyPickedBtn = document.getElementById("copyPickedBtn");
-    const carryPickedBtn = document.getElementById("carryPickedBtn");
-    const archiveCount = document.getElementById("archiveCount");
-    const searchInput = document.getElementById("searchInput");
-    const clearSearchBtn = document.getElementById("clearSearchBtn");
+  function formatForCopy(dateStr, items){
+    const lines = [];
+    lines.push(`[Today | ${dateStr}]`);
+    for(const it of items){
+      lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+    }
+    return lines.join("\n");
+  }
 
-    metaText.textContent = todayStr;
+  function highlight(text, query){
+    const t = String(text);
+    const q = String(query || "").trim();
+    if(!q) return escapeHtml(t);
+    const idx = t.toLowerCase().indexOf(q.toLowerCase());
+    if(idx === -1) return escapeHtml(t);
+    const before = escapeHtml(t.slice(0, idx));
+    const mid = escapeHtml(t.slice(idx, idx + q.length));
+    const after = escapeHtml(t.slice(idx + q.length));
+    return `${before}<span class="mark">${mid}</span>${after}`;
+  }
 
-    let archive = {};              // History/Archive용 (모달 열 때 로드)
-    let state = [];                // 오늘 리스트
-    let pickedDate = null;
-    let searchQuery = "";
-    
-    // ✅ Supabase에서 오늘 데이터 로드 후 렌더
-    state = await sbLoadDay(todayStr);
+  // ===== 로컬 아카이브 함수는 "남겨두되" 서버 모드에서는 완전 무시 =====
+  function loadArchive(){
+    if (USE_SUPABASE) return {};
+    try{
+      const raw = localStorage.getItem(KEY_ARCHIVE);
+      if(!raw) return {};
+      const parsed = JSON.parse(raw);
+      return (parsed && typeof parsed === "object") ? parsed : {};
+    }catch(e){ return {}; }
+  }
+  function saveArchive(archive){
+    if (USE_SUPABASE) return;
+    localStorage.setItem(KEY_ARCHIVE, JSON.stringify(archive));
+  }
+  function loadDay(key){
+    if (USE_SUPABASE) return [];
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(e){ return []; }
+  }
+  function saveDay(key, items){
+    if (USE_SUPABASE) return;
+    localStorage.setItem(key, JSON.stringify(items));
+  }
+
+  // =====================
+  // 2) Supabase Today Layer (row 단위)
+  // =====================
+  function nowIso(){ return new Date().toISOString(); }
+
+  function dayRangeIso(dateStr){
+    const p = parseYmd(dateStr);
+    if(!p) throw new Error("bad dateStr");
+    const start = new Date(p.y, p.m-1, p.d, 0,0,0,0);
+    const end = new Date(p.y, p.m-1, p.d+1, 0,0,0,0);
+    return { startIso: start.toISOString(), endIso: end.toISOString() };
+  }
+
+  function rowToItem(row){
+    return { id: row.id, text: row.title || "", done: row.status === "done" };
+  }
+
+  function itemToRow(item, dateStr){
+    const { startIso } = dayRangeIso(dateStr);
+    return {
+      id: item.id,
+      workspace_id,
+      title: (item.text || "").trim(),
+      status: item.done ? "done" : "todo",
+      due_at: startIso,
+      deleted: false,
+      updated_at: nowIso(),
+      pinned: false,
+      priority: 0
+    };
+  }
+
+  async function sbLoadDay(dateStr){
+    const { startIso, endIso } = dayRangeIso(dateStr);
+
+    // due_at 필터 2개(gte, lt) 때문에 query를 배열로 넣음
+    const rows = await sbFetch("items", {
+      query: [
+        ["select", "id,title,status,updated_at,due_at"],
+        ["workspace_id", `eq.${workspace_id}`],
+        ["deleted", "eq.false"],
+        ["due_at", `gte.${startIso}`],
+        ["due_at", `lt.${endIso}`],
+        ["order", "updated_at.desc"]
+      ]
+    });
+
+    return (rows || []).map(rowToItem);
+  }
+
+  async function sbLoadArchiveAll(){
+    const rows = await sbFetch("items", {
+      query: {
+        select: "id,title,status,due_at,updated_at",
+        workspace_id: `eq.${workspace_id}`,
+        deleted: "eq.false",
+        order: "due_at.desc",
+        limit: "2000"
+      }
+    });
+
+    const archive = {};
+    for(const r of (rows || [])){
+      if(!r.due_at) continue;
+      const d = new Date(r.due_at);
+      const dateStr = `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+      (archive[dateStr] ||= []).push(rowToItem(r));
+    }
+    return archive;
+  }
+
+  async function sbUpsertRow(row){
+    // on_conflict=id 로 upsert
+    await sbFetch("items?on_conflict=id", { method:"POST", body:[row] });
+  }
+
+  async function sbPatchRow(id, patch){
+    await sbFetch(`items?id=eq.${id}`, { method:"PATCH", body: patch });
+  }
+
+  async function sbSoftDelete(id){
+    await sbPatchRow(id, { deleted: true, updated_at: nowIso() });
+  }
+
+  // =====================
+  // 3) UI init
+  // =====================
+  const todayStr = ymd(new Date());
+  const yesterdayStr = ymd(new Date(Date.now() - 86400000));
+  const KEY_TODAY = `${PREFIX_DAY}${todayStr}`;
+
+  const metaText = document.getElementById("metaText");
+  const listEl = document.getElementById("list");
+  const inputEl = document.getElementById("todoInput");
+  const addBtn = document.getElementById("addBtn");
+  const countText = document.getElementById("countText");
+  const clearDoneBtn = document.getElementById("clearDoneBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  const carryYesterdayBtn = document.getElementById("carryYesterdayBtn");
+  const historyBtn = document.getElementById("historyBtn");
+  const copyTodayBtn = document.getElementById("copyTodayBtn");
+  const copyPopover = document.getElementById("copyPopover");
+  const toast = document.getElementById("toast");
+
+  // Modal
+  const modalOverlay = document.getElementById("modalOverlay");
+  const closeModalBtn = document.getElementById("closeModalBtn");
+  const datesPanel = document.getElementById("datesPanel");
+  const pickedDateText = document.getElementById("pickedDateText");
+  const previewBox = document.getElementById("previewBox");
+  const copyPickedBtn = document.getElementById("copyPickedBtn");
+  const carryPickedBtn = document.getElementById("carryPickedBtn");
+  const archiveCount = document.getElementById("archiveCount");
+  const searchInput = document.getElementById("searchInput");
+  const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+  metaText.textContent = todayStr;
+
+  addBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+      <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+  `;
+
+  function syncAddButtonState(){
+    const hasText = (inputEl.value || "").trim().length > 0;
+    addBtn.disabled = !hasText;
+  }
+  inputEl.addEventListener("input", syncAddButtonState);
+  syncAddButtonState();
+
+  let state = [];
+  let archive = {};
+  let pickedDate = null;
+  let searchQuery = "";
+
+  // ✅ 최초 로딩: 오늘 데이터 서버에서 받음
+  state = USE_SUPABASE ? await sbLoadDay(todayStr) : loadDay(KEY_TODAY);
+  render();
+
+  // =====================
+  // 4) CRUD (서버 모드에서는 서버로 반영)
+  // =====================
+  async function addItem(text){
+    const t = (text || "").trim();
+    if(!t) return;
+
+    const it = {
+      id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+      text: t,
+      done: false
+    };
+
+    state.unshift(it);
     render();
 
-
-    let pickedDate = null;
-    let searchQuery = "";
-
-    function loadDay(key){
-      if (USE_SUPABASE) return []; // ✅ 서버 모드에서는 로컬 day 저장 안 씀
-      try{
-        const raw = localStorage.getItem(key);
-        if(!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
-      }catch(e){ return []; }
-    }
-    
-    function saveDay(key, items){
-      if (USE_SUPABASE) return; // ✅ 서버 모드에서는 로컬 저장 안 함
-        localStorage.setItem(key, JSON.stringify(items));
-    }
-
-    function addItem(text){
-      const t = (text || "").trim();
-      if(!t) return;
-    
-      const it = {
-        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
-        text: t,
-        done: false
-      };
-    
-      // UI 먼저 반영(체감 빠름)
-      state.unshift(it);
-      render();
-    
-      // Supabase upsert
+    if (USE_SUPABASE) {
       await sbUpsertRow(itemToRow(it, todayStr));
+    } else {
+      saveDay(KEY_TODAY, state);
     }
-    function toggleItem(id){
-      state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
-      render();
-    
-      const it = state.find(x => x.id === id);
-      if(!it) return;
-    
-      await sbPatchRow(id, {
-        status: it.done ? "done" : "todo",
-        updated_at: nowIso()
+  }
+
+  async function toggleItem(id){
+    state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+    render();
+
+    const it = state.find(x => x.id === id);
+    if(!it) return;
+
+    if (USE_SUPABASE) {
+      await sbPatchRow(id, { status: it.done ? "done" : "todo", updated_at: nowIso() });
+    } else {
+      saveDay(KEY_TODAY, state);
+    }
+  }
+
+  async function deleteItem(id){
+    state = state.filter(it => it.id !== id);
+    render();
+
+    if (USE_SUPABASE) {
+      await sbSoftDelete(id);
+    } else {
+      saveDay(KEY_TODAY, state);
+    }
+  }
+
+  function clearDone(){
+    state = state.filter(it => !it.done);
+    render();
+    if (!USE_SUPABASE) saveDay(KEY_TODAY, state);
+  }
+
+  function resetAll(){
+    state = [];
+    render();
+    if (!USE_SUPABASE) saveDay(KEY_TODAY, state);
+  }
+
+  function render(){
+    listEl.innerHTML = "";
+    for(const it of state){
+      const li = document.createElement("li");
+      li.className = "item" + (it.done ? " done" : "");
+      li.innerHTML = `
+        <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+        <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
+      `;
+      listEl.appendChild(li);
+    }
+    const total = state.length;
+    const done = state.filter(x => x.done).length;
+    countText.textContent = `${done}/${total} done`;
+  }
+
+  // =====================
+  // 5) Carry over (서버 모드)
+  // =====================
+  async function carryOverUnfinishedFromDate(dateStr){
+    if(!dateStr || !parseYmd(dateStr)){
+      showToast("가져오기 실패: 날짜 형식이 올바르지 않아.");
+      return;
+    }
+
+    const src = USE_SUPABASE ? await sbLoadDay(dateStr) : (archive[dateStr] || []);
+    if(!src || src.length === 0){
+      showToast("가져올 기록이 없어.");
+      return;
+    }
+
+    const unfinished = src.filter(x => !x.done && (x.text || "").trim());
+    if(unfinished.length === 0){
+      showToast("미완료가 없어.");
+      return;
+    }
+
+    const existing = new Set(state.map(x => (x.text || "").trim()));
+    const toAdd = [];
+
+    for(const it of unfinished){
+      const tx = (it.text || "").trim();
+      if(!tx) continue;
+      if(existing.has(tx)) continue;
+      toAdd.push({
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+        text: tx,
+        done: false
       });
     }
-    
-    function deleteItem(id){
-      state = state.filter(it => it.id !== id);
-      render();
-      await sbSoftDelete(id);
-    }
-    function clearDone(){
-      state = state.filter(it => !it.done);
-      saveDay(KEY_TODAY, state);
-      render();
-    }
-    function resetAll(){
-      state = [];
-      saveDay(KEY_TODAY, state);
-      render();
+
+    if(toAdd.length === 0){
+      showToast("미완료가 이미 오늘에 있어.");
+      return;
     }
 
-    function render(){
-      listEl.innerHTML = "";
-      for(const it of state){
-        const li = document.createElement("li");
-        li.className = "item" + (it.done ? " done" : "");
-        li.innerHTML = `
-          <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
-          <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
-        `;
-        listEl.appendChild(li);
-      }
-      const total = state.length;
-      const done = state.filter(x => x.done).length;
-      countText.textContent = `${done}/${total} done`;
-    }
-
-    function carryOverUnfinishedFromDate(dateStr){
-      if(!dateStr || !parseYmd(dateStr)){
-        showToast("가져오기 실패: 날짜 형식이 올바르지 않아.");
-        return;
-      }
-      const src = archive[dateStr];
-      if(!src || !Array.isArray(src) || src.length === 0){
-        showToast("가져올 기록이 없어.");
-        return;
-      }
-
-      const unfinished = src.filter(x => !x.done && (x.text || "").trim());
-      if(unfinished.length === 0){
-        showToast("미완료가 없어.");
-        return;
-      }
-
-      const existing = new Set(state.map(x => (x.text || "").trim()));
-      const toAdd = [];
-      for(const it of unfinished){
-        const tx = (it.text || "").trim();
-        if(!tx) continue;
-        if(existing.has(tx)) continue;
-        toAdd.push({
-          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
-          text: tx,
-          done: false
-        });
-      }
-
-      if(toAdd.length === 0){
-        showToast("미완료가 이미 오늘에 있어.");
-        return;
-      }
-
-      state = [...toAdd, ...state];
-      saveDay(KEY_TODAY, state);
-      render();
-      showToast(`${dateStr} 미완료 ${toAdd.length}개 가져왔어.`);
-    }
-
-    function carryOverYesterday(){
-      if(archive[yesterdayStr]) return carryOverUnfinishedFromDate(yesterdayStr);
-
-      const raw = localStorage.getItem(`${PREFIX_DAY}${yesterdayStr}`);
-      if(!raw){
-        showToast("어제 기록이 없어.");
-        return;
-      }
-      try{
-        const items = JSON.parse(raw);
-        if(Array.isArray(items)){
-          archive[yesterdayStr] = items;
-          saveArchive(archive);
-          try{ localStorage.removeItem(`${PREFIX_DAY}${yesterdayStr}`);}catch(e){}
-          carryOverUnfinishedFromDate(yesterdayStr);
-        }else{
-          showToast("어제 기록을 읽을 수 없어.");
-        }
-      }catch(e){
-        showToast("어제 기록을 읽을 수 없어.");
-      }
-    }
-
-    async function copyToday(mode = "all"){
-      let filtered = state;
-      if(mode === "todo") filtered = state.filter(x => !x.done);
-      if(mode === "done") filtered = state.filter(x => x.done);
-
-      const text = formatForCopy(todayStr, filtered);
-      const ok = await copyToClipboard(text);
-
-      const label =
-        mode === "todo" ? "미완료만" :
-        mode === "done" ? "완료만" : "전체";
-
-      showToast(ok ? `${label} 복사했어.` : "복사 실패 (브라우저 권한 확인)");
-    }
-
-    async function copyPicked(){
-      if(!pickedDate) return;
-      const items = archive[pickedDate] || [];
-      const text = formatForCopy(pickedDate, items);
-      const ok = await copyToClipboard(text);
-      showToast(ok ? "선택 날짜 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
-    }
-
-    function openModal(){
-      // 로딩 표시 (간단)
-      datesPanel.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">불러오는 중…</div>`;
-      previewBox.innerHTML = "";
-    
-      archive = await sbLoadArchiveAll(); // ✅ 서버에서 전체 히스토리 로드
-      searchQuery = (searchInput.value || "").trim();
-      buildDates();
-    
-      modalOverlay.classList.add("open");
-      modalOverlay.setAttribute("aria-hidden", "false");
-    
-      pickedDate = null;
-      pickedDateText.textContent = "날짜를 선택해줘";
-      copyPickedBtn.disabled = true;
-      carryPickedBtn.disabled = true;
-      previewBox.innerHTML = `
-        <div style="color: rgba(30,30,30,0.55); font-size:12px;">
-          왼쪽에서 날짜를 선택하면, 그날의 Today 기록을 보여줘.
-        </div>
-      `;
-      if (!USE_SUPABASE) {
-        archive = loadArchive();
-      }
-      searchQuery = (searchInput.value || "").trim();
-      buildDates();
-      modalOverlay.classList.add("open");
-      modalOverlay.setAttribute("aria-hidden", "false");
-
-      pickedDate = null;
-      pickedDateText.textContent = "날짜를 선택해줘";
-      copyPickedBtn.disabled = true;
-      carryPickedBtn.disabled = true;
-      previewBox.innerHTML = `
-        <div style="color: rgba(30,30,30,0.55); font-size:12px;">
-          왼쪽에서 날짜를 선택하면, 그날의 Today 기록을 보여줘.
-        </div>
-      `;
-    }
-
-    function closeModal(){
-      modalOverlay.classList.remove("open");
-      modalOverlay.setAttribute("aria-hidden", "true");
-    }
-
-    function dateMatchesQuery(dateStr, items, q){
-      if(!q) return true;
-      const lowerQ = q.toLowerCase();
-      if(dateStr.toLowerCase().includes(lowerQ)) return true;
-      for(const it of (items || [])){
-        const tx = String(it.text || "").toLowerCase();
-        if(tx.includes(lowerQ)) return true;
-      }
-      return false;
-    }
-
-    function buildDates(){
-      const q = (searchQuery || "").trim();
-      const dates = Object.keys(archive).filter(d => parseYmd(d));
-      dates.sort((a,b) => ymdToDate(b).getTime() - ymdToDate(a).getTime());
-
-      const filtered = dates.filter(d => dateMatchesQuery(d, archive[d], q));
-
-      datesPanel.innerHTML = "";
-      if(filtered.length === 0){
-        datesPanel.innerHTML = `
-          <div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">
-            검색 결과가 없어.
-          </div>
-        `;
-      }else{
-        for(const d of filtered){
-          const items = archive[d] || [];
-          const done = items.filter(x => x.done).length;
-          const total = items.length;
-
-          const btn = document.createElement("button");
-          btn.className = "dateBtn";
-          btn.type = "button";
-          btn.dataset.date = d;
-          const label = formatDateLabel(d);
-          btn.innerHTML = `${escapeHtml(label)}<small>${done}/${total}</small>`;
-          datesPanel.appendChild(btn);
-        }
-      }
-
-      archiveCount.textContent = `${filtered.length} / ${dates.length} days`;
-
-      if(pickedDate && !filtered.includes(pickedDate)){
-        pickedDate = null;
-        pickedDateText.textContent = "날짜를 선택해줘";
-        copyPickedBtn.disabled = true;
-        carryPickedBtn.disabled = true;
-        previewBox.innerHTML = `
-          <div style="color: rgba(30,30,30,0.55); font-size:12px;">
-            검색 결과에서 날짜를 선택해줘.
-          </div>
-        `;
-      }else if(pickedDate){
-        setActiveDateButton(pickedDate);
-        renderPreview(pickedDate);
-      }
-    }
-
-    function setActiveDateButton(dateStr){
-      const btns = datesPanel.querySelectorAll(".dateBtn");
-      btns.forEach(b => b.classList.toggle("active", b.dataset.date === dateStr));
-    }
-
-    function renderPreview(dateStr){
-      const items = archive[dateStr] || [];
-      const q = (searchQuery || "").trim();
-
-      pickedDate = dateStr;
-      setActiveDateButton(dateStr);
-
-      pickedDateText.textContent = `선택: ${formatDateLabel(dateStr)}`;
-      copyPickedBtn.disabled = false;
-      carryPickedBtn.disabled = false;
-
-      let view = items;
-      if(q){
-        const lowerQ = q.toLowerCase();
-        view = items.filter(it => String(it.text || "").toLowerCase().includes(lowerQ) || dateStr.toLowerCase().includes(lowerQ));
-      }
-
-      if(!view || view.length === 0){
-        previewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">표시할 항목이 없어.</div>`;
-        return;
-      }
-
-      const rows = view.map(it => {
-        const badgeCls = it.done ? "badge done" : "badge";
-        const badgeText = it.done ? "done" : "todo";
-        const textHtml = highlight(it.text || "", q);
-        return `
-          <div class="pItem">
-            <span class="${badgeCls}">${badgeText}</span>
-            <span style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
-              ${textHtml}
-            </span>
-          </div>
-        `;
-      }).join("");
-
-      previewBox.innerHTML = rows;
-    }
-
-    // ✅ Popover helpers
-    function placePopover(){
-      const btnRect = copyTodayBtn.getBoundingClientRect();
-      const popRect = copyPopover.getBoundingClientRect();
-
-      const gap = 8;
-      const pad = 8;
-
-      let top = btnRect.top - popRect.height - gap;
-      let left = btnRect.right - popRect.width;
-
-      if(top < pad) top = btnRect.bottom + gap;
-
-      left = Math.max(pad, Math.min(left, window.innerWidth - popRect.width - pad));
-
-      copyPopover.style.left = `${left}px`;
-      copyPopover.style.top = `${top}px`;
-    }
-
-    function openCopyPopover(){
-      if(modalOverlay.classList.contains("open")) return;
-      copyPopover.classList.add("open");
-      copyPopover.setAttribute("aria-hidden", "false");
-      requestAnimationFrame(placePopover);
-    }
-
-    function closeCopyPopover(){
-      copyPopover.classList.remove("open");
-      copyPopover.setAttribute("aria-hidden", "true");
-    }
-
-    // Events
-    addBtn.addEventListener("click", () => {
-      addItem(inputEl.value);
-      inputEl.value = "";
-      inputEl.focus();
-      syncAddButtonState();
-    });
-
-    inputEl.addEventListener("keydown", (e) => {
-      if(e.key === "Enter"){
-        e.preventDefault();
-        if(!addBtn.disabled) addBtn.click();
-      }
-    });
-
-    listEl.addEventListener("click", (e) => {
-      const check = e.target.closest(".check");
-      const del = e.target.closest("[data-del]");
-      if(check) toggleItem(check.dataset.id);
-      else if(del) deleteItem(del.dataset.del);
-    });
-
-    listEl.addEventListener("keydown", (e) => {
-      const check = e.target.closest(".check");
-      if(!check) return;
-      if(e.key === "Enter" || e.key === " "){
-        e.preventDefault();
-        toggleItem(check.dataset.id);
-      }
-    });
-
-    if (clearDoneBtn) clearDoneBtn.addEventListener("click", clearDone);
-    if (resetBtn) resetBtn.addEventListener("click", resetAll);
-
-    carryYesterdayBtn.addEventListener("click", carryOverYesterday);
-    historyBtn.addEventListener("click", () => openModal());
-
-
-    copyTodayBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if(copyPopover.classList.contains("open")) closeCopyPopover();
-      else openCopyPopover();
-    });
-
-    copyPopover.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const btn = e.target.closest("[data-copy]");
-      if(!btn) return;
-      const mode = btn.dataset.copy || "all";
-      closeCopyPopover();
-      copyToday(mode);
-    });
-
-    document.addEventListener("click", () => closeCopyPopover());
-    document.addEventListener("keydown", (e) => {
-      if(e.key === "Escape") closeCopyPopover();
-    });
-
-    window.addEventListener("resize", () => {
-      if(copyPopover.classList.contains("open")) placePopover();
-    }, { passive: true });
-
-    window.addEventListener("scroll", () => {
-      if(copyPopover.classList.contains("open")) placePopover();
-    }, { passive: true });
-
-    closeModalBtn.addEventListener("click", closeModal);
-    modalOverlay.addEventListener("click", (e) => {
-      if(e.target === modalOverlay) closeModal();
-    });
-
-    datesPanel.addEventListener("click", (e) => {
-      const btn = e.target.closest(".dateBtn");
-      if(!btn) return;
-      renderPreview(btn.dataset.date);
-    });
-
-    copyPickedBtn.addEventListener("click", copyPicked);
-
-    carryPickedBtn.addEventListener("click", () => {
-      if(!pickedDate) return;
-      carryOverUnfinishedFromDate(pickedDate);
-    });
-
-    searchInput.addEventListener("input", () => {
-      searchQuery = (searchInput.value || "").trim();
-      buildDates();
-    });
-
-    clearSearchBtn.addEventListener("click", () => {
-      searchInput.value = "";
-      searchQuery = "";
-      buildDates();
-      showToast("검색을 초기화했어.");
-    });
-
+    state = [...toAdd, ...state];
     render();
-  </script>
+
+    if (USE_SUPABASE) {
+      // 오늘 날짜 row로 upsert
+      for(const it of toAdd){
+        await sbUpsertRow(itemToRow(it, todayStr));
+      }
+    } else {
+      saveDay(KEY_TODAY, state);
+    }
+
+    showToast(`${dateStr} 미완료 ${toAdd.length}개 가져왔어.`);
+  }
+
+  async function carryOverYesterday(){
+    await carryOverUnfinishedFromDate(yesterdayStr);
+  }
+
+  // =====================
+  // 6) Copy / Modal
+  // =====================
+  async function copyToday(mode = "all"){
+    let filtered = state;
+    if(mode === "todo") filtered = state.filter(x => !x.done);
+    if(mode === "done") filtered = state.filter(x => x.done);
+
+    const text = formatForCopy(todayStr, filtered);
+    const ok = await copyToClipboard(text);
+
+    const label =
+      mode === "todo" ? "미완료만" :
+      mode === "done" ? "완료만" : "전체";
+
+    showToast(ok ? `${label} 복사했어.` : "복사 실패 (브라우저 권한 확인)");
+  }
+
+  async function copyPicked(){
+    if(!pickedDate) return;
+    const items = archive[pickedDate] || [];
+    const text = formatForCopy(pickedDate, items);
+    const ok = await copyToClipboard(text);
+    showToast(ok ? "선택 날짜 기록을 복사했어." : "복사 실패 (브라우저 권한 확인)");
+  }
+
+  async function openModal(){
+    datesPanel.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">불러오는 중…</div>`;
+    previewBox.innerHTML = "";
+    modalOverlay.classList.add("open");
+    modalOverlay.setAttribute("aria-hidden", "false");
+
+    archive = USE_SUPABASE ? await sbLoadArchiveAll() : loadArchive();
+    searchQuery = (searchInput.value || "").trim();
+    buildDates();
+
+    pickedDate = null;
+    pickedDateText.textContent = "날짜를 선택해줘";
+    copyPickedBtn.disabled = true;
+    carryPickedBtn.disabled = true;
+    previewBox.innerHTML = `
+      <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+        왼쪽에서 날짜를 선택하면, 그날의 Today 기록을 보여줘.
+      </div>
+    `;
+  }
+
+  function closeModal(){
+    modalOverlay.classList.remove("open");
+    modalOverlay.setAttribute("aria-hidden", "true");
+  }
+
+  function dateMatchesQuery(dateStr, items, q){
+    if(!q) return true;
+    const lowerQ = q.toLowerCase();
+    if(dateStr.toLowerCase().includes(lowerQ)) return true;
+    for(const it of (items || [])){
+      const tx = String(it.text || "").toLowerCase();
+      if(tx.includes(lowerQ)) return true;
+    }
+    return false;
+  }
+
+  function buildDates(){
+    const q = (searchQuery || "").trim();
+    const dates = Object.keys(archive).filter(d => parseYmd(d));
+    dates.sort((a,b) => ymdToDate(b).getTime() - ymdToDate(a).getTime());
+
+    const filtered = dates.filter(d => dateMatchesQuery(d, archive[d], q));
+
+    datesPanel.innerHTML = "";
+    if(filtered.length === 0){
+      datesPanel.innerHTML = `
+        <div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">
+          검색 결과가 없어.
+        </div>
+      `;
+    }else{
+      for(const d of filtered){
+        const items = archive[d] || [];
+        const done = items.filter(x => x.done).length;
+        const total = items.length;
+
+        const btn = document.createElement("button");
+        btn.className = "dateBtn";
+        btn.type = "button";
+        btn.dataset.date = d;
+        const label = formatDateLabel(d);
+        btn.innerHTML = `${escapeHtml(label)}<small>${done}/${total}</small>`;
+        datesPanel.appendChild(btn);
+      }
+    }
+
+    archiveCount.textContent = `${filtered.length} / ${dates.length} days`;
+
+    if(pickedDate && !filtered.includes(pickedDate)){
+      pickedDate = null;
+      pickedDateText.textContent = "날짜를 선택해줘";
+      copyPickedBtn.disabled = true;
+      carryPickedBtn.disabled = true;
+      previewBox.innerHTML = `
+        <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+          검색 결과에서 날짜를 선택해줘.
+        </div>
+      `;
+    }else if(pickedDate){
+      setActiveDateButton(pickedDate);
+      renderPreview(pickedDate);
+    }
+  }
+
+  function setActiveDateButton(dateStr){
+    const btns = datesPanel.querySelectorAll(".dateBtn");
+    btns.forEach(b => b.classList.toggle("active", b.dataset.date === dateStr));
+  }
+
+  function renderPreview(dateStr){
+    const items = archive[dateStr] || [];
+    const q = (searchQuery || "").trim();
+
+    pickedDate = dateStr;
+    setActiveDateButton(dateStr);
+
+    pickedDateText.textContent = `선택: ${formatDateLabel(dateStr)}`;
+    copyPickedBtn.disabled = false;
+    carryPickedBtn.disabled = false;
+
+    let view = items;
+    if(q){
+      const lowerQ = q.toLowerCase();
+      view = items.filter(it =>
+        String(it.text || "").toLowerCase().includes(lowerQ) ||
+        dateStr.toLowerCase().includes(lowerQ)
+      );
+    }
+
+    if(!view || view.length === 0){
+      previewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">표시할 항목이 없어.</div>`;
+      return;
+    }
+
+    const rows = view.map(it => {
+      const badgeCls = it.done ? "badge done" : "badge";
+      const badgeText = it.done ? "done" : "todo";
+      const textHtml = highlight(it.text || "", q);
+      return `
+        <div class="pItem">
+          <span class="${badgeCls}">${badgeText}</span>
+          <span style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
+            ${textHtml}
+          </span>
+        </div>
+      `;
+    }).join("");
+
+    previewBox.innerHTML = rows;
+  }
+
+  // Popover helpers
+  function placePopover(){
+    const btnRect = copyTodayBtn.getBoundingClientRect();
+    const popRect = copyPopover.getBoundingClientRect();
+    const gap = 8;
+    const pad = 8;
+
+    let top = btnRect.top - popRect.height - gap;
+    let left = btnRect.right - popRect.width;
+
+    if(top < pad) top = btnRect.bottom + gap;
+    left = Math.max(pad, Math.min(left, window.innerWidth - popRect.width - pad));
+
+    copyPopover.style.left = `${left}px`;
+    copyPopover.style.top = `${top}px`;
+  }
+
+  function openCopyPopover(){
+    if(modalOverlay.classList.contains("open")) return;
+    copyPopover.classList.add("open");
+    copyPopover.setAttribute("aria-hidden", "false");
+    requestAnimationFrame(placePopover);
+  }
+
+  function closeCopyPopover(){
+    copyPopover.classList.remove("open");
+    copyPopover.setAttribute("aria-hidden", "true");
+  }
+
+  // =====================
+  // 7) Events
+  // =====================
+  addBtn.addEventListener("click", async () => {
+    await addItem(inputEl.value);
+    inputEl.value = "";
+    inputEl.focus();
+    syncAddButtonState();
+  });
+
+  inputEl.addEventListener("keydown", async (e) => {
+    if(e.key === "Enter"){
+      e.preventDefault();
+      if(!addBtn.disabled) addBtn.click();
+    }
+  });
+
+  listEl.addEventListener("click", async (e) => {
+    const check = e.target.closest(".check");
+    const del = e.target.closest("[data-del]");
+    if(check) await toggleItem(check.dataset.id);
+    else if(del) await deleteItem(del.dataset.del);
+  });
+
+  listEl.addEventListener("keydown", async (e) => {
+    const check = e.target.closest(".check");
+    if(!check) return;
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      await toggleItem(check.dataset.id);
+    }
+  });
+
+  if (clearDoneBtn) clearDoneBtn.addEventListener("click", clearDone);
+  if (resetBtn) resetBtn.addEventListener("click", resetAll);
+
+  carryYesterdayBtn.addEventListener("click", () => carryOverYesterday());
+  historyBtn.addEventListener("click", () => openModal());
+
+  copyTodayBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if(copyPopover.classList.contains("open")) closeCopyPopover();
+    else openCopyPopover();
+  });
+
+  copyPopover.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const btn = e.target.closest("[data-copy]");
+    if(!btn) return;
+    const mode = btn.dataset.copy || "all";
+    closeCopyPopover();
+    copyToday(mode);
+  });
+
+  document.addEventListener("click", () => closeCopyPopover());
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape") closeCopyPopover();
+  });
+
+  window.addEventListener("resize", () => {
+    if(copyPopover.classList.contains("open")) placePopover();
+  }, { passive: true });
+
+  window.addEventListener("scroll", () => {
+    if(copyPopover.classList.contains("open")) placePopover();
+  }, { passive: true });
+
+  closeModalBtn.addEventListener("click", closeModal);
+  modalOverlay.addEventListener("click", (e) => {
+    if(e.target === modalOverlay) closeModal();
+  });
+
+  datesPanel.addEventListener("click", (e) => {
+    const btn = e.target.closest(".dateBtn");
+    if(!btn) return;
+    renderPreview(btn.dataset.date);
+  });
+
+  copyPickedBtn.addEventListener("click", copyPicked);
+
+  carryPickedBtn.addEventListener("click", () => {
+    if(!pickedDate) return;
+    carryOverUnfinishedFromDate(pickedDate);
+  });
+
+  searchInput.addEventListener("input", () => {
+    searchQuery = (searchInput.value || "").trim();
+    buildDates();
+  });
+
+  clearSearchBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    searchQuery = "";
+    buildDates();
+    showToast("검색을 초기화했어.");
+  });
+</script>
+
 </body>
 </html>
