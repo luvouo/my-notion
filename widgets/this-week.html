@@ -309,6 +309,50 @@
       margin-top: 2px;
     }
 
+    /* ===== Next Week Inbox (one-line row) ===== */
+    .inboxRow{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+    
+      border: 1px solid rgba(140,190,232,0.30);
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 10px 10px;
+    }
+    
+    .inboxLeft{
+      display:flex;
+      align-items: baseline;
+      gap: 10px;
+      min-width: 0;
+    }
+    
+    .inboxTitle{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: 13px;
+      color: rgba(30,30,30,0.82);
+      white-space: nowrap;
+    }
+    
+    .inboxCount{
+      font-size: 12px;
+      color: rgba(30,30,30,0.40);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    
+    .inboxRight{
+      display:flex;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+
+
+    
     .daySection{
       border: 1px solid rgba(140,190,232,0.30);
       background: rgba(255,255,255,0.06);
@@ -803,6 +847,18 @@
           </div>
         </div>
 
+        <!-- Next Week Inbox (one-line) -->
+        <div class="inboxRow" id="nextInboxRow">
+          <div class="inboxLeft">
+            <span class="inboxTitle">Next Week</span>
+            <span class="inboxCount" id="nextInboxCount">0</span>
+          </div>
+          <div class="inboxRight">
+            <button class="btn secondary" id="addToNextBtn" type="button">Add</button>
+            <button class="btn secondary" id="openNextBtn" type="button">Show</button>
+          </div>
+        </div>
+
         <div class="weekList" id="weekList"></div>
 
         <div class="footer">
@@ -977,7 +1033,7 @@
     function emptyWeekState(){
       const days = {};
       for(let i=0;i<7;i++) days[String(i)] = [];
-      return { days };
+      return { days, nextInbox: [] }; // ✅ 추가
     }
 
     function loadWeek(key){
@@ -991,6 +1047,7 @@
         for(let i=0;i<7;i++){
           const k = String(i);
           if(!Array.isArray(parsed.days[k])) parsed.days[k] = [];
+          if(!Array.isArray(parsed.nextInbox)) parsed.nextInbox = []; // ✅ 추가
         }
         return parsed;
       }catch(e){ return emptyWeekState(); }
@@ -1051,6 +1108,10 @@
     const nextWeekBtn = document.getElementById("nextWeekBtn");
 
     const weekList = document.getElementById("weekList");
+
+    const nextInboxCount = document.getElementById("nextInboxCount");
+    const addToNextBtn = document.getElementById("addToNextBtn");
+    const openNextBtn = document.getElementById("openNextBtn");
 
     const countText = document.getElementById("countText");
     const historyBtn = document.getElementById("historyBtn");
@@ -1154,6 +1215,12 @@
     function renderWeekList(){
       rangeText.textContent = getWeekId().replace(" ~ ", " ~ ");
 
+      // ✅ Next Week Inbox count
+      const nextN = (weekState.nextInbox || []).length;
+      nextInboxCount.textContent = `${nextN}`;
+      openNextBtn.textContent = nextN > 0 ? "Show" : "Show";
+
+      
       weekList.innerHTML = "";
 
       let allTotal = 0;
@@ -1265,6 +1332,23 @@
       renderWeekList();
     }
 
+    function addItemToNextInbox(text){
+      const t = (text || "").trim();
+      if(!t) return false;
+    
+      const arr = weekState.nextInbox || (weekState.nextInbox = []);
+      arr.unshift({
+        id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+        text: t,
+        done: false
+      });
+    
+      saveWeek(getWeekKey(), weekState);
+      return true;
+    }
+
+
+    
     function toggleItem(dayIndex, id){
       const dayKey = String(dayIndex);
       const arr = weekState.days[dayKey] || [];
@@ -1336,6 +1420,35 @@
       showToast(`${DOW_LABEL[selectedDayIndex]}에 추가했어.`);
     });
 
+    // ✅ Add current input to Next Week inbox
+    addToNextBtn.addEventListener("click", () => {
+      const ok = addItemToNextInbox(taskInput.value);
+      if(!ok) return;
+      taskInput.value = "";
+      taskInput.focus();
+      syncAddButtonState();
+      renderWeekList();
+      showToast("Next Week에 넣었어.");
+    });
+    
+    // ✅ Show Next Week inbox as a simple copy (no modal, one-line feature 유지)
+    openNextBtn.addEventListener("click", async () => {
+      const arr = weekState.nextInbox || [];
+      if(arr.length === 0){
+        showToast("Next Week가 비어있어.");
+        return;
+      }
+      const lines = [];
+      lines.push(`[Next Week Inbox | from ${getWeekId()}]`);
+      for(const it of arr){
+        lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+      }
+      const ok = await copyToClipboard(lines.join("\n"));
+      showToast(ok ? "Next Week 목록을 복사했어." : "복사 실패 (권한 확인)");
+    });
+
+
+    
     taskInput.addEventListener("keydown", (e) => {
       if(e.key === "Enter"){
         e.preventDefault();
