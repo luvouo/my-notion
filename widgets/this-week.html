@@ -7,15 +7,15 @@
 
   <style>
     :root{
-      /* Pastel Skyblue (low saturation) */
-      --accent-1: rgba(180, 210, 235, 0.92);
-      --accent-2: rgba(165, 200, 230, 0.55);
-      --border:   rgba(160, 195, 225, 0.62);
+      /* Pastel Skyblue (slightly desaturated) */
+      --accent-1: rgba(165, 206, 240, 0.88);
+      --accent-2: rgba(140, 190, 232, 0.52);
+      --border:   rgba(140, 190, 232, 0.60);
 
-      --text:  rgba(30,30,30,0.92);
+      --text: rgba(30,30,30,0.92);
       --muted: rgba(30,30,30,0.38);
 
-      --glass:   rgba(255,255,255,0.10);
+      --glass: rgba(255,255,255,0.10);
       --glass-2: rgba(255,255,255,0.06);
 
       --shadow: 0 10px 30px rgba(0,0,0,0.06);
@@ -40,7 +40,7 @@
     }
 
     .wrap{
-      width: min(680px, 100%);
+      width: min(760px, 100%);
       margin: 0 auto;
       padding: clamp(10px, 2.6vw, 16px);
       box-sizing: border-box;
@@ -63,8 +63,8 @@
       position:absolute;
       inset:-2px;
       background:
-        radial-gradient(120% 80% at 0% 0%, rgba(180,210,235,0.22), transparent 55%),
-        radial-gradient(80% 80% at 100% 20%, rgba(165,200,230,0.18), transparent 55%);
+        radial-gradient(120% 80% at 0% 0%, rgba(165,206,240,0.20), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(140,190,232,0.14), transparent 55%);
       pointer-events:none;
     }
 
@@ -97,7 +97,7 @@
       display: block;
       object-fit: cover;
       flex: 0 0 auto;
-      box-shadow: 0 0 0 2px rgba(180,210,235,0.22);
+      box-shadow: 0 0 0 2px rgba(165,206,240,0.22);
     }
 
     .title h1{
@@ -116,34 +116,16 @@
       color: var(--muted);
       white-space: nowrap;
       margin-left: auto;
-      display:flex;
-      align-items:center;
-      gap: 8px;
+      font-variant-numeric: tabular-nums;
     }
 
-    .navBtn{
-      border: 1px solid rgba(160,195,225,0.45);
-      background: rgba(255,255,255,0.08);
-      border-radius: 999px;
-      padding: 6px 10px;
-      cursor: pointer;
-      color: rgba(30,30,30,0.70);
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
-      -webkit-tap-highlight-color: transparent;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      font-size: 12px;
-      line-height: 1;
-    }
-    .navBtn:hover{
-      border-color: rgba(160,195,225,0.70);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
-    }
-    .navBtn:active{ transform: scale(0.98); }
-    .navBtn:focus-visible{
-      outline:none;
-      border-color: rgba(160,195,225,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+    /* ===== controls row ===== */
+    .controls{
+      display:flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .inputRow{
@@ -151,12 +133,14 @@
       gap: 10px;
       flex-wrap: wrap;
       align-items: center;
+      flex: 1 1 420px;
+      min-width: 0;
     }
 
     .input{
-      flex: 1 1 260px;
+      flex: 1 1 220px;
       min-width: 0;
-      border: 1px solid rgba(160,195,225,0.45);
+      border: 1px solid rgba(140,190,232,0.45);
       background: rgba(255,255,255,0.10);
       border-radius: 14px;
       padding: 12px 12px;
@@ -168,91 +152,46 @@
     }
     .input::placeholder{ color: rgba(30,30,30,0.45); }
 
-    /* day picker (Mon..Sun) */
-    .dayStrip{
-      display:flex;
-      gap: 6px;
-      flex: 0 0 auto;
-      align-items:center;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      padding: 2px 0;
-      max-width: 100%;
-    }
-    .dayStrip::-webkit-scrollbar{ display:none; }
-
-    .dayPill{
-      border: 1px solid rgba(160,195,225,0.45);
-      background: rgba(255,255,255,0.08);
-      border-radius: 999px;
-      padding: 8px 10px;
-      font-size: 12px;
-      color: rgba(30,30,30,0.70);
-      cursor: pointer;
-      white-space: nowrap;
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease, background .18s ease;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      line-height: 1;
-    }
-    .dayPill:hover{
-      border-color: rgba(160,195,225,0.70);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
-    }
-    .dayPill:active{ transform: scale(0.98); }
-    .dayPill.active{
-      border-color: rgba(160,195,225,0.85);
-      background: rgba(180,210,235,0.16);
-      box-shadow: 0 10px 26px rgba(160,195,225,0.10);
-    }
-    .dayPill:focus-visible{
-      outline:none;
-      border-color: rgba(160,195,225,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
-    }
-
     .btn{
       flex: 0 0 auto;
-      border: 1px solid rgba(160,195,225,0.70);
-      background: rgba(180,210,235,0.18);
+      border: 1px solid rgba(140,190,232,0.70);
+      background: rgba(165,206,240,0.18);
       border-radius: 14px;
       padding: 12px 14px;
       font-size: 13px;
       color: rgba(30,30,30,0.85);
       cursor: pointer;
-      transition: transform .08s ease, background .2s ease, border-color .2s ease, box-shadow .18s ease, color .18s ease;
+      transition: transform .08s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       white-space: nowrap;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
     .btn:active{ transform: scale(0.98); }
     .btn:hover{
-      background: rgba(180,210,235,0.24);
-      border-color: rgba(160,195,225,0.90);
+      background: rgba(165,206,240,0.24);
+      border-color: rgba(140,190,232,0.90);
     }
     .btn:focus-visible{
-      outline:none;
-      border-color: rgba(160,195,225,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
     }
 
     .btn.secondary{
-      border: 1px solid rgba(160,195,225,0.45);
+      border: 1px solid rgba(140,190,232,0.45);
       background: rgba(255,255,255,0.08);
       padding: 10px 12px;
       border-radius: 12px;
       font-size: 12px;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
-    .btn.secondary:disabled{
-      opacity: 0.55;
-      cursor: not-allowed;
+    .btn.secondary:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      color: var(--accent-1);
     }
 
-    /* add button: match your + style */
+    /* + add button */
     #addBtn{
       height: clamp(28px, 3.2vw, 32px);
       min-width: clamp(28px, 3.2vw, 32px);
@@ -260,90 +199,171 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-
-      color: rgba(160,195,225,0.85);
+      color: rgba(30,30,30,0.48);
       background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(160,195,225,0.48);
+      border: 1px solid rgba(140,190,232,0.45);
       border-radius: 999px;
-
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       cursor: pointer;
-
-      transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
     }
     #addBtn:hover{
-      background: transparent;
-      border-color: rgba(160,195,225,0.70);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
+      background: rgba(165,206,240,0.16);
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
     }
     #addBtn:active{ transform: scale(0.96); }
-    #addBtn:focus-visible{
-      outline:none;
-      background: transparent;
-      border-color: rgba(160,195,225,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
-    }
     #addBtn:disabled{
       opacity: 0.45;
       cursor: not-allowed;
-      background: transparent;
-      border-color: rgba(160,195,225,0.25);
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(140,190,232,0.25);
       box-shadow: none;
       transform: none;
     }
-
-    @media (pointer: coarse){
-      #addBtn{ position: relative; }
-      #addBtn::after{
-        content:"";
-        position:absolute;
-        inset:-6px;
-      }
+    #addBtn:focus-visible{
+      outline:none;
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
     }
 
-    /* sections */
-    .week{
-      display:grid;
+    /* weekday pills */
+    .weekbar{
+      display:flex;
+      align-items: center;
+      justify-content: flex-end;
       gap: 10px;
+      flex: 0 0 auto;
     }
 
-    .section{
-      display:grid;
+    .weeknav{
+      display:flex;
+      align-items:center;
       gap: 8px;
     }
 
-    .secHead{
+    .navBtn{
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.08);
+      cursor: pointer;
+      display:grid;
+      place-items:center;
+      transition: box-shadow .18s ease, border-color .18s ease, background .18s ease, transform .08s ease;
+    }
+    .navBtn:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+    }
+    .navBtn:active{ transform: scale(0.98); }
+    .navBtn:focus-visible{ outline:none; box-shadow: 0 0 0 3px rgba(165,206,240,0.28); }
+
+    .weekdays{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+
+    .dayPill{
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.08);
+      cursor:pointer;
+
+      display:grid;
+      place-items:center;
+
+      font-size: 12px;
+      color: rgba(30,30,30,0.70);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease, color .18s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .dayPill:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      color: rgba(30,30,30,0.84);
+    }
+    .dayPill:active{ transform: scale(0.98); }
+    .dayPill:focus-visible{
+      outline:none;
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
+    }
+    .dayPill.active{
+      background: rgba(165,206,240,0.18);
+      border-color: rgba(140,190,232,0.88);
+      box-shadow: 0 10px 26px rgba(140,190,232,0.10);
+      color: rgba(30,30,30,0.88);
+    }
+
+    /* ===== week list sections ===== */
+    .weekList{
+      display:grid;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .daySection{
+      border: 1px solid rgba(140,190,232,0.30);
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .dayHead{
       display:flex;
       align-items:center;
       justify-content: space-between;
       gap: 10px;
-      padding: 2px 2px;
     }
 
-    .secTitle{
+    .dayLabel{
       display:flex;
       align-items: baseline;
-      gap: 8px;
+      gap: 10px;
       min-width: 0;
-    }
-    .secTitle strong{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      font-size: 13px;
-      letter-spacing: -0.2px;
       color: rgba(30,30,30,0.82);
-      white-space: nowrap;
+      font-size: 13px;
     }
-    .secTitle span{
+
+    .dayLabel small{
+      color: rgba(30,30,30,0.40);
       font-size: 12px;
-      color: var(--muted);
+      font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
 
-    .list{
-      margin:0;
-      padding:0;
-      list-style:none;
+    .showBtn{
+      border: 1px solid rgba(140,190,232,0.35);
+      background: rgba(255,255,255,0.08);
+      color: rgba(30,30,30,0.72);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      transition: box-shadow .18s ease, border-color .18s ease, color .18s ease;
+      white-space: nowrap;
+    }
+    .showBtn:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      color: var(--accent-1);
+    }
+    .showBtn:focus-visible{ outline:none; box-shadow: 0 0 0 3px rgba(165,206,240,0.28); }
+
+    .items{
+      margin-top: 10px;
       display:grid;
       gap: 8px;
     }
@@ -354,10 +374,8 @@
       gap: 10px;
       padding: 8px 10px;
       border-radius: 14px;
-      border: 1px solid rgba(160,195,225,0.30);
-      background: var(--glass-2);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.06);
       min-width: 0;
     }
 
@@ -366,7 +384,7 @@
       height: 18px;
       margin-top: 1px;
       border-radius: 6px;
-      border: 1.6px solid rgba(160,195,225,0.95);
+      border: 1.6px solid rgba(140,190,232,0.95);
       display:grid;
       place-items:center;
       flex: 0 0 auto;
@@ -375,41 +393,24 @@
       transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
     }
     .check:hover{
-      background: rgba(180,210,235,0.14);
-      border-color: rgba(160,195,225,1);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.20);
+      background: rgba(165,206,240,0.12);
+      border-color: rgba(140,190,232,1);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
     }
     .check:active{ transform: scale(0.98); }
     .check:focus-visible{
-      outline:none;
-      background: rgba(180,210,235,0.12);
-      border-color: rgba(160,195,225,1);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+      outline: none;
+      background: rgba(165,206,240,0.10);
+      border-color: rgba(140,190,232,1);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
     }
+
     .check svg{
       width: 12px;
       height: 12px;
       opacity: 0;
       transform: scale(0.9);
       transition: opacity .18s ease, transform .18s ease;
-    }
-
-    .chip{
-      flex: 0 0 auto;
-      font-size: 11px;
-      padding: 4px 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(160,195,225,0.36);
-      background: rgba(180,210,235,0.14);
-      color: rgba(30,30,30,0.62);
-      white-space: nowrap;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-    .chip.someday{
-      border-color: rgba(160,195,225,0.30);
-      background: rgba(255,255,255,0.08);
-      color: rgba(30,30,30,0.58);
     }
 
     .text{
@@ -420,32 +421,6 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    .miniBtn{
-      flex: 0 0 auto;
-      border: 1px solid rgba(160,195,225,0.42);
-      background: rgba(255,255,255,0.06);
-      color: rgba(30,30,30,0.68);
-      border-radius: 10px;
-      padding: 6px 8px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease, background .18s ease;
-      -webkit-tap-highlight-color: transparent;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      line-height: 1;
-    }
-    .miniBtn:hover{
-      border-color: rgba(160,195,225,0.70);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.18);
-    }
-    .miniBtn:active{ transform: scale(0.98); }
-    .miniBtn:focus-visible{
-      outline:none;
-      border-color: rgba(160,195,225,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
     }
 
     .del{
@@ -461,71 +436,49 @@
       -webkit-tap-highlight-color: transparent;
     }
     .del:hover{
-      background: rgba(180,210,235,0.14);
+      background: rgba(165,206,240,0.12);
       color: rgba(30,30,30,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.20);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
     }
     .del:active{ transform: scale(0.96); }
     .del:focus-visible{
       outline:none;
-      background: rgba(180,210,235,0.12);
-      color: rgba(30,30,30,0.78);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.28);
+      background: rgba(165,206,240,0.10);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
     }
 
     .item.done{ opacity: 0.78; }
     .item.done .text{ text-decoration: line-through; color: rgba(30,30,30,0.50); }
     .item.done .check{
-      background: rgba(180,210,235,0.20);
-      border-color: rgba(160,195,225,1);
+      background: rgba(165,206,240,0.18);
+      border-color: rgba(140,190,232,1);
     }
     .item.done .check svg{ opacity: 1; transform: scale(1); }
 
+    /* ===== footer ===== */
     .footer{
       display:flex;
       justify-content: space-between;
-      align-items:center;
+      align-items:flex-end;
       gap: 10px;
       flex-wrap: wrap;
       font-size: 12px;
       color: var(--muted);
+      margin-top: 2px;
     }
 
-    /* right aligned buttons */
-    .footer-actions{
+    .footerLeft{
       display:flex;
-      justify-content:flex-end;
-      align-items:center;
-      gap: 8px;
-      width: 100%;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      margin-left: auto;
-      padding-left: 8px;
-      padding-right: 2px;
-      scrollbar-width: none;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 160px;
     }
-    .footer-actions::-webkit-scrollbar{ display:none; }
-    .footer-actions > .btn{ flex: 0 0 auto; }
 
-    /* Toast overlay (same structure as Today) */
+    /* Toast overlay (like your Today B) */
     .toast{
-      position: absolute;
-      left: 16px;
-      bottom: 12px;
-      z-index: 10;
-
       display: inline-flex;
       align-items: center;
       gap: 8px;
-
-      padding: 0;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-
       color: rgba(30,30,30,0.62);
       font-size: 12px;
       line-height: 1;
@@ -541,20 +494,271 @@
       transform: translateY(0);
     }
     .toast::before{
-      content:"";
+      content: "";
       width: 6px;
       height: 6px;
       border-radius: 999px;
-      background: rgba(180,210,235,0.95);
-      box-shadow: 0 0 0 3px rgba(180,210,235,0.22);
+      background: rgba(165,206,240,0.88);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
       flex: 0 0 auto;
     }
 
+    .footer-actions{
+      display:flex;
+      justify-content: flex-end;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-left: 8px;
+      padding-right: 2px;
+      scrollbar-width: none;
+      width: 100%;
+    }
+    .footer-actions::-webkit-scrollbar{ display:none; }
+    .footer-actions > .btn{ flex: 0 0 auto; }
+
+    /* Keep History / Archive + Copy + Clear done */
+    #historyBtn, #copyBtn, #clearDoneBtn{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
+    /* responsive */
+    @media (max-width: 420px){
+      .weekbar{ width: 100%; justify-content: space-between; }
+    }
     @media (max-width: 360px){
       .meta{ display:none; }
-      .btn{ width: 100%; }
+      .btn{ width: auto; }
       .input{ flex-basis: 100%; }
-      .dayStrip{ width: 100%; }
+    }
+
+    /* ===== Modal (Week History / Archive) ===== */
+    .modalOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      z-index: 5000;
+      overflow: hidden;
+    }
+    .modalOverlay.open{ display:flex; }
+
+    .modal{
+      width: min(860px, 100%);
+      max-height: calc(100vh - 20px);
+      display: flex;
+      flex-direction: column;
+      border-radius: 18px;
+      border: 1px solid rgba(140,190,232,0.38);
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      overflow: hidden;
+    }
+
+    .modalHeader{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      flex-wrap: wrap;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .mhLeft{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      min-width: 0;
+    }
+    .mhLeft strong{
+      font-size: 14px;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
+    .mhRight{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content: flex-end;
+      flex: 1 1 360px;
+      min-width: 0;
+    }
+
+    .search{
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.70);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      outline: none;
+      min-width: 0;
+      flex: 1 1 260px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .search::placeholder{ color: rgba(30,30,30,0.45); }
+
+    .modalBody{
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    .weeks{
+      border-right: 1px solid rgba(0,0,0,0.06);
+      padding: 12px 10px;
+      overflow: auto;
+      width: max-content;
+      min-height: 0;
+    }
+
+    .weekBtn{
+      width: fit-content;
+      max-width: 100%;
+      display: grid;
+      gap: 4px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.62);
+      cursor: pointer;
+      text-align: left;
+      white-space: nowrap;
+      font-size: 13px;
+      color: rgba(30,30,30,0.88);
+      transition: background .18s ease, border-color .18s ease, transform .08s ease;
+      -webkit-tap-highlight-color: transparent;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .weekBtn:hover{
+      border-color: rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.72);
+    }
+    .weekBtn:active{ transform: scale(0.99); }
+    .weekBtn small{
+      display: block;
+      font-size: 11px;
+      color: rgba(30,30,30,0.52);
+      margin-top: 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .weekBtn.active{
+      border-color: rgba(140,190,232,0.70);
+      background: rgba(165,206,240,0.14);
+      box-shadow: 0 10px 26px rgba(140,190,232,0.10);
+    }
+
+    .preview{
+      padding: 12px;
+      overflow: auto;
+      min-height: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .previewTop{
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+      min-width: 0;
+    }
+    .picked{
+      font-size: 13px;
+      color: rgba(30,30,30,0.82);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      flex: 1 1 auto;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .previewTop > div:last-child{
+      display:flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+    }
+
+    .previewBox{
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.66);
+      display: grid;
+      gap: 10px;
+    }
+
+    .pItem{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      font-size: 13px;
+      color: rgba(30,30,30,0.86);
+      line-height: 1.25;
+    }
+    .badge{
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(0,0,0,0.03);
+      color: rgba(30,30,30,0.58);
+      flex: 0 0 auto;
+      font-variant-numeric: tabular-nums;
+    }
+    .badge.done{
+      border-color: rgba(140,190,232,0.40);
+      background: rgba(165,206,240,0.18);
+      color: rgba(30,30,30,0.62);
+    }
+    .mark{
+      background: rgba(165,206,240,0.35);
+      border-radius: 6px;
+      padding: 0 3px;
+    }
+
+    .modalFooter{
+      padding: 12px 14px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      font-size: 12px;
+      color: rgba(30,30,30,0.55);
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 420px){
+      .modalBody{ grid-template-columns: 1fr; }
+      .weeks{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
     }
   </style>
 </head>
@@ -568,57 +772,107 @@
             <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
             <h1>This Week</h1>
           </div>
+          <div class="meta" id="rangeText"></div>
+        </div>
 
-          <div class="meta">
-            <button class="navBtn" id="prevWeekBtn" type="button" aria-label="이전 주">‹</button>
-            <span id="weekMeta"></span>
-            <button class="navBtn" id="nextWeekBtn" type="button" aria-label="다음 주">›</button>
+        <div class="controls">
+          <div class="inputRow">
+            <input id="taskInput" class="input" type="text" placeholder="이번 주 할 일…" maxlength="80" />
+            <button class="btn secondary" id="fromTodayBtn" type="button">From Today</button>
+            <button class="btn secondary" id="pullBtn" type="button" title="Today에서 가져오기">Pull</button>
+            <button class="btn secondary" id="pushBtn" type="button" title="Today로 보내기">Push</button>
+            <button id="addBtn" type="button" title="할 일 추가" aria-label="할 일 추가"></button>
+          </div>
+
+          <div class="weekbar" aria-label="Week navigation">
+            <div class="weeknav">
+              <button class="navBtn" id="prevWeekBtn" type="button" aria-label="이전 주">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                  <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+
+              <button class="navBtn" id="nextWeekBtn" type="button" aria-label="다음 주">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="weekdays" id="weekdayPills" aria-label="요일 선택"></div>
           </div>
         </div>
 
-        <!-- input -->
-        <div class="inputRow">
-          <input id="taskInput" class="input" type="text" placeholder="이번 주 할 일…" maxlength="80" />
-          <div class="dayStrip" id="dayStrip" aria-label="요일 선택"></div>
-
-          <button class="btn secondary" id="fromTodayBtn" type="button" title="Today에서 오늘 미완료 가져오기">From Today</button>
-          <button class="btn secondary" id="pullBtn" type="button" title="다음 주 작업을 이번 주로 당기기">Pull</button>
-          <button class="btn secondary" id="pushBtn" type="button" title="이번 주 미완료를 다음 주로 미루기">Push</button>
-
-
-          <button id="addBtn" type="button" aria-label="할 일 추가" title="할 일 추가"></button>
-        </div>
-
-        <!-- week sections -->
-        <div class="week" id="weekSections"></div>
+        <div class="weekList" id="weekList"></div>
 
         <div class="footer">
-          <span id="countText">0/0 done</span>
+          <div class="footerLeft">
+            <span id="countText">0/0 done</span>
+            <div class="toast" id="toast"></div>
+          </div>
 
           <div class="footer-actions">
+            <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
             <button class="btn secondary" id="copyBtn" type="button">Copy</button>
             <button class="btn secondary" id="clearDoneBtn" type="button">Clear done</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <div class="toast" id="toast"></div>
+  <!-- History / Archive Modal -->
+  <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Week History / Archive">
+      <div class="modalHeader">
+        <div class="mhLeft">
+          <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+          <strong>Week History / Archive</strong>
+        </div>
+
+        <div class="mhRight">
+          <input id="searchInput" class="search" type="text" placeholder="검색: 주차(YYYY.MM.DD~) 또는 할 일 키워드…" />
+          <button class="btn secondary" id="clearSearchBtn" type="button">검색 초기화</button>
+          <button class="btn secondary" id="closeModalBtn" type="button">닫기</button>
+        </div>
+      </div>
+
+      <div class="modalBody">
+        <div class="weeks" id="weeksPanel"></div>
+
+        <div class="preview">
+          <div class="previewTop">
+            <div class="picked" id="pickedWeekText">주차를 선택해줘</div>
+            <div>
+              <button class="btn secondary" id="restoreWeekBtn" type="button" disabled>Restore</button>
+              <button class="btn secondary" id="copyWeekBtn" type="button" disabled>Copy</button>
+            </div>
+          </div>
+
+          <div class="previewBox" id="previewBox">
+            <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+              왼쪽에서 주차를 선택하면, 그 주의 기록을 보여줘.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modalFooter">
+        <span id="archiveMeta">자동 아카이브: ON</span>
+        <span id="archiveCount">0 weeks archived</span>
       </div>
     </div>
   </div>
 
   <script>
-    /* =========================
-       Storage keys
-    ========================= */
-    const KEY_PREFIX = "soft_schedule_this_week_";   // per-week storage
-    const KEY_ARCHIVE = "soft_schedule_this_week_archive_v1"; // reserved (not used yet)
+    /* ========= storage keys ========= */
+    const WEEK_PREFIX = "soft_schedule_week_";
+    const WEEK_ARCHIVE_KEY = "soft_schedule_week_archive_v1";
 
-    // Today widget storage prefix (your existing Today)
-    const TODAY_PREFIX = "soft_schedule_today_"; // + YYYY.MM.DD
+    // Today widget keys (for Pull/Push)
+    const TODAY_PREFIX = "soft_schedule_today_";
 
-    /* =========================
-       Date helpers (YYYY.MM.DD)
-    ========================= */
+    /* ========= utils ========= */
     function pad2(n){ return String(n).padStart(2,"0"); }
     function ymd(d=new Date()){
       return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
@@ -633,36 +887,23 @@
       if(!p) return null;
       return new Date(p.y, p.m-1, p.d);
     }
-    function addDays(dateObj, days){
-      const d = new Date(dateObj);
-      d.setDate(d.getDate() + days);
-      return d;
+    function dateToYmd(d){
+      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
     }
-
-    // Monday-start week: 0=Mon .. 6=Sun
-    function getWeekStart(dateObj){
-      const d = new Date(dateObj);
-      const js = d.getDay(); // 0=Sun..6=Sat
-      const mondayIndex = (js + 6) % 7; // Sun->6, Mon->0, Tue->1...
-      d.setHours(0,0,0,0);
-      d.setDate(d.getDate() - mondayIndex);
-      return d;
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
     }
-    function weekRangeLabel(weekStart){
-      const ws = new Date(weekStart);
-      const we = addDays(ws, 6);
-      return `${ymd(ws)} – ${ymd(we)}`;
-    }
-
-    /* =========================
-       UI helpers
-    ========================= */
     function showToast(msg){
       toast.textContent = msg;
       clearTimeout(showToast._t);
       showToast._t = setTimeout(()=> toast.textContent = "", 1600);
     }
-
     async function copyToClipboard(text){
       try{
         await navigator.clipboard.writeText(text);
@@ -685,41 +926,152 @@
       }
     }
 
-    function formatForCopy(weekStartStr, sections){
-      const lines = [];
-      lines.push(`[This Week | ${weekStartStr}]`);
-      for(const sec of sections){
-        lines.push(`\n${sec.title}`);
-        for(const it of sec.items){
-          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
-        }
-      }
-      return lines.join("\n");
+    function mondayOfWeek(d){
+      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const day = x.getDay(); // 0 Sun .. 6 Sat
+      const diff = (day === 0) ? -6 : (1 - day); // to Monday
+      x.setDate(x.getDate() + diff);
+      x.setHours(0,0,0,0);
+      return x;
     }
 
-    /* =========================
-       State + DOM
-    ========================= */
-    const weekMeta = document.getElementById("weekMeta");
-    const prevWeekBtn = document.getElementById("prevWeekBtn");
-    const nextWeekBtn = document.getElementById("nextWeekBtn");
+    function addDays(d, n){
+      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      x.setDate(x.getDate() + n);
+      x.setHours(0,0,0,0);
+      return x;
+    }
+
+    function weekIdFromMonday(monday){
+      const start = dateToYmd(monday);
+      const end = dateToYmd(addDays(monday, 6));
+      return `${start} ~ ${end}`;
+    }
+
+    function highlight(text, query){
+      const t = String(text);
+      const q = String(query || "").trim();
+      if(!q) return escapeHtml(t);
+      const idx = t.toLowerCase().indexOf(q.toLowerCase());
+      if(idx === -1) return escapeHtml(t);
+      const before = escapeHtml(t.slice(0, idx));
+      const mid = escapeHtml(t.slice(idx, idx + q.length));
+      const after = escapeHtml(t.slice(idx + q.length));
+      return `${before}<span class="mark">${mid}</span>${after}`;
+    }
+
+    /* ========= archive helpers ========= */
+    function loadWeekArchive(){
+      try{
+        const raw = localStorage.getItem(WEEK_ARCHIVE_KEY);
+        if(!raw) return {};
+        const parsed = JSON.parse(raw);
+        return (parsed && typeof parsed === "object") ? parsed : {};
+      }catch(e){ return {}; }
+    }
+    function saveWeekArchive(archive){
+      localStorage.setItem(WEEK_ARCHIVE_KEY, JSON.stringify(archive));
+    }
+
+    // state per week: { days: { "0": [items], ... "6": [items] } }
+    function emptyWeekState(){
+      const days = {};
+      for(let i=0;i<7;i++) days[String(i)] = [];
+      return { days };
+    }
+
+    function loadWeek(key){
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) return emptyWeekState();
+        const parsed = JSON.parse(raw);
+        if(!parsed || typeof parsed !== "object") return emptyWeekState();
+        if(!parsed.days || typeof parsed.days !== "object") return emptyWeekState();
+        // normalize
+        for(let i=0;i<7;i++){
+          const k = String(i);
+          if(!Array.isArray(parsed.days[k])) parsed.days[k] = [];
+        }
+        return parsed;
+      }catch(e){ return emptyWeekState(); }
+    }
+
+    function saveWeek(key, data){
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    function autoArchivePastWeeks(currentWeekKey, currentWeekId){
+      const archive = loadWeekArchive();
+      const keysToMove = [];
+
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(!k) continue;
+        if(k === WEEK_ARCHIVE_KEY) continue;
+        if(!k.startsWith(WEEK_PREFIX)) continue;
+        if(k === currentWeekKey) continue;
+
+        const weekId = k.slice(WEEK_PREFIX.length);
+        if(!weekId) continue;
+
+        keysToMove.push({ k, weekId });
+      }
+
+      let moved = 0;
+      for(const {k, weekId} of keysToMove){
+        if(archive[weekId]){
+          try{ localStorage.removeItem(k); }catch(e){}
+          continue;
+        }
+        try{
+          const raw = localStorage.getItem(k);
+          const data = raw ? JSON.parse(raw) : null;
+          if(data && typeof data === "object"){
+            archive[weekId] = data;
+            moved++;
+          }
+          localStorage.removeItem(k);
+        }catch(e){}
+      }
+      if(moved > 0) saveWeekArchive(archive);
+      return archive;
+    }
+
+    /* ========= DOM ========= */
+    const rangeText = document.getElementById("rangeText");
+    const weekdayPills = document.getElementById("weekdayPills");
 
     const taskInput = document.getElementById("taskInput");
-    const dayStrip = document.getElementById("dayStrip");
-    const addBtn = document.getElementById("addBtn");
-
     const fromTodayBtn = document.getElementById("fromTodayBtn");
     const pullBtn = document.getElementById("pullBtn");
     const pushBtn = document.getElementById("pushBtn");
+    const addBtn = document.getElementById("addBtn");
 
-    const weekSections = document.getElementById("weekSections");
+    const prevWeekBtn = document.getElementById("prevWeekBtn");
+    const nextWeekBtn = document.getElementById("nextWeekBtn");
+
+    const weekList = document.getElementById("weekList");
+
     const countText = document.getElementById("countText");
+    const historyBtn = document.getElementById("historyBtn");
     const copyBtn = document.getElementById("copyBtn");
     const clearDoneBtn = document.getElementById("clearDoneBtn");
 
     const toast = document.getElementById("toast");
 
-    // plus icon
+    // modal
+    const modalOverlay = document.getElementById("modalOverlay");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const weeksPanel = document.getElementById("weeksPanel");
+    const pickedWeekText = document.getElementById("pickedWeekText");
+    const previewBox = document.getElementById("previewBox");
+    const restoreWeekBtn = document.getElementById("restoreWeekBtn");
+    const copyWeekBtn = document.getElementById("copyWeekBtn");
+    const archiveCount = document.getElementById("archiveCount");
+    const searchInput = document.getElementById("searchInput");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+    /* ========= add icon for + ========= */
     addBtn.innerHTML = `
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
         <path d="M12 5v14M5 12h14"
@@ -729,530 +1081,643 @@
       </svg>
     `;
 
-    // week navigation
-    const baseToday = new Date();
-    let weekOffset = 0; // 0 = this week
-    let selectedDayIndex = 0; // default Monday
-    let state = []; // items for current week
+    /* ========= Week runtime state ========= */
+    const WK = ["M","T","W","T","F","S","S"];
+    const DOW_LABEL = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
-    // item shape: { id, text, done, dateStr|null }
-    function loadWeek(weekStartStr){
-      try{
-        const raw = localStorage.getItem(KEY_PREFIX + weekStartStr);
-        if(!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
-      }catch(e){ return []; }
-    }
-    function saveWeek(weekStartStr, items){
-      localStorage.setItem(KEY_PREFIX + weekStartStr, JSON.stringify(items));
-    }
+    // current viewing monday (can navigate)
+    let viewMonday = mondayOfWeek(new Date());
+    let selectedDayIndex = (() => {
+      const today = new Date();
+      const mon = mondayOfWeek(today);
+      const diff = Math.round((today - mon) / 86400000);
+      return Math.min(6, Math.max(0, diff));
+    })();
 
-    function getCurrentWeekStart(){
-      const ws = getWeekStart(addDays(baseToday, weekOffset * 7));
-      return ws;
-    }
-    function getWeekStartStr(){
-      return ymd(getCurrentWeekStart());
-    }
-    function getDayStrFromIndex(weekStartDate, idx){
-      return ymd(addDays(weekStartDate, idx));
-    }
+    // section expanded states (UI only)
+    const expanded = new Map(); // key: dayIndex -> bool
 
+    // load week
+    function getWeekId(){ return weekIdFromMonday(viewMonday); }
+    function getWeekKey(){ return WEEK_PREFIX + getWeekId(); }
+
+    let weekArchive = autoArchivePastWeeks(getWeekKey(), getWeekId());
+    let weekState = loadWeek(getWeekKey());
+
+    /* ========= buttons enable/disable ========= */
     function syncAddButtonState(){
       const hasText = (taskInput.value || "").trim().length > 0;
       addBtn.disabled = !hasText;
     }
     taskInput.addEventListener("input", syncAddButtonState);
+    syncAddButtonState();
 
-    function buildDayStrip(){
-      const ws = getCurrentWeekStart();
-      const labels = ["M","T","W","T","F","S","S"];
-      dayStrip.innerHTML = "";
+    /* ========= build weekday pills ========= */
+    function buildWeekdayPills(){
+      weekdayPills.innerHTML = "";
       for(let i=0;i<7;i++){
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "dayPill" + (i === selectedDayIndex ? " active" : "");
-        const dStr = getDayStrFromIndex(ws, i);
-        btn.dataset.idx = String(i);
-        btn.title = dStr;
-        btn.textContent = labels[i];
-        btn.addEventListener("click", () => {
-          selectedDayIndex = i;
-          buildDayStrip();
-        });
-        dayStrip.appendChild(btn);
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "dayPill" + (i === selectedDayIndex ? " active" : "");
+        b.dataset.day = String(i);
+        b.textContent = WK[i];
+        weekdayPills.appendChild(b);
       }
     }
 
-    function render(){
-      const ws = getCurrentWeekStart();
-      const wsStr = ymd(ws);
+    function setSelectedDay(i){
+      selectedDayIndex = i;
+      buildWeekdayPills();
+      renderWeekList();
+    }
 
-      // meta label
-      weekMeta.textContent = weekRangeLabel(ws);
+    weekdayPills.addEventListener("click", (e) => {
+      const btn = e.target.closest(".dayPill");
+      if(!btn) return;
+      const i = Number(btn.dataset.day);
+      if(Number.isFinite(i)) setSelectedDay(i);
+    });
 
-      // "From Today" only makes sense for the real current week
-      const realWsStr = ymd(getWeekStart(baseToday));
-      fromTodayBtn.disabled = (wsStr !== realWsStr);
+    /* ========= render ========= */
+    function dayDateStr(i){
+      const d = addDays(viewMonday, i);
+      return dateToYmd(d);
+    }
 
-      // Build sections Mon..Sun + Someday
-      const labelsFull = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-      const sections = [];
+    function totalAndDoneForDay(i){
+      const arr = weekState.days[String(i)] || [];
+      const total = arr.length;
+      const done = arr.filter(x => x.done).length;
+      return { total, done };
+    }
+
+    function renderWeekList(){
+      rangeText.textContent = getWeekId().replace(" ~ ", " ~ ");
+
+      weekList.innerHTML = "";
+
+      let allTotal = 0;
+      let allDone = 0;
 
       for(let i=0;i<7;i++){
-        const dateStr = getDayStrFromIndex(ws, i);
-        const items = state.filter(it => it.dateStr === dateStr);
-        sections.push({
-          key: dateStr,
-          title: `${labelsFull[i]} · ${dateStr}`,
-          items
-        });
-      }
+        const { total, done } = totalAndDoneForDay(i);
+        allTotal += total;
+        allDone += done;
 
-      // Someday (no date)
-      const somedayItems = state.filter(it => !it.dateStr);
-      sections.push({
-        key: "someday",
-        title: "Someday",
-        items: somedayItems
-      });
-
-      weekSections.innerHTML = "";
-
-      for(const sec of sections){
-        // skip empty sections except someday if empty too (keep it hidden)
-        if(sec.items.length === 0) continue;
-
-        const box = document.createElement("div");
-        box.className = "section";
+        const section = document.createElement("div");
+        section.className = "daySection";
+        section.dataset.day = String(i);
 
         const head = document.createElement("div");
-        head.className = "secHead";
+        head.className = "dayHead";
 
-        const left = document.createElement("div");
-        left.className = "secTitle";
+        const label = document.createElement("div");
+        label.className = "dayLabel";
+        label.innerHTML = `
+          <span>${DOW_LABEL[i]}</span>
+          <small>${escapeHtml(dayDateStr(i))}</small>
+        `;
 
-        const strong = document.createElement("strong");
-        strong.textContent = sec.key === "someday" ? "Someday" : sec.title.split(" · ")[0];
+        const toggleWrap = document.createElement("div");
 
-        const span = document.createElement("span");
-        span.textContent = sec.key === "someday" ? "Date optional" : sec.title.split(" · ")[1];
-
-        left.appendChild(strong);
-        left.appendChild(span);
-
-        const right = document.createElement("div");
-        right.style.display = "flex";
-        right.style.gap = "8px";
-
-        if(sec.key !== "someday"){
-          // per-section quick actions (optional but handy)
-          const toNext = document.createElement("button");
-          toNext.type = "button";
-          toNext.className = "miniBtn";
-          toNext.textContent = "Next";
-          toNext.title = "이 날짜의 미완료를 다음 주로";
-          toNext.addEventListener("click", () => moveDateItemsToNextWeek(sec.key));
-          right.appendChild(toNext);
+        // show toggle only when 2+ items
+        if(total >= 2){
+          const isOpen = expanded.get(i) === true;
+          const tBtn = document.createElement("button");
+          tBtn.type = "button";
+          tBtn.className = "showBtn";
+          tBtn.textContent = isOpen ? `Hide (${done}/${total})` : `Show (${done}/${total})`;
+          tBtn.dataset.toggle = "1";
+          toggleWrap.appendChild(tBtn);
+        } else if(total === 1){
+          // 1개면 토글 없이 상태만 살짝 보여주고 싶으면 여기서 표시 가능
+          // (요청은 2개 이상일 때만 토글이므로, 1개면 아무것도 안 둠)
+        } else {
+          // 0개일 때도 아무것도 안 둠
         }
 
-        head.appendChild(left);
-        head.appendChild(right);
+        head.appendChild(label);
+        head.appendChild(toggleWrap);
 
-        const ul = document.createElement("ul");
-        ul.className = "list";
+        const itemsBox = document.createElement("div");
+        itemsBox.className = "items";
 
-        for(const it of sec.items){
-          const li = document.createElement("li");
-          li.className = "item" + (it.done ? " done" : "");
+        const list = weekState.days[String(i)] || [];
+        const isOpen = expanded.get(i) === true;
 
-          const chipHtml = it.dateStr
-            ? `<span class="chip">${it.dateStr}</span>`
-            : `<span class="chip someday">Someday</span>`;
+        // 노출 규칙:
+        // - total 0: 아무것도 안 보여줌
+        // - total 1: 1개는 항상 보여줌
+        // - total >=2: 접힘이면 1개만, 펼침이면 전부
+        let visible = list;
+        if(total >= 2 && !isOpen) visible = list.slice(0, 1);
 
-          li.innerHTML = `
-            <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
+        for(const it of visible){
+          const row = document.createElement("div");
+          row.className = "item" + (it.done ? " done" : "");
+          row.innerHTML = `
+            <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}" data-day="${i}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            ${chipHtml}
             <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
-            ${it.dateStr ? `<button class="miniBtn" type="button" data-next="${it.id}" title="다음 주로 미루기">Next</button>` : ``}
-            <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
+            <button class="del" type="button" aria-label="삭제" data-del="${it.id}" data-day="${i}">✕</button>
           `;
-
-          ul.appendChild(li);
+          itemsBox.appendChild(row);
         }
 
-        box.appendChild(head);
-        box.appendChild(ul);
-        weekSections.appendChild(box);
+        // 클릭 힌트: 섹션 헤더 클릭하면 해당 요일 선택
+        label.style.cursor = "pointer";
+        label.addEventListener("click", () => setSelectedDay(i));
+
+        section.appendChild(head);
+        if(total > 0) section.appendChild(itemsBox);
+
+        // 선택된 요일은 섹션을 살짝 강조(미세)
+        if(i === selectedDayIndex){
+          section.style.borderColor = "rgba(140,190,232,0.45)";
+          section.style.background = "rgba(255,255,255,0.08)";
+        }
+
+        weekList.appendChild(section);
       }
 
-      // count
-      const total = state.length;
-      const done = state.filter(x => x.done).length;
-      countText.textContent = `${done}/${total} done`;
+      countText.textContent = `${allDone}/${allTotal} done`;
     }
 
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, (m) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      }[m]));
-    }
+    buildWeekdayPills();
+    renderWeekList();
 
-    function addItem(text){
+    /* ========= mutations ========= */
+    function addItemToDay(dayIndex, text){
       const t = (text || "").trim();
       if(!t) return;
 
-      const ws = getCurrentWeekStart();
-      const dayStr = getDayStrFromIndex(ws, selectedDayIndex);
-
-      state.unshift({
+      const dayKey = String(dayIndex);
+      const arr = weekState.days[dayKey] || (weekState.days[dayKey] = []);
+      arr.unshift({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
-        done: false,
-        dateStr: dayStr // This Week 기본은 요일 지정 날짜
+        done: false
       });
-
-      saveWeek(getWeekStartStr(), state);
-      render();
-      showToast("이번 주에 추가했어.");
+      saveWeek(getWeekKey(), weekState);
+      renderWeekList();
     }
 
-    function toggleItem(id){
-      state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
-      saveWeek(getWeekStartStr(), state);
-      render();
+    function toggleItem(dayIndex, id){
+      const dayKey = String(dayIndex);
+      const arr = weekState.days[dayKey] || [];
+      weekState.days[dayKey] = arr.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+      saveWeek(getWeekKey(), weekState);
+      renderWeekList();
     }
 
-    function deleteItem(id){
-      state = state.filter(it => it.id !== id);
-      saveWeek(getWeekStartStr(), state);
-      render();
+    function deleteItem(dayIndex, id){
+      const dayKey = String(dayIndex);
+      const arr = weekState.days[dayKey] || [];
+      weekState.days[dayKey] = arr.filter(it => it.id !== id);
+      saveWeek(getWeekKey(), weekState);
+      renderWeekList();
     }
 
     function clearDone(){
-      const before = state.length;
-      state = state.filter(it => !it.done);
-      saveWeek(getWeekStartStr(), state);
-      render();
-      const removed = before - state.length;
-      showToast(removed ? `완료 ${removed}개 삭제했어.` : "삭제할 완료가 없어.");
+      for(let i=0;i<7;i++){
+        const k = String(i);
+        weekState.days[k] = (weekState.days[k] || []).filter(it => !it.done);
+      }
+      saveWeek(getWeekKey(), weekState);
+      renderWeekList();
+      showToast("완료를 지웠어.");
     }
 
-    // Move: a specific date's unfinished items to next week (date +7)
-    function moveDateItemsToNextWeek(dateStr){
-      const ws = getCurrentWeekStart();
-      const wsStr = ymd(ws);
-      const nextWs = addDays(ws, 7);
-      const nextWsStr = ymd(nextWs);
-
-      const nextState = loadWeek(nextWsStr);
-
-      const moving = [];
-      const staying = [];
-
-      for(const it of state){
-        if(it.dateStr === dateStr && !it.done){
-          const dt = ymdToDate(it.dateStr);
-          const nd = dt ? ymd(addDays(dt, 7)) : it.dateStr;
-          moving.push({ ...it, dateStr: nd });
-        }else{
-          staying.push(it);
-        }
-      }
-
-      if(moving.length === 0){
-        showToast("미완료가 없어.");
+    /* ========= section toggle (2+ only) ========= */
+    weekList.addEventListener("click", (e) => {
+      const tbtn = e.target.closest("[data-toggle]");
+      if(tbtn){
+        const section = e.target.closest(".daySection");
+        if(!section) return;
+        const day = Number(section.dataset.day);
+        const cur = expanded.get(day) === true;
+        expanded.set(day, !cur);
+        renderWeekList();
         return;
       }
 
-      // de-dup by text+date
-      const existing = new Set(nextState.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
-      const toAdd = [];
-      for(const it of moving){
-        const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
-        if(existing.has(key)) continue;
-        toAdd.push(it);
+      const check = e.target.closest(".check");
+      const del = e.target.closest("[data-del]");
+      if(check){
+        const day = Number(check.dataset.day);
+        toggleItem(day, check.dataset.id);
+      } else if(del){
+        const day = Number(del.dataset.day);
+        deleteItem(day, del.dataset.del);
       }
+    });
 
-      const merged = [...toAdd, ...nextState];
-      saveWeek(nextWsStr, merged);
-
-      state = staying;
-      saveWeek(wsStr, state);
-      render();
-
-      showToast(`다음 주로 ${toAdd.length}개 미뤘어.`);
-    }
-
-    // Push: this week unfinished -> next week (date +7, someday stays someday)
-    function pushToNextWeek(){
-      const ws = getCurrentWeekStart();
-      const wsStr = ymd(ws);
-      const nextWs = addDays(ws, 7);
-      const nextWsStr = ymd(nextWs);
-
-      const nextState = loadWeek(nextWsStr);
-
-      const moving = [];
-      const staying = [];
-
-      for(const it of state){
-        if(!it.done){
-          if(it.dateStr){
-            const dt = ymdToDate(it.dateStr);
-            const nd = dt ? ymd(addDays(dt, 7)) : it.dateStr;
-            moving.push({ ...it, dateStr: nd });
-          }else{
-            // someday -> keep someday
-            moving.push({ ...it });
-          }
-        }else{
-          staying.push(it);
-        }
+    weekList.addEventListener("keydown", (e) => {
+      const check = e.target.closest(".check");
+      if(!check) return;
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        const day = Number(check.dataset.day);
+        toggleItem(day, check.dataset.id);
       }
+    });
 
-      if(moving.length === 0){
-        showToast("미완료가 없어.");
+    /* ========= Add events ========= */
+    addBtn.addEventListener("click", () => {
+      addItemToDay(selectedDayIndex, taskInput.value);
+      taskInput.value = "";
+      taskInput.focus();
+      syncAddButtonState();
+
+      // toast with chosen day info
+      showToast(`${DOW_LABEL[selectedDayIndex]}에 추가했어.`);
+    });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        if(!addBtn.disabled) addBtn.click();
+      }
+    });
+
+    /* ========= From Today / Pull / Push ========= */
+    fromTodayBtn.addEventListener("click", () => {
+      // select today's index within this viewed week if it belongs, else just keep current selection
+      const today = new Date();
+      const mon = mondayOfWeek(today);
+      const sameWeek = (dateToYmd(mon) === dateToYmd(viewMonday));
+      if(!sameWeek){
+        showToast("현재 보고 있는 주가 이번 주가 아니야.");
         return;
       }
+      const idx = Math.min(6, Math.max(0, Math.round((today - mon)/86400000)));
+      setSelectedDay(idx);
+      showToast("Today 기준으로 이동했어.");
+    });
 
-      const existing = new Set(nextState.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
-      const toAdd = [];
-      for(const it of moving){
-        const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
-        if(existing.has(key)) continue;
-        toAdd.push(it);
-      }
-
-      saveWeek(nextWsStr, [...toAdd, ...nextState]);
-
-      state = staying; // keep done items only
-      saveWeek(wsStr, state);
-      render();
-
-      showToast(`다음 주로 ${toAdd.length}개 미뤘어.`);
-    }
-
-    // Pull: next week unfinished -> this week (date -7, someday stays someday)
-    function pullFromNextWeek(){
-      const ws = getCurrentWeekStart();
-      const wsStr = ymd(ws);
-      const nextWs = addDays(ws, 7);
-      const nextWsStr = ymd(nextWs);
-
-      const nextState = loadWeek(nextWsStr);
-
-      const moving = [];
-      const stayingNext = [];
-
-      for(const it of nextState){
-        if(!it.done){
-          if(it.dateStr){
-            const dt = ymdToDate(it.dateStr);
-            const nd = dt ? ymd(addDays(dt, -7)) : it.dateStr;
-            moving.push({ ...it, dateStr: nd });
-          }else{
-            moving.push({ ...it });
-          }
-        }else{
-          stayingNext.push(it);
-        }
-      }
-
-      if(moving.length === 0){
-        showToast("당겨올 미완료가 없어.");
-        return;
-      }
-
-      const existing = new Set(state.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
-      const toAdd = [];
-      for(const it of moving){
-        const key = `${(it.text||"").trim()}|${it.dateStr||""}`;
-        if(existing.has(key)) continue;
-        toAdd.push(it);
-      }
-
-      state = [...toAdd, ...state];
-      saveWeek(wsStr, state);
-
-      saveWeek(nextWsStr, stayingNext);
-      render();
-
-      showToast(`이번 주로 ${toAdd.length}개 당겼어.`);
-    }
-
-    // From Today: import today's unfinished from Today widget into this week's "today date"
-    function fromToday(){
-      const wsStr = getWeekStartStr();
-      const realWsStr = ymd(getWeekStart(baseToday));
-      if(wsStr !== realWsStr){
-        showToast("현재 주에서만 가능해.");
-        return;
-      }
-
-      const todayStr = ymd(new Date());
-      const key = TODAY_PREFIX + todayStr;
-      let todayItems = [];
+    pullBtn.addEventListener("click", () => {
+      // Pull from Today widget (unfinished) into selected day (dedupe by text)
+      const todayKey = TODAY_PREFIX + ymd(new Date());
+      let src = [];
       try{
-        const raw = localStorage.getItem(key);
-        if(raw) todayItems = JSON.parse(raw) || [];
-        if(!Array.isArray(todayItems)) todayItems = [];
-      }catch(e){ todayItems = []; }
+        const raw = localStorage.getItem(todayKey);
+        if(raw) src = JSON.parse(raw) || [];
+      }catch(e){ src = []; }
 
-      const unfinished = todayItems.filter(x => x && !x.done && (x.text||"").trim());
-      if(unfinished.length === 0){
-        showToast("오늘 미완료가 없어.");
+      if(!Array.isArray(src) || src.length === 0){
+        showToast("Today 기록이 없어.");
         return;
       }
 
-      const existing = new Set(state.map(x => `${(x.text||"").trim()}|${x.dateStr||""}`));
-      const toAdd = [];
-      for(const it of unfinished){
-        const text = (it.text||"").trim();
-        const key2 = `${text}|${todayStr}`;
-        if(existing.has(key2)) continue;
-        toAdd.push({
-          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
-          text,
-          done: false,
-          dateStr: todayStr
-        });
+      const unfinished = src.filter(x => !x.done && (x.text||"").trim());
+      if(unfinished.length === 0){
+        showToast("가져올 미완료가 없어.");
+        return;
       }
 
-      if(toAdd.length === 0){
+      const dayKey = String(selectedDayIndex);
+      const arr = weekState.days[dayKey] || (weekState.days[dayKey] = []);
+      const existing = new Set(arr.map(x => (x.text||"").trim()));
+
+      let added = 0;
+      for(const it of unfinished){
+        const tx = (it.text||"").trim();
+        if(!tx) continue;
+        if(existing.has(tx)) continue;
+        arr.unshift({
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+          text: tx,
+          done: false
+        });
+        existing.add(tx);
+        added++;
+      }
+
+      if(added === 0){
         showToast("이미 이번 주에 있어.");
         return;
       }
 
-      state = [...toAdd, ...state];
-      saveWeek(getWeekStartStr(), state);
-      render();
-      showToast(`오늘에서 ${toAdd.length}개 가져왔어.`);
-    }
+      saveWeek(getWeekKey(), weekState);
+      renderWeekList();
+      showToast(`Today에서 ${added}개 가져왔어.`);
+    });
 
-    /* =========================
-       Events
-    ========================= */
-    function mount(){
-      buildDayStrip();
+    pushBtn.addEventListener("click", () => {
+      // Push selected day's unfinished into Today widget (dedupe by text)
+      const todayKey = TODAY_PREFIX + ymd(new Date());
+      let dest = [];
+      try{
+        const raw = localStorage.getItem(todayKey);
+        if(raw) dest = JSON.parse(raw) || [];
+      }catch(e){ dest = []; }
 
-      // load initial week
-      const wsStr = getWeekStartStr();
-      state = loadWeek(wsStr);
+      if(!Array.isArray(dest)) dest = [];
 
-      // select day pill = today index (Mon..Sun) when on current week
-      const ws = getCurrentWeekStart();
-      const today = new Date();
-      const wsReal = getWeekStart(today);
-      if(ymd(ws) === ymd(wsReal)){
-        const js = today.getDay(); // 0 Sun..6 Sat
-        selectedDayIndex = (js + 6) % 7; // Mon=0..Sun=6
-        buildDayStrip();
+      const dayArr = weekState.days[String(selectedDayIndex)] || [];
+      const unfinished = dayArr.filter(x => !x.done && (x.text||"").trim());
+      if(unfinished.length === 0){
+        showToast("보낼 미완료가 없어.");
+        return;
       }
 
-      // plus button
-      syncAddButtonState();
-      addBtn.addEventListener("click", () => {
-        addItem(taskInput.value);
-        taskInput.value = "";
-        taskInput.focus();
-        syncAddButtonState();
-      });
+      const existing = new Set(dest.map(x => (x.text||"").trim()));
+      let added = 0;
 
-      taskInput.addEventListener("keydown", (e) => {
-        if(e.key === "Enter"){
-          e.preventDefault();
-          if(!addBtn.disabled) addBtn.click();
+      for(const it of unfinished){
+        const tx = (it.text||"").trim();
+        if(!tx) continue;
+        if(existing.has(tx)) continue;
+        dest.unshift({
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+          text: tx,
+          done: false
+        });
+        existing.add(tx);
+        added++;
+      }
+
+      if(added === 0){
+        showToast("이미 Today에 있어.");
+        return;
+      }
+
+      localStorage.setItem(todayKey, JSON.stringify(dest));
+      showToast(`Today로 ${added}개 보냈어.`);
+    });
+
+    /* ========= Copy ========= */
+    function formatWeekForCopy(weekId, data){
+      const lines = [];
+      lines.push(`[This Week | ${weekId}]`);
+      for(let i=0;i<7;i++){
+        const dateStr = dayDateStr(i);
+        const arr = (data.days && data.days[String(i)]) ? data.days[String(i)] : [];
+        lines.push(`\n${DOW_LABEL[i]} (${dateStr})`);
+        if(arr.length === 0){
+          lines.push(`- (empty)`);
+          continue;
         }
-      });
-
-      dayStrip.addEventListener("keydown", (e) => {
-        // optional: left/right to move selection
-      });
-
-      // list actions (toggle/delete/next)
-      weekSections.addEventListener("click", (e) => {
-        const check = e.target.closest(".check");
-        const del = e.target.closest("[data-del]");
-        const next = e.target.closest("[data-next]");
-
-        if(check){
-          toggleItem(check.dataset.id);
-        }else if(del){
-          deleteItem(del.dataset.del);
-        }else if(next){
-          const id = next.dataset.next;
-          const it = state.find(x => x.id === id);
-          if(it && it.dateStr){
-            moveDateItemsToNextWeek(it.dateStr);
-          }
+        for(const it of arr){
+          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
         }
-      });
-
-      weekSections.addEventListener("keydown", (e) => {
-        const check = e.target.closest(".check");
-        if(!check) return;
-        if(e.key === "Enter" || e.key === " "){
-          e.preventDefault();
-          toggleItem(check.dataset.id);
-        }
-      });
-
-      clearDoneBtn.addEventListener("click", clearDone);
-
-      copyBtn.addEventListener("click", async () => {
-        const ws = getCurrentWeekStart();
-        const wsStr = ymd(ws);
-
-        const labelsFull = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-        const sections = [];
-        for(let i=0;i<7;i++){
-          const dateStr = ymd(addDays(ws, i));
-          const items = state.filter(it => it.dateStr === dateStr);
-          if(items.length) sections.push({ title: `${labelsFull[i]} · ${dateStr}`, items });
-        }
-        const somedayItems = state.filter(it => !it.dateStr);
-        if(somedayItems.length) sections.push({ title: "Someday", items: somedayItems });
-
-        const text = formatForCopy(wsStr, sections);
-        const ok = await copyToClipboard(text);
-        showToast(ok ? "복사했어." : "복사 실패 (브라우저 권한 확인)");
-      });
-
-      pushBtn.addEventListener("click", pushToNextWeek);
-      pullBtn.addEventListener("click", pullFromNextWeek);
-      fromTodayBtn.addEventListener("click", fromToday);
-
-      // week nav
-      prevWeekBtn.addEventListener("click", () => {
-        weekOffset -= 1;
-        const wsStr = getWeekStartStr();
-        state = loadWeek(wsStr);
-        buildDayStrip();
-        render();
-      });
-
-      nextWeekBtn.addEventListener("click", () => {
-        weekOffset += 1;
-        const wsStr = getWeekStartStr();
-        state = loadWeek(wsStr);
-        buildDayStrip();
-        render();
-      });
-
-      render();
+      }
+      return lines.join("\n");
     }
 
-    mount();
+    copyBtn.addEventListener("click", async () => {
+      const text = formatWeekForCopy(getWeekId(), weekState);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "주간 전체를 복사했어." : "복사 실패 (권한 확인)");
+    });
+
+    clearDoneBtn.addEventListener("click", clearDone);
+
+    /* ========= Week navigation ========= */
+    function loadCurrentViewWeek(){
+      // archive past weeks relative to current storage
+      weekArchive = autoArchivePastWeeks(getWeekKey(), getWeekId());
+      weekState = loadWeek(getWeekKey());
+      expanded.clear();
+      buildWeekdayPills();
+      renderWeekList();
+    }
+
+    prevWeekBtn.addEventListener("click", () => {
+      viewMonday = addDays(viewMonday, -7);
+      loadCurrentViewWeek();
+      showToast("이전 주로 이동했어.");
+    });
+
+    nextWeekBtn.addEventListener("click", () => {
+      viewMonday = addDays(viewMonday, 7);
+      loadCurrentViewWeek();
+      showToast("다음 주로 이동했어.");
+    });
+
+    /* ========= History / Archive modal ========= */
+    let pickedWeekId = null;
+    let searchQuery = "";
+
+    function openModal(){
+      weekArchive = loadWeekArchive();
+      searchQuery = (searchInput.value || "").trim();
+      buildWeeks();
+      modalOverlay.classList.add("open");
+      modalOverlay.setAttribute("aria-hidden", "false");
+
+      pickedWeekId = null;
+      pickedWeekText.textContent = "주차를 선택해줘";
+      restoreWeekBtn.disabled = true;
+      copyWeekBtn.disabled = true;
+
+      previewBox.innerHTML = `
+        <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+          왼쪽에서 주차를 선택하면, 그 주의 기록을 보여줘.
+        </div>
+      `;
+    }
+
+    function closeModal(){
+      modalOverlay.classList.remove("open");
+      modalOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    function weekMatchesQuery(weekId, data, q){
+      if(!q) return true;
+      const lowerQ = q.toLowerCase();
+      if(String(weekId).toLowerCase().includes(lowerQ)) return true;
+
+      const days = (data && data.days) ? data.days : {};
+      for(let i=0;i<7;i++){
+        const arr = days[String(i)] || [];
+        for(const it of arr){
+          const tx = String(it.text || "").toLowerCase();
+          if(tx.includes(lowerQ)) return true;
+        }
+      }
+      return false;
+    }
+
+    function getCountsForWeek(data){
+      let total = 0, done = 0;
+      const days = (data && data.days) ? data.days : {};
+      for(let i=0;i<7;i++){
+        const arr = days[String(i)] || [];
+        total += arr.length;
+        done += arr.filter(x => x.done).length;
+      }
+      return { total, done };
+    }
+
+    function buildWeeks(){
+      const q = (searchQuery || "").trim();
+      const ids = Object.keys(weekArchive || {});
+      ids.sort((a,b) => {
+        // sort by start date desc
+        const as = a.split("~")[0].trim();
+        const bs = b.split("~")[0].trim();
+        const ad = ymdToDate(as);
+        const bd = ymdToDate(bs);
+        const at = ad ? ad.getTime() : 0;
+        const bt = bd ? bd.getTime() : 0;
+        return bt - at;
+      });
+
+      const filtered = ids.filter(id => weekMatchesQuery(id, weekArchive[id], q));
+
+      weeksPanel.innerHTML = "";
+      if(filtered.length === 0){
+        weeksPanel.innerHTML = `
+          <div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">
+            검색 결과가 없어.
+          </div>
+        `;
+      }else{
+        for(const id of filtered){
+          const data = weekArchive[id];
+          const { total, done } = getCountsForWeek(data);
+
+          const btn = document.createElement("button");
+          btn.className = "weekBtn";
+          btn.type = "button";
+          btn.dataset.week = id;
+          btn.innerHTML = `${escapeHtml(id)}<small>${done}/${total}</small>`;
+          weeksPanel.appendChild(btn);
+        }
+      }
+
+      archiveCount.textContent = `${filtered.length} / ${ids.length} weeks`;
+
+      if(pickedWeekId && !filtered.includes(pickedWeekId)){
+        pickedWeekId = null;
+        pickedWeekText.textContent = "주차를 선택해줘";
+        restoreWeekBtn.disabled = true;
+        copyWeekBtn.disabled = true;
+        previewBox.innerHTML = `
+          <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+            검색 결과에서 주차를 선택해줘.
+          </div>
+        `;
+      } else if(pickedWeekId){
+        setActiveWeekButton(pickedWeekId);
+        renderWeekPreview(pickedWeekId);
+      }
+    }
+
+    function setActiveWeekButton(id){
+      const btns = weeksPanel.querySelectorAll(".weekBtn");
+      btns.forEach(b => b.classList.toggle("active", b.dataset.week === id));
+    }
+
+    function renderWeekPreview(id){
+      const data = weekArchive[id];
+      if(!data){
+        previewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">표시할 내용이 없어.</div>`;
+        return;
+      }
+
+      pickedWeekId = id;
+      setActiveWeekButton(id);
+
+      pickedWeekText.textContent = `선택: ${id}`;
+      restoreWeekBtn.disabled = false;
+      copyWeekBtn.disabled = false;
+
+      const q = (searchQuery || "").trim();
+      const days = data.days || {};
+      const rows = [];
+
+      for(let i=0;i<7;i++){
+        const arr = days[String(i)] || [];
+        const dateStr = (() => {
+          // derive from id start date
+          const startStr = id.split("~")[0].trim();
+          const start = ymdToDate(startStr);
+          if(!start) return "";
+          return dateToYmd(addDays(start, i));
+        })();
+
+        rows.push(`<div style="margin-top:6px; color:rgba(30,30,30,0.72); font-size:12.5px; font-family:EnterSanChaek, ui-sans-serif, system-ui;">${DOW_LABEL[i]} <span style="color:rgba(30,30,30,0.42); font-variant-numeric:tabular-nums;">${escapeHtml(dateStr)}</span></div>`);
+
+        if(arr.length === 0){
+          rows.push(`<div style="color: rgba(30,30,30,0.45); font-size:12px;">(empty)</div>`);
+          continue;
+        }
+
+        const view = q ? arr.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase()) || id.toLowerCase().includes(q.toLowerCase())) : arr;
+
+        for(const it of view){
+          const badgeCls = it.done ? "badge done" : "badge";
+          const badgeText = it.done ? "done" : "todo";
+          const textHtml = highlight(it.text || "", q);
+          rows.push(`
+            <div class="pItem">
+              <span class="${badgeCls}">${badgeText}</span>
+              <span style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
+                ${textHtml}
+              </span>
+            </div>
+          `);
+        }
+      }
+
+      previewBox.innerHTML = rows.join("");
+    }
+
+    historyBtn.addEventListener("click", openModal);
+    closeModalBtn.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", (e) => {
+      if(e.target === modalOverlay) closeModal();
+    });
+
+    weeksPanel.addEventListener("click", (e) => {
+      const btn = e.target.closest(".weekBtn");
+      if(!btn) return;
+      renderWeekPreview(btn.dataset.week);
+    });
+
+    restoreWeekBtn.addEventListener("click", () => {
+      if(!pickedWeekId) return;
+      const data = weekArchive[pickedWeekId];
+      if(!data) return;
+
+      // restore into current view week (overwrite)
+      weekState = JSON.parse(JSON.stringify(data));
+      saveWeek(getWeekKey(), weekState);
+      renderWeekList();
+      showToast("선택한 주 기록으로 복원했어.");
+    });
+
+    copyWeekBtn.addEventListener("click", async () => {
+      if(!pickedWeekId) return;
+      const data = weekArchive[pickedWeekId];
+      const text = formatWeekForCopy(pickedWeekId, data);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "선택 주차를 복사했어." : "복사 실패 (권한 확인)");
+    });
+
+    searchInput.addEventListener("input", () => {
+      searchQuery = (searchInput.value || "").trim();
+      buildWeeks();
+    });
+
+    clearSearchBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      searchQuery = "";
+      buildWeeks();
+      showToast("검색을 초기화했어.");
+    });
+
+    /* ========= Esc closes modal ========= */
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape"){
+        if(modalOverlay.classList.contains("open")) closeModal();
+      }
+    });
   </script>
 </body>
 </html>
