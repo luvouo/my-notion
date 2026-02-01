@@ -970,6 +970,8 @@
     if (!workspace_id) {
       // 사용자가 패스코드를 넣고 새로고침하기 전까지 종료
       throw new Error("passcode required");
+      const USE_SUPABASE = true; // ✅ 서버 동기화 ON/OFF 스위치
+
     }
 
 console.log("env ok?", window.__ENV__);
@@ -1061,6 +1063,14 @@ console.log("env ok?", window.__ENV__);
     }
 
     function loadArchive(){
+      if (USE_SUPABASE) return {}; // ✅ 서버 모드에서는 로컬 아카이브 안 씀
+      try{
+        const raw = localStorage.getItem(KEY_ARCHIVE);
+        if(!raw) return {};
+        const parsed = JSON.parse(raw);
+        return (parsed && typeof parsed === "object") ? parsed : {};
+      }catch(e){ return {}; }
+      
       try{
         const raw = localStorage.getItem(KEY_ARCHIVE);
         if(!raw) return {};
@@ -1069,10 +1079,12 @@ console.log("env ok?", window.__ENV__);
       }catch(e){ return {}; }
     }
     function saveArchive(archive){
+      if (USE_SUPABASE) return; // ✅ 서버 모드에서는 저장 안 함
       localStorage.setItem(KEY_ARCHIVE, JSON.stringify(archive));
     }
 
     function autoArchivePastDays(todayStr){
+      if (USE_SUPABASE) return {}; // ✅ 서버 모드에서는 로컬 자동 아카이브 안 함
       const archive = loadArchive();
       const keys = [];
       for(let i=0;i<localStorage.length;i++){
@@ -1160,12 +1172,14 @@ console.log("env ok?", window.__ENV__);
 
     metaText.textContent = todayStr;
 
-    let archive = autoArchivePastDays(todayStr);
-    let state = loadDay(KEY_TODAY);
+    let archive = USE_SUPABASE ? {} : autoArchivePastDays(todayStr);
+    let state   = USE_SUPABASE ? [] : loadDay(KEY_TODAY);
+
     let pickedDate = null;
     let searchQuery = "";
 
     function loadDay(key){
+      if (USE_SUPABASE) return []; // ✅ 서버 모드에서는 로컬 day 저장 안 씀
       try{
         const raw = localStorage.getItem(key);
         if(!raw) return [];
@@ -1173,8 +1187,10 @@ console.log("env ok?", window.__ENV__);
         return Array.isArray(parsed) ? parsed : [];
       }catch(e){ return []; }
     }
+    
     function saveDay(key, items){
-      localStorage.setItem(key, JSON.stringify(items));
+      if (USE_SUPABASE) return; // ✅ 서버 모드에서는 로컬 저장 안 함
+        localStorage.setItem(key, JSON.stringify(items));
     }
 
     function addItem(text){
@@ -1318,7 +1334,9 @@ console.log("env ok?", window.__ENV__);
     }
 
     function openModal(){
-      archive = loadArchive();
+      if (!USE_SUPABASE) {
+        archive = loadArchive();
+      }
       searchQuery = (searchInput.value || "").trim();
       buildDates();
       modalOverlay.classList.add("open");
