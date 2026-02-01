@@ -7,15 +7,15 @@
 
   <style>
     :root{
-      /* Pastel Skyblue (채도 살짝 낮춤) */
-      --accent-1: rgba(170, 220, 245, 0.86);
-      --accent-2: rgba(150, 210, 240, 0.55);
-      --border:   rgba(150, 210, 240, 0.62);
+      /* Pastel Skyblue (slightly desaturated) */
+      --accent-1: rgba(165, 206, 240, 0.88);
+      --accent-2: rgba(140, 190, 232, 0.52);
+      --border:   rgba(140, 190, 232, 0.60);
 
-      --text:  rgba(30,30,30,0.92);
+      --text: rgba(30,30,30,0.92);
       --muted: rgba(30,30,30,0.38);
 
-      --glass:   rgba(255,255,255,0.10);
+      --glass: rgba(255,255,255,0.10);
       --glass-2: rgba(255,255,255,0.06);
 
       --shadow: 0 10px 30px rgba(0,0,0,0.06);
@@ -40,7 +40,7 @@
     }
 
     .wrap{
-      width: min(740px, 100%);
+      width: min(760px, 100%);
       margin: 0 auto;
       padding: clamp(10px, 2.6vw, 16px);
       box-sizing: border-box;
@@ -63,8 +63,8 @@
       position:absolute;
       inset:-2px;
       background:
-        radial-gradient(120% 80% at 0% 0%, rgba(170,220,245,0.22), transparent 55%),
-        radial-gradient(80% 80% at 100% 20%, rgba(150,210,240,0.16), transparent 55%);
+        radial-gradient(120% 80% at 0% 0%, rgba(165,206,240,0.20), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(140,190,232,0.14), transparent 55%);
       pointer-events:none;
     }
 
@@ -97,7 +97,7 @@
       display: block;
       object-fit: cover;
       flex: 0 0 auto;
-      box-shadow: 0 0 0 2px rgba(170,220,245,0.22);
+      box-shadow: 0 0 0 2px rgba(165,206,240,0.22);
     }
 
     .title h1{
@@ -116,138 +116,370 @@
       color: var(--muted);
       white-space: nowrap;
       margin-left: auto;
-      display:flex;
-      align-items:center;
-      gap: 8px;
+      font-variant-numeric: tabular-nums;
     }
 
-    .navBtn{
-      border: 1px solid rgba(150,210,240,0.45);
-      background: rgba(255,255,255,0.08);
-      padding: 6px 10px;
-      border-radius: 999px;
-      cursor: pointer;
-      color: rgba(30,30,30,0.78);
-      font-size: 12px;
-      line-height: 1;
-      transition: border-color .18s ease, box-shadow .18s ease, transform .08s ease, background .18s ease;
-      -webkit-tap-highlight-color: transparent;
-      user-select:none;
+    /* ===== controls row ===== */
+    .controls{
+      display:flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-    .navBtn:hover{
-      border-color: rgba(150,210,240,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.22);
+
+    .inputRow{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      flex: 1 1 420px;
+      min-width: 0;
     }
-    .navBtn:active{ transform: scale(0.98); }
-    .navBtn:focus-visible{
-      outline:none;
-      border-color: rgba(150,210,240,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.28);
+
+    .input{
+      flex: 1 1 220px;
+      min-width: 0;
+      border: 1px solid rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 12px 12px;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
+    .input::placeholder{ color: rgba(30,30,30,0.45); }
 
     .btn{
       flex: 0 0 auto;
-      border: 1px solid rgba(150,210,240,0.70);
-      background: rgba(170,220,245,0.20);
+      border: 1px solid rgba(140,190,232,0.70);
+      background: rgba(165,206,240,0.18);
       border-radius: 14px;
       padding: 12px 14px;
       font-size: 13px;
       color: rgba(30,30,30,0.85);
       cursor: pointer;
-      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      transition: transform .08s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       white-space: nowrap;
     }
     .btn:active{ transform: scale(0.98); }
-    .btn:hover{ background: rgba(170,220,245,0.28); border-color: rgba(150,210,240,0.92); }
+    .btn:hover{
+      background: rgba(165,206,240,0.24);
+      border-color: rgba(140,190,232,0.90);
+    }
+    .btn:focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
+    }
 
     .btn.secondary{
-      border: 1px solid rgba(150,210,240,0.45);
+      border: 1px solid rgba(140,190,232,0.45);
       background: rgba(255,255,255,0.08);
       padding: 10px 12px;
       border-radius: 12px;
       font-size: 12px;
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      transition:
-        color .18s ease,
-        border-color .18s ease,
-        box-shadow .18s ease,
-        background .18s ease,
-        transform .08s ease;
-    }
-    .btn.secondary:disabled{
-      opacity: 0.55;
-      cursor: not-allowed;
     }
     .btn.secondary:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
       color: var(--accent-1);
-      border-color: rgba(150,210,240,0.70);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.22);
-    }
-    .btn.secondary:focus-visible{
-      outline:none;
-      color: var(--accent-1);
-      border-color: rgba(150,210,240,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.28);
     }
 
-    /* ===== Next Week Inbox (one line) ===== */
-    .inboxRow{
+    /* + add button */
+    #addBtn{
+      height: clamp(28px, 3.2vw, 32px);
+      min-width: clamp(28px, 3.2vw, 32px);
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(30,30,30,0.48);
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(140,190,232,0.45);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+    #addBtn:hover{
+      background: rgba(165,206,240,0.16);
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+    }
+    #addBtn:active{ transform: scale(0.96); }
+    #addBtn:disabled{
+      opacity: 0.45;
+      cursor: not-allowed;
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(140,190,232,0.25);
+      box-shadow: none;
+      transform: none;
+    }
+    #addBtn:focus-visible{
+      outline:none;
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
+    }
+
+    /* weekday pills */
+    .weekbar{
+      display:flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
+
+    .weeknav{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+    }
+
+    .navBtn{
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.08);
+      cursor: pointer;
+      display:grid;
+      place-items:center;
+      transition: box-shadow .18s ease, border-color .18s ease, background .18s ease, transform .08s ease;
+    }
+    .navBtn:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+    }
+    .navBtn:active{ transform: scale(0.98); }
+    .navBtn:focus-visible{ outline:none; box-shadow: 0 0 0 3px rgba(165,206,240,0.28); }
+
+    .weekdays{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+
+    .dayPill{
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.08);
+      cursor:pointer;
+
+      display:grid;
+      place-items:center;
+
+      font-size: 12px;
+      color: rgba(30,30,30,0.70);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease, color .18s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .dayPill:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      color: rgba(30,30,30,0.84);
+    }
+    .dayPill:active{ transform: scale(0.98); }
+    .dayPill:focus-visible{
+      outline:none;
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
+    }
+    .dayPill.active{
+      background: rgba(165,206,240,0.18);
+      border-color: rgba(140,190,232,0.88);
+      box-shadow: 0 10px 26px rgba(140,190,232,0.10);
+      color: rgba(30,30,30,0.88);
+    }
+
+    /* ===== Next Week Inbox (one-line) ===== */
+    .nextInboxRow{
       display:flex;
       align-items:center;
       justify-content: space-between;
       gap: 10px;
-      border: 1px solid rgba(150,210,240,0.30);
-      background: var(--glass-2);
-      border-radius: 16px;
-      padding: 10px 12px;
-      min-width:0;
+
+      border: 1px solid rgba(140,190,232,0.30);
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 10px 10px;
+      overflow: hidden;
+      min-width: 0;
     }
-    .inboxLeft{
+
+    .nextInboxLeft{
       display:flex;
-      align-items: baseline;
+      align-items:center;
       gap: 10px;
-      min-width:0;
+      min-width: 0;
     }
-    .inboxTitle{
+
+    .nextInboxTitle{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: rgba(30,30,30,0.82);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .nextInboxCount{
+      font-size: 12px;
+      color: rgba(30,30,30,0.62);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(140,190,232,0.35);
+      border-radius: 999px;
+      padding: 5px 10px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .nextInboxRight{
+      display:flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+      align-items:center;
+      flex: 0 0 auto;
+    }
+
+    /* ===== Next Week popover (mini) ===== */
+    .popover{
+      position: fixed;
+      left: 0;
+      top: 0;
+
+      width: min(340px, calc(100vw - 24px));
+      border-radius: 16px;
+      border: 1px solid rgba(140,190,232,0.32);
+      background: rgba(255,255,255,0.86);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+      z-index: 9999;
+
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(6px);
+      transition: opacity .14s ease, transform .14s ease;
+      overflow: hidden;
+    }
+    .popover.open{
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .popHead{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      gap: 10px;
+      min-width: 0;
+    }
+    .popTitle{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
       font-size: 13px;
       color: rgba(30,30,30,0.86);
       white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
     }
-    .inboxCount{
-      font-size: 12px;
-      color: rgba(30,30,30,0.62);
-      background: rgba(0,0,0,0.03);
-      border: 1px solid rgba(0,0,0,0.06);
+    .popClose{
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.70);
+      width: 30px;
+      height: 30px;
       border-radius: 999px;
-      padding: 3px 8px;
-      line-height: 1;
-      flex:0 0 auto;
-    }
-    .inboxRight{
-      display:flex;
-      gap: 8px;
+      cursor:pointer;
+      color: rgba(30,30,30,0.70);
+      display:grid;
+      place-items:center;
+      -webkit-tap-highlight-color: transparent;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
       flex: 0 0 auto;
+    }
+    .popClose:hover{
+      border-color: rgba(140,190,232,0.55);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
+    }
+    .popClose:active{ transform: scale(0.98); }
+    .popClose:focus-visible{
+      outline:none;
+      border-color: rgba(140,190,232,0.78);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
+    }
+
+    .popList{
+      padding: 10px 12px;
+      display:grid;
+      gap: 8px;
+      max-height: 46vh;
+      overflow: auto;
+    }
+
+    .popItem{
+      display:flex;
       align-items:center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.60);
+      min-width:0;
+    }
+
+    .popText{
+      flex:1 1 auto;
+      min-width:0;
+      font-size: 13px;
+      color: rgba(30,30,30,0.86);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      line-height: 1.45;
+    }
+    .popItem.done .popText{
+      text-decoration: line-through;
+      color: rgba(30,30,30,0.55);
+      opacity: 0.95;
+    }
+
+    .popFoot{
+      padding: 10px 12px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      display:flex;
+      justify-content:flex-end;
+      gap: 8px;
       flex-wrap: nowrap;
     }
 
-    /* ===== Week list ===== */
+    /* ===== week list sections ===== */
     .weekList{
       display:grid;
       gap: 10px;
+      margin-top: 2px;
     }
 
     .daySection{
-      border: 1px solid rgba(150,210,240,0.30);
-      background: var(--glass-2);
-      border-radius: 16px;
-      padding: 10px 10px;
-      min-width:0;
+      border: 1px solid rgba(140,190,232,0.30);
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 10px;
+      overflow: hidden;
     }
 
     .dayHead{
@@ -255,151 +487,48 @@
       align-items:center;
       justify-content: space-between;
       gap: 10px;
-      padding: 2px 4px 8px 4px;
-      min-width:0;
     }
-    .dayTitle{
+
+    .dayLabel{
       display:flex;
       align-items: baseline;
-      gap: 8px;
-      min-width:0;
-    }
-    .dow{
+      gap: 10px;
+      min-width: 0;
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: rgba(30,30,30,0.82);
       font-size: 13px;
-      color: rgba(30,30,30,0.88);
-      white-space:nowrap;
     }
-    .date{
+
+    .dayLabel small{
+      color: rgba(30,30,30,0.40);
       font-size: 12px;
-      color: rgba(30,30,30,0.52);
-      white-space:nowrap;
-    }
-    .dayMeta{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      flex: 0 0 auto;
-    }
-    .pill{
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.06);
-      background: rgba(0,0,0,0.03);
-      color: rgba(30,30,30,0.58);
-      line-height:1;
+      font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
 
-    /* 2개 이상일 때만 토글 버튼 노출 */
-    .toggleBtn{
-      display:none;
-      border: 1px solid rgba(150,210,240,0.45);
+    .showBtn{
+      border: 1px solid rgba(140,190,232,0.35);
       background: rgba(255,255,255,0.08);
+      color: rgba(30,30,30,0.72);
       border-radius: 999px;
-      padding: 6px 10px;
-      cursor:pointer;
-      color: rgba(30,30,30,0.74);
+      padding: 7px 10px;
       font-size: 12px;
-      line-height:1;
-      transition: border-color .18s ease, box-shadow .18s ease, transform .08s ease, background .18s ease;
-      -webkit-tap-highlight-color: transparent;
-      user-select:none;
-    }
-    .toggleBtn:hover{
-      border-color: rgba(150,210,240,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.22);
-    }
-    .toggleBtn:active{ transform: scale(0.98); }
-    .toggleBtn:focus-visible{
-      outline:none;
-      border-color: rgba(150,210,240,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.28);
-    }
-    .daySection.hasToggle .toggleBtn{ display:inline-flex; align-items:center; gap:6px; }
-
-    .chev{
-      width: 12px; height: 12px; display:inline-block;
-      transform: rotate(0deg);
-      transition: transform .16s ease;
-    }
-    .daySection.collapsed .chev{ transform: rotate(-90deg); }
-
-    .dayBody{
-      display:grid;
-      gap: 8px;
-    }
-    .daySection.collapsed .dayBody{ display:none; }
-
-    .addRow{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      padding: 0 4px 6px 4px;
-      flex-wrap: nowrap;
-    }
-
-    .input{
-      flex: 1 1 auto;
-      min-width: 0;
-      border: 1px solid rgba(150,210,240,0.40);
-      background: rgba(255,255,255,0.10);
-      border-radius: 12px;
-      padding: 10px 10px;
-      outline: none;
-      color: var(--text);
-      font-size: 13px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-    .input::placeholder{ color: rgba(30,30,30,0.45); }
-
-    #addBtn{
-      height: 32px;
-      min-width: 32px;
-      padding: 0;
-
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-
-      color: rgba(150,210,240,0.95);
-      background: rgba(255,255,255,0.88);
-      border: 1px solid rgba(150,210,240,0.45);
-      border-radius: 999px;
-
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       cursor: pointer;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      transition: box-shadow .18s ease, border-color .18s ease, color .18s ease;
+      white-space: nowrap;
+    }
+    .showBtn:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      color: var(--accent-1);
+    }
+    .showBtn:focus-visible{ outline:none; box-shadow: 0 0 0 3px rgba(165,206,240,0.28); }
 
-      transition: box-shadow .2s ease, border-color .2s ease, background .2s ease, transform .15s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-    #addBtn:hover{
-      background: rgba(255,255,255,0.60);
-      border-color: rgba(150,210,240,0.70);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.22);
-    }
-    #addBtn:active{ transform: scale(0.96); }
-    #addBtn:disabled{
-      opacity: 0.45;
-      cursor: not-allowed;
-      background: rgba(255,255,255,0.40);
-      border-color: rgba(150,210,240,0.25);
-      box-shadow: none;
-      transform: none;
-    }
-    #addBtn:focus-visible{
-      outline:none;
-      border-color: rgba(150,210,240,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.28);
-    }
-
-    .list{
-      margin:0;
-      padding:0 4px 0 4px;
-      list-style:none;
+    .items{
+      margin-top: 10px;
       display:grid;
       gap: 8px;
     }
@@ -410,10 +539,8 @@
       gap: 10px;
       padding: 8px 10px;
       border-radius: 14px;
-      border: 1px solid rgba(150,210,240,0.26);
+      border: 1px solid rgba(140,190,232,0.22);
       background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       min-width: 0;
     }
 
@@ -422,7 +549,7 @@
       height: 18px;
       margin-top: 1px;
       border-radius: 6px;
-      border: 1.6px solid rgba(150,210,240,0.95);
+      border: 1.6px solid rgba(140,190,232,0.95);
       display:grid;
       place-items:center;
       flex: 0 0 auto;
@@ -431,16 +558,16 @@
       transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
     }
     .check:hover{
-      background: rgba(170,220,245,0.14);
-      border-color: rgba(150,210,240,1);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.20);
+      background: rgba(165,206,240,0.12);
+      border-color: rgba(140,190,232,1);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
     }
     .check:active{ transform: scale(0.98); }
     .check:focus-visible{
       outline: none;
-      background: rgba(170,220,245,0.12);
-      border-color: rgba(150,210,240,1);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.28);
+      background: rgba(165,206,240,0.10);
+      border-color: rgba(140,190,232,1);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
     }
 
     .check svg{
@@ -455,7 +582,7 @@
       flex: 1 1 auto;
       min-width: 0;
       line-height: 1.45;
-      font-size: 13px;
+      font-size: 14px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -465,7 +592,7 @@
       flex: 0 0 auto;
       border: none;
       background: transparent;
-      color: rgba(30,30,30,0.55);
+      color: rgba(30,30,30,0.50);
       cursor:pointer;
       font-size: 14px;
       padding: 6px 8px;
@@ -474,68 +601,49 @@
       -webkit-tap-highlight-color: transparent;
     }
     .del:hover{
-      background: rgba(170,220,245,0.14);
+      background: rgba(165,206,240,0.12);
       color: rgba(30,30,30,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.20);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
     }
     .del:active{ transform: scale(0.96); }
     .del:focus-visible{
       outline:none;
-      background: rgba(170,220,245,0.12);
-      color: rgba(30,30,30,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.28);
+      background: rgba(165,206,240,0.10);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
     }
 
     .item.done{ opacity: 0.78; }
     .item.done .text{ text-decoration: line-through; color: rgba(30,30,30,0.50); }
     .item.done .check{
-      background: rgba(170,220,245,0.22);
-      border-color: rgba(150,210,240,1);
+      background: rgba(165,206,240,0.18);
+      border-color: rgba(140,190,232,1);
     }
     .item.done .check svg{ opacity: 1; transform: scale(1); }
 
-    /* ===== Footer (Today와 동일 구조) ===== */
+    /* ===== footer ===== */
     .footer{
       display:flex;
       justify-content: space-between;
       align-items:flex-end;
       gap: 10px;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
     }
 
     .footerLeft{
       display:flex;
       flex-direction: column;
       gap: 6px;
-      min-width: 0;
-      flex: 1 1 auto;
+      min-width: 160px;
     }
 
-    #countText{
-      font-size: 12px;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
-    .footer-actions{
-      display:flex;
-      gap: 8px;
-      flex: 0 0 auto;
-      align-items:center;
-      flex-wrap: nowrap;
-    }
-
-    /* Toast overlay (footerLeft 안에서) */
+    /* Toast overlay (like your Today B) */
     .toast{
       display: inline-flex;
       align-items: center;
       gap: 8px;
-
-      padding: 0;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-
       color: rgba(30,30,30,0.62);
       font-size: 12px;
       line-height: 1;
@@ -545,7 +653,6 @@
       pointer-events: none;
 
       transition: opacity .14s ease, transform .14s ease;
-      min-height: 0;
     }
     .toast:not(:empty){
       opacity: 1;
@@ -556,12 +663,45 @@
       width: 6px;
       height: 6px;
       border-radius: 999px;
-      background: rgba(170,220,245,0.88);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.16);
+      background: rgba(165,206,240,0.88);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
       flex: 0 0 auto;
     }
 
-    /* ===== Modal ===== */
+    .footer-actions{
+      display:flex;
+      justify-content: flex-end;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-left: 8px;
+      padding-right: 2px;
+      scrollbar-width: none;
+      width: 100%;
+    }
+    .footer-actions::-webkit-scrollbar{ display:none; }
+    .footer-actions > .btn{ flex: 0 0 auto; }
+
+    /* Keep History / Archive + Copy + Clear done */
+    #historyBtn, #copyBtn, #clearDoneBtn{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
+    /* responsive */
+    @media (max-width: 420px){
+      .weekbar{ width: 100%; justify-content: space-between; }
+    }
+    @media (max-width: 360px){
+      .meta{ display:none; }
+      .btn{ width: auto; }
+      .input{ flex-basis: 100%; }
+    }
+
+    /* ===== Modal (Week History / Archive) ===== */
     .modalOverlay{
       position: fixed;
       inset: 0;
@@ -576,12 +716,12 @@
     .modalOverlay.open{ display:flex; }
 
     .modal{
-      width: min(900px, 100%);
+      width: min(860px, 100%);
       max-height: calc(100vh - 20px);
       display: flex;
       flex-direction: column;
       border-radius: 18px;
-      border: 1px solid rgba(150,210,240,0.34);
+      border: 1px solid rgba(140,190,232,0.38);
       background: rgba(255,255,255,0.84);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -597,8 +737,8 @@
       padding: 14px 14px;
       border-bottom: 1px solid rgba(0,0,0,0.06);
       flex-wrap: wrap;
-      min-width:0;
-      box-sizing:border-box;
+      min-width: 0;
+      box-sizing: border-box;
     }
 
     .mhLeft{
@@ -623,8 +763,8 @@
       flex-wrap: wrap;
       align-items:center;
       justify-content: flex-end;
-      flex: 1 1 auto;
-      min-width:0;
+      flex: 1 1 360px;
+      min-width: 0;
     }
 
     .search{
@@ -634,9 +774,10 @@
       padding: 10px 12px;
       font-size: 12.5px;
       outline: none;
-      min-width: min(340px, 100%);
+      min-width: 0;
       flex: 1 1 260px;
-      box-sizing:border-box;
+      width: 100%;
+      box-sizing: border-box;
     }
     .search::placeholder{ color: rgba(30,30,30,0.45); }
 
@@ -653,8 +794,6 @@
       padding: 12px 10px;
       overflow: auto;
       width: max-content;
-      max-width: none;
-      min-width: unset;
       min-height: 0;
     }
 
@@ -666,7 +805,7 @@
       padding: 8px 10px;
       margin-bottom: 10px;
       border-radius: 14px;
-      border: 1px solid rgba(150,210,240,0.22);
+      border: 1px solid rgba(140,190,232,0.22);
       background: rgba(255,255,255,0.62);
       cursor: pointer;
       text-align: left;
@@ -675,21 +814,25 @@
       color: rgba(30,30,30,0.88);
       transition: background .18s ease, border-color .18s ease, transform .08s ease;
       -webkit-tap-highlight-color: transparent;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
     .weekBtn:hover{
-      border-color: rgba(150,210,240,0.45);
+      border-color: rgba(140,190,232,0.45);
       background: rgba(255,255,255,0.72);
     }
     .weekBtn:active{ transform: scale(0.99); }
     .weekBtn small{
-      display:block;
+      display: block;
       font-size: 11px;
       color: rgba(30,30,30,0.52);
+      margin-top: 0;
+      font-variant-numeric: tabular-nums;
     }
     .weekBtn.active{
-      border-color: rgba(150,210,240,0.70);
-      background: rgba(170,220,245,0.14);
-      box-shadow: 0 10px 26px rgba(150,210,240,0.12);
+      border-color: rgba(140,190,232,0.70);
+      background: rgba(165,206,240,0.14);
+      box-shadow: 0 10px 26px rgba(140,190,232,0.10);
     }
 
     .preview{
@@ -706,19 +849,19 @@
       align-items: center;
       gap: 10px;
       flex-wrap: nowrap;
-      min-width:0;
+      min-width: 0;
     }
-
     .picked{
       font-size: 13px;
       color: rgba(30,30,30,0.82);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      min-width:0;
+      min-width: 0;
       flex: 1 1 auto;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
-
     .previewTop > div:last-child{
       display:flex;
       gap: 8px;
@@ -752,16 +895,15 @@
       background: rgba(0,0,0,0.03);
       color: rgba(30,30,30,0.58);
       flex: 0 0 auto;
-      line-height:1;
+      font-variant-numeric: tabular-nums;
     }
     .badge.done{
-      border-color: rgba(150,210,240,0.40);
-      background: rgba(170,220,245,0.18);
+      border-color: rgba(140,190,232,0.40);
+      background: rgba(165,206,240,0.18);
       color: rgba(30,30,30,0.62);
     }
-
     .mark{
-      background: rgba(170,220,245,0.32);
+      background: rgba(165,206,240,0.35);
       border-radius: 6px;
       padding: 0 3px;
     }
@@ -776,128 +918,12 @@
       align-items:center;
       font-size: 12px;
       color: rgba(30,30,30,0.55);
+      font-variant-numeric: tabular-nums;
     }
 
-    @media (max-width: 520px){
+    @media (max-width: 420px){
       .modalBody{ grid-template-columns: 1fr; }
       .weeks{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
-      .search{ min-width: 100%; }
-    }
-
-    /* ===== Next Week Popover (fixed + clamp to card) ===== */
-    .popover{
-      position: fixed;
-      left: 0;
-      top: 0;
-
-      width: min(320px, calc(100vw - 24px));
-      border-radius: 16px;
-      border: 1px solid rgba(150,210,240,0.32);
-      background: rgba(255,255,255,0.86);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
-      z-index: 9999;
-
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(6px);
-      transition: opacity .14s ease, transform .14s ease;
-      overflow: hidden;
-    }
-    .popover.open{
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateY(0);
-    }
-
-    .nwHead{
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(0,0,0,0.06);
-      gap: 10px;
-    }
-    .nwTitle{
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      font-size: 13px;
-      color: rgba(30,30,30,0.86);
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-    }
-    .nwClose{
-      border: 1px solid rgba(0,0,0,0.08);
-      background: rgba(255,255,255,0.70);
-      width: 30px;
-      height: 30px;
-      border-radius: 999px;
-      cursor:pointer;
-      color: rgba(30,30,30,0.70);
-      display:grid;
-      place-items:center;
-      -webkit-tap-highlight-color: transparent;
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
-      flex: 0 0 auto;
-    }
-    .nwClose:hover{
-      border-color: rgba(150,210,240,0.55);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.20);
-    }
-    .nwClose:active{ transform: scale(0.98); }
-    .nwClose:focus-visible{
-      outline:none;
-      border-color: rgba(150,210,240,0.78);
-      box-shadow: 0 0 0 3px rgba(170,220,245,0.28);
-    }
-
-    .nwList{
-      padding: 10px 12px;
-      display:grid;
-      gap: 8px;
-      max-height: 46vh;
-      overflow: auto;
-    }
-
-    .nwItem{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      padding: 8px 10px;
-      border-radius: 14px;
-      border: 1px solid rgba(150,210,240,0.22);
-      background: rgba(255,255,255,0.60);
-      min-width:0;
-    }
-    .nwText{
-      flex:1 1 auto;
-      min-width:0;
-      font-size: 13px;
-      color: rgba(30,30,30,0.86);
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      line-height: 1.45;
-    }
-
-    .nwFoot{
-      padding: 10px 12px;
-      border-top: 1px solid rgba(0,0,0,0.06);
-      display:flex;
-      justify-content:flex-end;
-      gap: 8px;
-      flex-wrap: nowrap;
-    }
-
-    @media (pointer: coarse){
-      #addBtn{ position: relative; }
-      #addBtn::after{
-        content:"";
-        position:absolute;
-        inset:-6px;
-      }
     }
   </style>
 </head>
@@ -906,29 +932,51 @@
   <div class="wrap">
     <div class="card" role="application" aria-label="This Week Widget">
       <div class="inner">
-
         <div class="top">
           <div class="title">
             <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
             <h1>This Week</h1>
           </div>
+          <div class="meta" id="rangeText"></div>
+        </div>
 
-          <div class="meta">
-            <button class="navBtn" id="prevWeekBtn" type="button" aria-label="이전 주">←</button>
-            <span id="weekMetaText"></span>
-            <button class="navBtn" id="nextWeekBtn" type="button" aria-label="다음 주">→</button>
+        <div class="controls">
+          <div class="inputRow">
+            <input id="taskInput" class="input" type="text" placeholder="이번 주 할 일…" maxlength="80" />
+            <button class="btn secondary" id="fromTodayBtn" type="button">From Today</button>
+            <button class="btn secondary" id="pullBtn" type="button" title="Today에서 가져오기">Pull</button>
+            <button class="btn secondary" id="pushBtn" type="button" title="Today로 보내기">Push</button>
+            <button id="addBtn" type="button" title="할 일 추가" aria-label="할 일 추가"></button>
+          </div>
+
+          <div class="weekbar" aria-label="Week navigation">
+            <div class="weeknav">
+              <button class="navBtn" id="prevWeekBtn" type="button" aria-label="이전 주">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                  <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+
+              <button class="navBtn" id="nextWeekBtn" type="button" aria-label="다음 주">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="weekdays" id="weekdayPills" aria-label="요일 선택"></div>
           </div>
         </div>
 
-        <!-- Next Week Inbox (one-line) -->
-        <div class="inboxRow" id="nextInboxRow">
-          <div class="inboxLeft">
-            <span class="inboxTitle">Next Week</span>
-            <span class="inboxCount" id="nextInboxCount">0</span>
+        <!-- ✅ Next Week Inbox (one-line) -->
+        <div class="nextInboxRow" id="nextInboxRow" aria-label="Next Week Inbox">
+          <div class="nextInboxLeft">
+            <span class="nextInboxTitle">Next Week Inbox</span>
+            <span class="nextInboxCount" id="nextInboxCount">0</span>
           </div>
-          <div class="inboxRight">
-            <button class="btn secondary" id="addToNextBtn" type="button">Add</button>
-            <button class="btn secondary" id="openNextBtn" type="button">Show</button>
+          <div class="nextInboxRight">
+            <button class="btn secondary" id="nextAddBtn" type="button">Add</button>
+            <button class="btn secondary" id="nextShowBtn" type="button">Show</button>
           </div>
         </div>
 
@@ -946,8 +994,22 @@
             <button class="btn secondary" id="clearDoneBtn" type="button">Clear done</button>
           </div>
         </div>
-
       </div>
+    </div>
+  </div>
+
+  <!-- ✅ Next Week Inbox Popover -->
+  <div class="popover" id="nextPopover" aria-hidden="true">
+    <div class="popHead">
+      <div class="popTitle" id="nextPopTitle">Next Week Inbox</div>
+      <button class="popClose" id="nextPopCloseBtn" type="button" aria-label="닫기">✕</button>
+    </div>
+
+    <div class="popList" id="nextPopList"></div>
+
+    <div class="popFoot">
+      <button class="btn secondary" id="nextCopyBtn" type="button">Copy</button>
+      <button class="btn secondary" id="nextClearDoneBtn" type="button">Clear done</button>
     </div>
   </div>
 
@@ -994,69 +1056,15 @@
     </div>
   </div>
 
-  <!-- Next Week Popover (fixed) -->
-  <div class="popover" id="nextPopover" aria-hidden="true">
-    <div class="nwHead">
-      <div class="nwTitle">Next Week</div>
-      <button class="nwClose" id="closeNextPopoverBtn" type="button" aria-label="닫기">✕</button>
-    </div>
-
-    <div class="nwList" id="nextList"></div>
-
-    <div class="nwFoot">
-      <button class="btn secondary" id="clearNextDoneBtn" type="button">Clear done</button>
-      <button class="btn secondary" id="copyNextBtn" type="button">Copy</button>
-    </div>
-  </div>
-
   <script>
     /* ========= storage keys ========= */
     const WEEK_PREFIX = "soft_schedule_week_";
     const WEEK_ARCHIVE_KEY = "soft_schedule_week_archive_v1";
-    const TODAY_PREFIX = "soft_schedule_today_"; // (pull/push 확장용)
 
-    /* ========= DOM ========= */
-    const cardEl = document.querySelector(".card");
-    const weekMetaText = document.getElementById("weekMetaText");
-    const weekListEl = document.getElementById("weekList");
-
-    const prevWeekBtn = document.getElementById("prevWeekBtn");
-    const nextWeekBtn = document.getElementById("nextWeekBtn");
-
-    const countText = document.getElementById("countText");
-    const toast = document.getElementById("toast");
-
-    const historyBtn = document.getElementById("historyBtn");
-    const copyBtn = document.getElementById("copyBtn");
-    const clearDoneBtn = document.getElementById("clearDoneBtn");
-
-    // Next week inbox
-    const nextInboxCount = document.getElementById("nextInboxCount");
-    const addToNextBtn = document.getElementById("addToNextBtn");
-    const openNextBtn = document.getElementById("openNextBtn");
-
-    // Next week popover
-    const nextPopover = document.getElementById("nextPopover");
-    const closeNextPopoverBtn = document.getElementById("closeNextPopoverBtn");
-    const nextList = document.getElementById("nextList");
-    const clearNextDoneBtn = document.getElementById("clearNextDoneBtn");
-    const copyNextBtn = document.getElementById("copyNextBtn");
-
-    // Modal
-    const modalOverlay = document.getElementById("modalOverlay");
-    const closeModalBtn = document.getElementById("closeModalBtn");
-    const weeksPanel = document.getElementById("weeksPanel");
-    const pickedWeekText = document.getElementById("pickedWeekText");
-    const previewBox = document.getElementById("previewBox");
-    const restoreWeekBtn = document.getElementById("restoreWeekBtn");
-    const copyWeekBtn = document.getElementById("copyWeekBtn");
-    const archiveCount = document.getElementById("archiveCount");
-    const searchInput = document.getElementById("searchInput");
-    const clearSearchBtn = document.getElementById("clearSearchBtn");
+    // Today widget keys (for Pull/Push)
+    const TODAY_PREFIX = "soft_schedule_today_";
 
     /* ========= utils ========= */
-    const DOW_LABEL = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-
     function pad2(n){ return String(n).padStart(2,"0"); }
     function ymd(d=new Date()){
       return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
@@ -1071,25 +1079,8 @@
       if(!p) return null;
       return new Date(p.y, p.m-1, p.d);
     }
-    function addDays(dateObj, days){
-      const d = new Date(dateObj.getTime());
-      d.setDate(d.getDate() + days);
-      return d;
-    }
-    function startOfWeekMonday(d=new Date()){
-      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const day = x.getDay(); // 0=Sun..6=Sat
-      const diff = (day === 0 ? -6 : 1 - day); // Monday start
-      x.setDate(x.getDate() + diff);
-      x.setHours(0,0,0,0);
-      return x;
-    }
-    function weekIdFromMonday(mondayDate){
-      // storage id: YYYY.MM.DD (monday)
-      return ymd(mondayDate);
-    }
-    function dayDateStr(i){ // i=0..6
-      return ymd(addDays(viewMonday, i));
+    function dateToYmd(d){
+      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
     }
     function escapeHtml(str){
       return String(str).replace(/[&<>"']/g, (m) => ({
@@ -1100,24 +1091,11 @@
         "'": "&#039;"
       }[m]));
     }
-    function highlight(text, query){
-      const t = String(text);
-      const q = String(query || "").trim();
-      if(!q) return escapeHtml(t);
-      const idx = t.toLowerCase().indexOf(q.toLowerCase());
-      if(idx === -1) return escapeHtml(t);
-      const before = escapeHtml(t.slice(0, idx));
-      const mid = escapeHtml(t.slice(idx, idx + q.length));
-      const after = escapeHtml(t.slice(idx + q.length));
-      return `${before}<span class="mark">${mid}</span>${after}`;
-    }
-
     function showToast(msg){
       toast.textContent = msg;
       clearTimeout(showToast._t);
       showToast._t = setTimeout(()=> toast.textContent = "", 1600);
     }
-
     async function copyToClipboard(text){
       try{
         await navigator.clipboard.writeText(text);
@@ -1140,43 +1118,56 @@
       }
     }
 
-    /* ========= storage ========= */
-    function defaultWeekState(){
-      const days = {};
-      for(let i=0;i<7;i++) days[String(i)] = [];
-      return {
-        days,
-        nextInbox: [] // [{id,text,done}]
-      };
+    function mondayOfWeek(d){
+      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const day = x.getDay(); // 0 Sun .. 6 Sat
+      const diff = (day === 0) ? -6 : (1 - day); // to Monday
+      x.setDate(x.getDate() + diff);
+      x.setHours(0,0,0,0);
+      return x;
     }
 
-    function loadWeek(key){
-      try{
-        const raw = localStorage.getItem(key);
-        if(!raw) return defaultWeekState();
-        const parsed = JSON.parse(raw);
-        if(!parsed || typeof parsed !== "object") return defaultWeekState();
-
-        // normalize
-        const base = defaultWeekState();
-        if(parsed.days && typeof parsed.days === "object"){
-          for(let i=0;i<7;i++){
-            const arr = parsed.days[String(i)];
-            base.days[String(i)] = Array.isArray(arr) ? arr : [];
-          }
-        }
-        base.nextInbox = Array.isArray(parsed.nextInbox) ? parsed.nextInbox : [];
-        return base;
-      }catch(e){
-        return defaultWeekState();
-      }
+    function addDays(d, n){
+      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      x.setDate(x.getDate() + n);
+      x.setHours(0,0,0,0);
+      return x;
     }
 
-    function saveWeek(key, data){
-      localStorage.setItem(key, JSON.stringify(data));
+    function weekIdFromMonday(monday){
+      const start = dateToYmd(monday);
+      const end = dateToYmd(addDays(monday, 6));
+      return `${start} ~ ${end}`;
     }
 
-    function loadArchive(){
+    function parseWeekRangeId(weekId){
+      // "YYYY.MM.DD ~ YYYY.MM.DD"
+      const parts = String(weekId || "").split("~");
+      if(parts.length < 2) return null;
+      const startStr = parts[0].trim();
+      const endStr = parts[1].trim();
+      const start = ymdToDate(startStr);
+      const end = ymdToDate(endStr);
+      if(!start || !end) return null;
+      start.setHours(0,0,0,0);
+      end.setHours(0,0,0,0);
+      return { startStr, endStr, start, end };
+    }
+
+    function highlight(text, query){
+      const t = String(text);
+      const q = String(query || "").trim();
+      if(!q) return escapeHtml(t);
+      const idx = t.toLowerCase().indexOf(q.toLowerCase());
+      if(idx === -1) return escapeHtml(t);
+      const before = escapeHtml(t.slice(0, idx));
+      const mid = escapeHtml(t.slice(idx, idx + q.length));
+      const after = escapeHtml(t.slice(idx + q.length));
+      return `${before}<span class="mark">${mid}</span>${after}`;
+    }
+
+    /* ========= archive helpers ========= */
+    function loadWeekArchive(){
       try{
         const raw = localStorage.getItem(WEEK_ARCHIVE_KEY);
         if(!raw) return {};
@@ -1184,278 +1175,368 @@
         return (parsed && typeof parsed === "object") ? parsed : {};
       }catch(e){ return {}; }
     }
-    function saveArchive(archive){
+    function saveWeekArchive(archive){
       localStorage.setItem(WEEK_ARCHIVE_KEY, JSON.stringify(archive));
     }
 
-    function autoArchivePastWeeks(currentKey, currentWeekId){
-      // 과거 주 키들을 archive로 이동
-      const archive = loadArchive();
-      const keys = [];
+    // state per week:
+    // { days: { "0": [items], ... "6": [items] }, nextInbox: [items] }
+    function emptyWeekState(){
+      const days = {};
+      for(let i=0;i<7;i++) days[String(i)] = [];
+      return { days, nextInbox: [] };
+    }
+
+    function normalizeWeekState(parsed){
+      const base = emptyWeekState();
+      if(!parsed || typeof parsed !== "object") return base;
+
+      if(parsed.days && typeof parsed.days === "object"){
+        for(let i=0;i<7;i++){
+          const k = String(i);
+          base.days[k] = Array.isArray(parsed.days[k]) ? parsed.days[k] : [];
+        }
+      }
+      base.nextInbox = Array.isArray(parsed.nextInbox) ? parsed.nextInbox : [];
+      return base;
+    }
+
+    function loadWeek(key){
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) return emptyWeekState();
+        const parsed = JSON.parse(raw);
+        return normalizeWeekState(parsed);
+      }catch(e){ return emptyWeekState(); }
+    }
+
+    function saveWeek(key, data){
+      localStorage.setItem(key, JSON.stringify(normalizeWeekState(data)));
+    }
+
+    // ✅ FIX: 주 이동 시 “사라짐” 방지
+    // - 과거(이미 지난 주)만 archive에 '복사' (스냅샷)
+    // - localStorage 원본 주 키는 삭제하지 않음
+    function autoArchivePastWeeks(){
+      const archive = loadWeekArchive();
+      const thisWeekMon = mondayOfWeek(new Date());
+      const thisWeekEnd = addDays(thisWeekMon, 6);
+
+      let changed = false;
 
       for(let i=0;i<localStorage.length;i++){
         const k = localStorage.key(i);
         if(!k) continue;
         if(k === WEEK_ARCHIVE_KEY) continue;
         if(!k.startsWith(WEEK_PREFIX)) continue;
-        const weekId = k.slice(WEEK_PREFIX.length); // YYYY.MM.DD
-        if(!parseYmd(weekId)) continue;
-        if(weekId === currentWeekId) continue;
-        keys.push({ k, weekId });
-      }
 
-      let moved = 0;
-      for(const {k, weekId} of keys){
-        if(archive[weekId]){
-          try{ localStorage.removeItem(k); }catch(e){}
-          continue;
-        }
-        try{
-          const raw = localStorage.getItem(k);
-          const data = raw ? JSON.parse(raw) : null;
-          if(data && typeof data === "object"){
-            archive[weekId] = data;
-            moved++;
+        const weekId = k.slice(WEEK_PREFIX.length);
+        const rng = parseWeekRangeId(weekId);
+        if(!rng) continue;
+
+        // past week only: end < thisWeekMon
+        if(rng.end.getTime() < thisWeekMon.getTime()){
+          if(!archive[weekId]){
+            try{
+              const raw = localStorage.getItem(k);
+              const data = raw ? JSON.parse(raw) : null;
+              if(data && typeof data === "object"){
+                archive[weekId] = normalizeWeekState(data);
+                changed = true;
+              }
+            }catch(e){}
           }
-          localStorage.removeItem(k);
-        }catch(e){}
+        }
       }
 
-      if(moved > 0) saveArchive(archive);
+      if(changed) saveWeekArchive(archive);
       return archive;
     }
 
-    /* ========= week state ========= */
-    let viewMonday = startOfWeekMonday(new Date());
-    let weekState = defaultWeekState();
-    let weekArchive = {};
-    const expanded = new Set(); // "0".."6" : expanded sections (only meaningful when toggle shown)
+    /* ========= DOM ========= */
+    const rangeText = document.getElementById("rangeText");
+    const weekdayPills = document.getElementById("weekdayPills");
+
+    const taskInput = document.getElementById("taskInput");
+    const fromTodayBtn = document.getElementById("fromTodayBtn");
+    const pullBtn = document.getElementById("pullBtn");
+    const pushBtn = document.getElementById("pushBtn");
+    const addBtn = document.getElementById("addBtn");
+
+    const prevWeekBtn = document.getElementById("prevWeekBtn");
+    const nextWeekBtn = document.getElementById("nextWeekBtn");
+
+    const weekList = document.getElementById("weekList");
+
+    const countText = document.getElementById("countText");
+    const historyBtn = document.getElementById("historyBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const clearDoneBtn = document.getElementById("clearDoneBtn");
+
+    const toast = document.getElementById("toast");
+
+    // Next week inbox row
+    const nextInboxCount = document.getElementById("nextInboxCount");
+    const nextAddBtn = document.getElementById("nextAddBtn");
+    const nextShowBtn = document.getElementById("nextShowBtn");
+
+    // Next popover
+    const nextPopover = document.getElementById("nextPopover");
+    const nextPopCloseBtn = document.getElementById("nextPopCloseBtn");
+    const nextPopList = document.getElementById("nextPopList");
+    const nextCopyBtn = document.getElementById("nextCopyBtn");
+    const nextClearDoneBtn = document.getElementById("nextClearDoneBtn");
+
+    const cardEl = document.querySelector(".card");
+
+    // modal
+    const modalOverlay = document.getElementById("modalOverlay");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const weeksPanel = document.getElementById("weeksPanel");
+    const pickedWeekText = document.getElementById("pickedWeekText");
+    const previewBox = document.getElementById("previewBox");
+    const restoreWeekBtn = document.getElementById("restoreWeekBtn");
+    const copyWeekBtn = document.getElementById("copyWeekBtn");
+    const archiveCount = document.getElementById("archiveCount");
+    const searchInput = document.getElementById("searchInput");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+    /* ========= add icon for + ========= */
+    addBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+        <path d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"/>
+      </svg>
+    `;
+
+    /* ========= Week runtime state ========= */
+    const WK = ["M","T","W","T","F","S","S"];
+    const DOW_LABEL = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+    // current viewing monday (can navigate)
+    let viewMonday = mondayOfWeek(new Date());
+    let selectedDayIndex = (() => {
+      const today = new Date();
+      const mon = mondayOfWeek(today);
+      const diff = Math.round((today - mon) / 86400000);
+      return Math.min(6, Math.max(0, diff));
+    })();
+
+    // section expanded states (UI only)
+    const expanded = new Map(); // key: dayIndex -> bool
 
     function getWeekId(){ return weekIdFromMonday(viewMonday); }
     function getWeekKey(){ return WEEK_PREFIX + getWeekId(); }
 
-    function weekRangeLabel(){
-      const start = dayDateStr(0);
-      const end = dayDateStr(6);
-      return `${start} ~ ${end}`;
+    // init
+    let weekArchive = autoArchivePastWeeks();
+    let weekState = loadWeek(getWeekKey());
+
+    function persistCurrentWeek(){
+      saveWeek(getWeekKey(), weekState);
     }
 
-    /* ========= rendering ========= */
-    function computeDoneCounts(){
-      let total = 0;
-      let done = 0;
+    /* ========= buttons enable/disable ========= */
+    function syncAddButtonState(){
+      const hasText = (taskInput.value || "").trim().length > 0;
+      addBtn.disabled = !hasText;
+    }
+    taskInput.addEventListener("input", syncAddButtonState);
+    syncAddButtonState();
+
+    /* ========= build weekday pills ========= */
+    function buildWeekdayPills(){
+      weekdayPills.innerHTML = "";
       for(let i=0;i<7;i++){
-        const arr = weekState.days[String(i)] || [];
-        total += arr.length;
-        done += arr.filter(x => x.done).length;
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "dayPill" + (i === selectedDayIndex ? " active" : "");
+        b.dataset.day = String(i);
+        b.textContent = WK[i];
+        weekdayPills.appendChild(b);
       }
+    }
+
+    function setSelectedDay(i){
+      selectedDayIndex = i;
+      buildWeekdayPills();
+      renderWeekList();
+    }
+
+    weekdayPills.addEventListener("click", (e) => {
+      const btn = e.target.closest(".dayPill");
+      if(!btn) return;
+      const i = Number(btn.dataset.day);
+      if(Number.isFinite(i)) setSelectedDay(i);
+    });
+
+    /* ========= render ========= */
+    function dayDateStr(i){
+      const d = addDays(viewMonday, i);
+      return dateToYmd(d);
+    }
+
+    function totalAndDoneForDay(i){
+      const arr = weekState.days[String(i)] || [];
+      const total = arr.length;
+      const done = arr.filter(x => x.done).length;
       return { total, done };
     }
 
-    function renderNextInbox(){
+    function renderNextInboxRow(){
       const arr = weekState.nextInbox || [];
       nextInboxCount.textContent = String(arr.length);
+    }
 
-      nextList.innerHTML = "";
+    function renderNextPopover(){
+      const arr = weekState.nextInbox || [];
+      nextPopList.innerHTML = "";
+
       if(arr.length === 0){
-        nextList.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">(empty)</div>`;
+        nextPopList.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">(empty)</div>`;
         return;
       }
 
       for(const it of arr){
         const row = document.createElement("div");
-        row.className = "nwItem";
+        row.className = "popItem" + (it.done ? " done" : "");
         row.innerHTML = `
-          <div class="check" role="checkbox" aria-checked="${it.done ? "true" : "false"}" tabindex="0" data-nw-id="${escapeHtml(it.id)}">
+          <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-nx-id="${escapeHtml(it.id)}">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <div class="nwText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
-          <button class="del" type="button" aria-label="삭제" data-nw-del="${escapeHtml(it.id)}">✕</button>
+          <div class="popText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+          <button class="del" type="button" aria-label="삭제" data-nx-del="${escapeHtml(it.id)}">✕</button>
         `;
-        if(it.done){
-          row.querySelector(".check").classList.add("done"); // not used, but ok
-          row.style.opacity = "0.82";
-          row.querySelector(".nwText").style.textDecoration = "line-through";
-          row.querySelector(".nwText").style.color = "rgba(30,30,30,0.55)";
-          row.querySelector("svg").style.opacity = "1";
-          row.querySelector("svg").style.transform = "scale(1)";
-        }
-        nextList.appendChild(row);
+        nextPopList.appendChild(row);
       }
-
-      // ensure checkmark visibility for done
-      nextList.querySelectorAll("[data-nw-id]").forEach(el => {
-        const id = el.dataset.nwId;
-        const it = (weekState.nextInbox || []).find(x => x.id === id);
-        if(it && it.done){
-          const svg = el.querySelector("svg");
-          if(svg){ svg.style.opacity = "1"; svg.style.transform = "scale(1)"; }
-        }
-      });
     }
 
     function renderWeekList(){
-      weekMetaText.textContent = weekRangeLabel();
+      rangeText.textContent = getWeekId().replace(" ~ ", " ~ ");
 
-      weekListEl.innerHTML = "";
+      weekList.innerHTML = "";
+
+      let allTotal = 0;
+      let allDone = 0;
 
       for(let i=0;i<7;i++){
-        const dayKey = String(i);
-        const arr = weekState.days[dayKey] || [];
-        const done = arr.filter(x => x.done).length;
-        const total = arr.length;
+        const { total, done } = totalAndDoneForDay(i);
+        allTotal += total;
+        allDone += done;
 
         const section = document.createElement("div");
         section.className = "daySection";
-        section.dataset.day = dayKey;
+        section.dataset.day = String(i);
 
-        // toggle visible only if total >= 2
-        const hasToggle = total >= 2;
-        if(hasToggle) section.classList.add("hasToggle");
+        const head = document.createElement("div");
+        head.className = "dayHead";
 
-        // collapsed if hasToggle and not expanded set
-        const isExpanded = expanded.has(dayKey);
-        if(hasToggle && !isExpanded) section.classList.add("collapsed");
-
-        const dateStr = dayDateStr(i);
-
-        section.innerHTML = `
-          <div class="dayHead">
-            <div class="dayTitle">
-              <div class="dow">${DOW_LABEL[i]}</div>
-              <div class="date">${dateStr}</div>
-            </div>
-
-            <div class="dayMeta">
-              <span class="pill">${done}/${total}</span>
-              <button class="toggleBtn" type="button" aria-label="접기/펴기" data-toggle="${dayKey}">
-                <span class="chev">
-                  <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
-                    <path d="M8 10l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
-                <span>${section.classList.contains("collapsed") ? "Show" : "Hide"}</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="dayBody">
-            <div class="addRow">
-              <input class="input" type="text" maxlength="80" placeholder="This day… (Enter)" data-input="${dayKey}" />
-              <button id="addBtn" type="button" title="추가" aria-label="추가" data-add="${dayKey}"></button>
-            </div>
-
-            <ul class="list" data-list="${dayKey}"></ul>
-
-            <div style="display:flex; gap:8px; padding: 0 4px 2px 4px; justify-content:flex-end;">
-              <button class="btn secondary" type="button" data-fromtoday="${dayKey}">from today</button>
-              <button class="btn secondary" type="button" data-pull="${dayKey}">pull</button>
-              <button class="btn secondary" type="button" data-push="${dayKey}">push</button>
-            </div>
-          </div>
+        const label = document.createElement("div");
+        label.className = "dayLabel";
+        label.innerHTML = `
+          <span>${DOW_LABEL[i]}</span>
+          <small>${escapeHtml(dayDateStr(i))}</small>
         `;
 
-        weekListEl.appendChild(section);
+        const toggleWrap = document.createElement("div");
 
-        // add button svg for this section
-        const addBtn = section.querySelector('[data-add="'+dayKey+'"]');
-        addBtn.innerHTML = `
-          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-            <path d="M12 5v14M5 12h14"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  stroke-linecap="round"/>
-          </svg>
-        `;
-
-        const list = section.querySelector('[data-list="'+dayKey+'"]');
-
-        if(arr.length === 0){
-          list.innerHTML = `<li style="color: rgba(30,30,30,0.55); font-size:12px; padding: 2px 2px;">(empty)</li>`;
-        }else{
-          for(const it of arr){
-            const li = document.createElement("li");
-            li.className = "item" + (it.done ? " done" : "");
-            li.innerHTML = `
-              <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${escapeHtml(it.id)}" data-day="${dayKey}">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
-              <button class="del" type="button" aria-label="삭제" data-del="${escapeHtml(it.id)}" data-day="${dayKey}">✕</button>
-            `;
-            list.appendChild(li);
-          }
+        // show toggle only when 2+ items
+        if(total >= 2){
+          const isOpen = expanded.get(i) === true;
+          const tBtn = document.createElement("button");
+          tBtn.type = "button";
+          tBtn.className = "showBtn";
+          tBtn.textContent = isOpen ? `Hide (${done}/${total})` : `Show (${done}/${total})`;
+          tBtn.dataset.toggle = "1";
+          toggleWrap.appendChild(tBtn);
         }
 
-        // sync add button state for this day
-        const input = section.querySelector('[data-input="'+dayKey+'"]');
-        function syncAdd(){
-          const has = (input.value || "").trim().length > 0;
-          addBtn.disabled = !has;
+        head.appendChild(label);
+        head.appendChild(toggleWrap);
+
+        const itemsBox = document.createElement("div");
+        itemsBox.className = "items";
+
+        const list = weekState.days[String(i)] || [];
+        const isOpen = expanded.get(i) === true;
+
+        // 노출 규칙:
+        // - total 0: 아무것도 안 보여줌
+        // - total 1: 1개는 항상 보여줌
+        // - total >=2: 접힘이면 1개만, 펼침이면 전부
+        let visible = list;
+        if(total >= 2 && !isOpen) visible = list.slice(0, 1);
+
+        for(const it of visible){
+          const row = document.createElement("div");
+          row.className = "item" + (it.done ? " done" : "");
+          row.innerHTML = `
+            <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}" data-day="${i}">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+            <button class="del" type="button" aria-label="삭제" data-del="${it.id}" data-day="${i}">✕</button>
+          `;
+          itemsBox.appendChild(row);
         }
-        input.addEventListener("input", syncAdd);
-        syncAdd();
 
-        input.addEventListener("keydown", (e) => {
-          if(e.key === "Enter"){
-            e.preventDefault();
-            if(!addBtn.disabled) addBtn.click();
-          }
-        });
+        // 클릭 힌트: 섹션 헤더 클릭하면 해당 요일 선택
+        label.style.cursor = "pointer";
+        label.addEventListener("click", () => setSelectedDay(i));
 
-        addBtn.addEventListener("click", () => {
-          const text = (input.value || "").trim();
-          if(!text) return;
-          addItemToDay(dayKey, text);
-          input.value = "";
-          input.focus();
-          syncAdd();
-        });
+        section.appendChild(head);
+        if(total > 0) section.appendChild(itemsBox);
+
+        // 선택된 요일은 섹션을 살짝 강조(미세)
+        if(i === selectedDayIndex){
+          section.style.borderColor = "rgba(140,190,232,0.45)";
+          section.style.background = "rgba(255,255,255,0.08)";
+        }
+
+        weekList.appendChild(section);
       }
 
-      // counts
-      const {total, done} = computeDoneCounts();
-      countText.textContent = `${done}/${total} done`;
-
-      renderNextInbox();
+      countText.textContent = `${allDone}/${allTotal} done`;
+      renderNextInboxRow();
     }
 
-    function addItemToDay(dayKey, text){
+    buildWeekdayPills();
+    renderWeekList();
+
+    /* ========= mutations ========= */
+    function addItemToDay(dayIndex, text){
       const t = (text || "").trim();
       if(!t) return;
 
-      const arr = weekState.days[dayKey] || [];
+      const dayKey = String(dayIndex);
+      const arr = weekState.days[dayKey] || (weekState.days[dayKey] = []);
       arr.unshift({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
         done: false
       });
-      weekState.days[dayKey] = arr;
-
-      // if 2개 이상이 되었으면 토글 UI 노출 가능. 기본은 "펼침" 유지로 UX 안정
-      if(arr.length >= 2) expanded.add(dayKey);
-
       persistCurrentWeek();
       renderWeekList();
-      showToast("추가했어.");
     }
 
-    function toggleItem(dayKey, id){
+    function toggleItem(dayIndex, id){
+      const dayKey = String(dayIndex);
       const arr = weekState.days[dayKey] || [];
-      weekState.days[dayKey] = arr.map(it => it.id === id ? ({...it, done: !it.done}) : it);
+      weekState.days[dayKey] = arr.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
       persistCurrentWeek();
       renderWeekList();
     }
 
-    function deleteItem(dayKey, id){
+    function deleteItem(dayIndex, id){
+      const dayKey = String(dayIndex);
       const arr = weekState.days[dayKey] || [];
       weekState.days[dayKey] = arr.filter(it => it.id !== id);
-      // 2개 미만이면 토글 자체 의미가 약하니 expanded 정리
-      if((weekState.days[dayKey] || []).length < 2) expanded.delete(dayKey);
       persistCurrentWeek();
       renderWeekList();
     }
@@ -1463,84 +1544,225 @@
     function clearDone(){
       for(let i=0;i<7;i++){
         const k = String(i);
-        const arr = weekState.days[k] || [];
-        weekState.days[k] = arr.filter(it => !it.done);
-        if((weekState.days[k] || []).length < 2) expanded.delete(k);
+        weekState.days[k] = (weekState.days[k] || []).filter(it => !it.done);
       }
       persistCurrentWeek();
       renderWeekList();
-      showToast("완료를 정리했어.");
+      showToast("완료를 지웠어.");
     }
 
-    function persistCurrentWeek(){
-      // ✅ 핵심: viewMonday 기반 key로 저장 (주 이동 전에 저장되면 사라짐 방지)
-      saveWeek(getWeekKey(), weekState);
-    }
-
-    /* ========= Next week inbox actions ========= */
+    /* ========= Next Week Inbox mutations ========= */
     function addNextInbox(text){
       const t = (text || "").trim();
       if(!t) return;
-      weekState.nextInbox = weekState.nextInbox || [];
-      weekState.nextInbox.unshift({
+
+      const arr = weekState.nextInbox || (weekState.nextInbox = []);
+      arr.unshift({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
         done: false
       });
       persistCurrentWeek();
-      renderNextInbox();
-      showToast("Next Week에 넣었어.");
+      renderNextInboxRow();
+      if(nextPopover.classList.contains("open")) renderNextPopover();
+      showToast("Next Week Inbox에 추가했어.");
     }
 
     function toggleNextInbox(id){
       const arr = weekState.nextInbox || [];
-      weekState.nextInbox = arr.map(it => it.id === id ? ({...it, done: !it.done}) : it);
+      weekState.nextInbox = arr.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
       persistCurrentWeek();
-      renderNextInbox();
+      renderNextInboxRow();
+      renderNextPopover();
     }
 
     function deleteNextInbox(id){
       const arr = weekState.nextInbox || [];
       weekState.nextInbox = arr.filter(it => it.id !== id);
       persistCurrentWeek();
-      renderNextInbox();
+      renderNextInboxRow();
+      renderNextPopover();
     }
 
     function clearNextDone(){
       const arr = weekState.nextInbox || [];
       weekState.nextInbox = arr.filter(it => !it.done);
       persistCurrentWeek();
-      renderNextInbox();
-      showToast("Next Week 완료를 정리했어.");
+      renderNextInboxRow();
+      renderNextPopover();
+      showToast("Next Week 완료를 지웠어.");
     }
 
-    async function copyNext(){
+    async function copyNextInbox(){
       const arr = weekState.nextInbox || [];
       const lines = [];
       lines.push(`[Next Week Inbox | from ${getWeekId()}]`);
       if(arr.length === 0) lines.push(`- (empty)`);
-      else{
-        for(const it of arr){
-          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
-        }
-      }
+      else for(const it of arr) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
       const ok = await copyToClipboard(lines.join("\n"));
-      showToast(ok ? "Next Week를 복사했어." : "복사 실패 (권한 확인)");
+      showToast(ok ? "Next Week Inbox를 복사했어." : "복사 실패 (권한 확인)");
     }
 
-    /* ========= popover placement ========= */
-    function placeNextPopover(anchorEl){
-      if(!anchorEl || !cardEl) return;
-
-      // popover measure guard (Notion embed timing)
-      const popRect0 = nextPopover.getBoundingClientRect();
-      if(popRect0.width < 50 || popRect0.height < 50){
-        requestAnimationFrame(() => placeNextPopover(anchorEl));
+    /* ========= section toggle (2+ only) ========= */
+    weekList.addEventListener("click", (e) => {
+      const tbtn = e.target.closest("[data-toggle]");
+      if(tbtn){
+        const section = e.target.closest(".daySection");
+        if(!section) return;
+        const day = Number(section.dataset.day);
+        const cur = expanded.get(day) === true;
+        expanded.set(day, !cur);
+        renderWeekList();
         return;
       }
 
+      const check = e.target.closest(".check");
+      const del = e.target.closest("[data-del]");
+      if(check && check.dataset.id){
+        const day = Number(check.dataset.day);
+        toggleItem(day, check.dataset.id);
+      } else if(del){
+        const day = Number(del.dataset.day);
+        deleteItem(day, del.dataset.del);
+      }
+    });
+
+    weekList.addEventListener("keydown", (e) => {
+      const check = e.target.closest(".check");
+      if(!check) return;
+      if(e.key === "Enter" || e.key === " "){
+        if(!check.dataset.id) return;
+        e.preventDefault();
+        const day = Number(check.dataset.day);
+        toggleItem(day, check.dataset.id);
+      }
+    });
+
+    /* ========= Add events ========= */
+    addBtn.addEventListener("click", () => {
+      addItemToDay(selectedDayIndex, taskInput.value);
+      taskInput.value = "";
+      taskInput.focus();
+      syncAddButtonState();
+      showToast(`${DOW_LABEL[selectedDayIndex]}에 추가했어.`);
+    });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        if(!addBtn.disabled) addBtn.click();
+      }
+    });
+
+    /* ========= From Today / Pull / Push ========= */
+    fromTodayBtn.addEventListener("click", () => {
+      const today = new Date();
+      const mon = mondayOfWeek(today);
+      const sameWeek = (dateToYmd(mon) === dateToYmd(viewMonday));
+      if(!sameWeek){
+        showToast("현재 보고 있는 주가 이번 주가 아니야.");
+        return;
+      }
+      const idx = Math.min(6, Math.max(0, Math.round((today - mon)/86400000)));
+      setSelectedDay(idx);
+      showToast("Today 기준으로 이동했어.");
+    });
+
+    pullBtn.addEventListener("click", () => {
+      const todayKey = TODAY_PREFIX + ymd(new Date());
+      let src = [];
+      try{
+        const raw = localStorage.getItem(todayKey);
+        if(raw) src = JSON.parse(raw) || [];
+      }catch(e){ src = []; }
+
+      if(!Array.isArray(src) || src.length === 0){
+        showToast("Today 기록이 없어.");
+        return;
+      }
+
+      const unfinished = src.filter(x => !x.done && (x.text||"").trim());
+      if(unfinished.length === 0){
+        showToast("가져올 미완료가 없어.");
+        return;
+      }
+
+      const dayKey = String(selectedDayIndex);
+      const arr = weekState.days[dayKey] || (weekState.days[dayKey] = []);
+      const existing = new Set(arr.map(x => (x.text||"").trim()));
+
+      let added = 0;
+      for(const it of unfinished){
+        const tx = (it.text||"").trim();
+        if(!tx) continue;
+        if(existing.has(tx)) continue;
+        arr.unshift({
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+          text: tx,
+          done: false
+        });
+        existing.add(tx);
+        added++;
+      }
+
+      if(added === 0){
+        showToast("이미 이번 주에 있어.");
+        return;
+      }
+
+      persistCurrentWeek();
+      renderWeekList();
+      showToast(`Today에서 ${added}개 가져왔어.`);
+    });
+
+    pushBtn.addEventListener("click", () => {
+      const todayKey = TODAY_PREFIX + ymd(new Date());
+      let dest = [];
+      try{
+        const raw = localStorage.getItem(todayKey);
+        if(raw) dest = JSON.parse(raw) || [];
+      }catch(e){ dest = []; }
+
+      if(!Array.isArray(dest)) dest = [];
+
+      const dayArr = weekState.days[String(selectedDayIndex)] || [];
+      const unfinished = dayArr.filter(x => !x.done && (x.text||"").trim());
+      if(unfinished.length === 0){
+        showToast("보낼 미완료가 없어.");
+        return;
+      }
+
+      const existing = new Set(dest.map(x => (x.text||"").trim()));
+      let added = 0;
+
+      for(const it of unfinished){
+        const tx = (it.text||"").trim();
+        if(!tx) continue;
+        if(existing.has(tx)) continue;
+        dest.unshift({
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
+          text: tx,
+          done: false
+        });
+        existing.add(tx);
+        added++;
+      }
+
+      if(added === 0){
+        showToast("이미 Today에 있어.");
+        return;
+      }
+
+      localStorage.setItem(todayKey, JSON.stringify(dest));
+      showToast(`Today로 ${added}개 보냈어.`);
+    });
+
+    /* ========= Next Week Inbox UI / Popover ========= */
+    function placeNextPopover(anchorEl){
+      if(!anchorEl || !cardEl) return;
+
+      const popRect = nextPopover.getBoundingClientRect();
       const btnRect = anchorEl.getBoundingClientRect();
-      const popRect = popRect0;
       const cardRect = cardEl.getBoundingClientRect();
 
       const gap = 8;
@@ -1562,14 +1784,13 @@
     }
 
     function openNextPopover(anchorEl){
-      if(!anchorEl) anchorEl = openNextBtn;
-
+      renderNextPopover();
       nextPopover.classList.add("open");
       nextPopover.setAttribute("aria-hidden", "false");
 
       requestAnimationFrame(() => {
-        placeNextPopover(anchorEl);
-        requestAnimationFrame(() => placeNextPopover(anchorEl));
+        placeNextPopover(anchorEl || nextShowBtn);
+        requestAnimationFrame(() => placeNextPopover(anchorEl || nextShowBtn));
       });
     }
 
@@ -1578,45 +1799,63 @@
       nextPopover.setAttribute("aria-hidden", "true");
     }
 
-    /* ========= week navigation ========= */
-    function loadCurrentViewWeek(){
-      // archive past weeks relative to current storage
-      weekArchive = autoArchivePastWeeks(getWeekKey(), getWeekId());
-      weekState = loadWeek(getWeekKey());
+    nextAddBtn.addEventListener("click", () => {
+      const text = prompt("Next Week Inbox에 넣을 한 줄:", "");
+      if(text === null) return;
+      addNextInbox(text);
+    });
 
-      // expanded 초기화는 하되, 2개 이상이면 기본 펼침 UX 유지
-      expanded.clear();
-      for(let i=0;i<7;i++){
-        const k = String(i);
-        const arr = weekState.days[k] || [];
-        if(arr.length >= 2) expanded.add(k);
+    nextShowBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if(nextPopover.classList.contains("open")) closeNextPopover();
+      else openNextPopover(nextShowBtn);
+    });
+
+    nextPopCloseBtn.addEventListener("click", closeNextPopover);
+
+    nextPopList.addEventListener("click", (e) => {
+      const check = e.target.closest("[data-nx-id]");
+      const del = e.target.closest("[data-nx-del]");
+      if(check){
+        toggleNextInbox(check.dataset.nxId);
+        return;
       }
+      if(del){
+        deleteNextInbox(del.dataset.nxDel);
+        return;
+      }
+    });
 
-      renderWeekList();
-    }
+    nextPopList.addEventListener("keydown", (e) => {
+      const check = e.target.closest("[data-nx-id]");
+      if(!check) return;
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        toggleNextInbox(check.dataset.nxId);
+      }
+    });
 
-    function goPrevWeek(){
-      // ✅ 이동 전 저장
-      persistCurrentWeek();
-      viewMonday = addDays(viewMonday, -7);
-      loadCurrentViewWeek();
-      showToast("이전 주로 이동했어.");
-    }
+    nextCopyBtn.addEventListener("click", copyNextInbox);
+    nextClearDoneBtn.addEventListener("click", clearNextDone);
 
-    function goNextWeek(){
-      // ✅ 이동 전 저장
-      persistCurrentWeek();
-      viewMonday = addDays(viewMonday, 7);
-      loadCurrentViewWeek();
-      showToast("다음 주로 이동했어.");
-    }
+    // popover close on outside click / esc / resize / scroll
+    document.addEventListener("click", () => closeNextPopover());
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape") closeNextPopover();
+    });
+    window.addEventListener("resize", () => {
+      if(nextPopover.classList.contains("open")) placeNextPopover(nextShowBtn);
+    }, { passive: true });
+    window.addEventListener("scroll", () => {
+      if(nextPopover.classList.contains("open")) placeNextPopover(nextShowBtn);
+    }, { passive: true });
 
     /* ========= Copy ========= */
     function formatWeekForCopy(weekId, data){
       const lines = [];
       lines.push(`[This Week | ${weekId}]`);
       for(let i=0;i<7;i++){
-        const dateStr = ymd(addDays(ymdToDate(weekId) || viewMonday, i));
+        const dateStr = dayDateStr(i);
         const arr = (data.days && data.days[String(i)]) ? data.days[String(i)] : [];
         lines.push(`\n${DOW_LABEL[i]} (${dateStr})`);
         if(arr.length === 0){
@@ -1627,21 +1866,59 @@
           lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
         }
       }
-      // next inbox
-      lines.push(`\nNext Week Inbox`);
+
+      // Next Week Inbox도 함께 복사 (원하면 제거해도 됨)
       const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
+      lines.push(`\nNext Week Inbox`);
       if(nx.length === 0) lines.push(`- (empty)`);
-      else nx.forEach(it => lines.push(`- [${it.done ? "x" : " "}] ${it.text}`));
+      else for(const it of nx) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
 
       return lines.join("\n");
     }
 
-    /* ========= Modal / archive ========= */
+    copyBtn.addEventListener("click", async () => {
+      const text = formatWeekForCopy(getWeekId(), weekState);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "주간 전체를 복사했어." : "복사 실패 (권한 확인)");
+    });
+
+    clearDoneBtn.addEventListener("click", clearDone);
+
+    /* ========= Week navigation ========= */
+    function loadCurrentViewWeek(){
+      // snapshot archive (past only), never deletes live weeks
+      weekArchive = autoArchivePastWeeks();
+
+      weekState = loadWeek(getWeekKey());
+      expanded.clear();
+      buildWeekdayPills();
+      renderWeekList();
+    }
+
+    prevWeekBtn.addEventListener("click", () => {
+      // ✅ 이동 전 현재 주 저장
+      persistCurrentWeek();
+
+      viewMonday = addDays(viewMonday, -7);
+      loadCurrentViewWeek();
+      showToast("이전 주로 이동했어.");
+    });
+
+    nextWeekBtn.addEventListener("click", () => {
+      // ✅ 이동 전 현재 주 저장
+      persistCurrentWeek();
+
+      viewMonday = addDays(viewMonday, 7);
+      loadCurrentViewWeek();
+      showToast("다음 주로 이동했어.");
+    });
+
+    /* ========= History / Archive modal ========= */
     let pickedWeekId = null;
     let searchQuery = "";
 
     function openModal(){
-      weekArchive = loadArchive();
+      weekArchive = loadWeekArchive();
       searchQuery = (searchInput.value || "").trim();
       buildWeeks();
       modalOverlay.classList.add("open");
@@ -1651,6 +1928,7 @@
       pickedWeekText.textContent = "주차를 선택해줘";
       restoreWeekBtn.disabled = true;
       copyWeekBtn.disabled = true;
+
       previewBox.innerHTML = `
         <div style="color: rgba(30,30,30,0.55); font-size:12px;">
           왼쪽에서 주차를 선택하면, 그 주의 기록을 보여줘.
@@ -1668,7 +1946,6 @@
       const lowerQ = q.toLowerCase();
       if(String(weekId).toLowerCase().includes(lowerQ)) return true;
 
-      // search in tasks
       const days = (data && data.days) ? data.days : {};
       for(let i=0;i<7;i++){
         const arr = days[String(i)] || [];
@@ -1677,6 +1954,7 @@
           if(tx.includes(lowerQ)) return true;
         }
       }
+      // nextInbox도 검색에 포함
       const nx = (data && Array.isArray(data.nextInbox)) ? data.nextInbox : [];
       for(const it of nx){
         const tx = String(it.text || "").toLowerCase();
@@ -1685,17 +1963,31 @@
       return false;
     }
 
-    function setActiveWeekButton(weekId){
-      const btns = weeksPanel.querySelectorAll(".weekBtn");
-      btns.forEach(b => b.classList.toggle("active", b.dataset.week === weekId));
+    function getCountsForWeek(data){
+      let total = 0, done = 0;
+      const days = (data && data.days) ? data.days : {};
+      for(let i=0;i<7;i++){
+        const arr = days[String(i)] || [];
+        total += arr.length;
+        done += arr.filter(x => x.done).length;
+      }
+      return { total, done };
     }
 
     function buildWeeks(){
       const q = (searchQuery || "").trim();
-      const weeks = Object.keys(weekArchive).filter(w => parseYmd(w));
-      weeks.sort((a,b) => ymdToDate(b).getTime() - ymdToDate(a).getTime());
+      const ids = Object.keys(weekArchive || {});
+      ids.sort((a,b) => {
+        const as = a.split("~")[0].trim();
+        const bs = b.split("~")[0].trim();
+        const ad = ymdToDate(as);
+        const bd = ymdToDate(bs);
+        const at = ad ? ad.getTime() : 0;
+        const bt = bd ? bd.getTime() : 0;
+        return bt - at;
+      });
 
-      const filtered = weeks.filter(w => weekMatchesQuery(w, weekArchive[w], q));
+      const filtered = ids.filter(id => weekMatchesQuery(id, weekArchive[id], q));
 
       weeksPanel.innerHTML = "";
       if(filtered.length === 0){
@@ -1705,24 +1997,20 @@
           </div>
         `;
       }else{
-        for(const w of filtered){
-          const data = weekArchive[w] || defaultWeekState();
-          let total = 0, done = 0;
-          for(let i=0;i<7;i++){
-            const arr = (data.days && data.days[String(i)]) ? data.days[String(i)] : [];
-            total += arr.length;
-            done += arr.filter(x => x.done).length;
-          }
+        for(const id of filtered){
+          const data = weekArchive[id];
+          const { total, done } = getCountsForWeek(data);
+
           const btn = document.createElement("button");
           btn.className = "weekBtn";
           btn.type = "button";
-          btn.dataset.week = w;
-          btn.innerHTML = `${escapeHtml(w)}<small>${done}/${total}</small>`;
+          btn.dataset.week = id;
+          btn.innerHTML = `${escapeHtml(id)}<small>${done}/${total}</small>`;
           weeksPanel.appendChild(btn);
         }
       }
 
-      archiveCount.textContent = `${filtered.length} / ${weeks.length} weeks`;
+      archiveCount.textContent = `${filtered.length} / ${ids.length} weeks`;
 
       if(pickedWeekId && !filtered.includes(pickedWeekId)){
         pickedWeekId = null;
@@ -1734,53 +2022,76 @@
             검색 결과에서 주차를 선택해줘.
           </div>
         `;
-      }else if(pickedWeekId){
+      } else if(pickedWeekId){
         setActiveWeekButton(pickedWeekId);
         renderWeekPreview(pickedWeekId);
       }
     }
 
-    function renderWeekPreview(weekId){
-      const data = weekArchive[weekId] || defaultWeekState();
-      const q = (searchQuery || "").trim();
+    function setActiveWeekButton(id){
+      const btns = weeksPanel.querySelectorAll(".weekBtn");
+      btns.forEach(b => b.classList.toggle("active", b.dataset.week === id));
+    }
 
-      pickedWeekId = weekId;
-      setActiveWeekButton(weekId);
+    function renderWeekPreview(id){
+      const data = weekArchive[id];
+      if(!data){
+        previewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">표시할 내용이 없어.</div>`;
+        return;
+      }
 
-      pickedWeekText.textContent = `선택: ${weekId} (Mon)`;
+      pickedWeekId = id;
+      setActiveWeekButton(id);
+
+      pickedWeekText.textContent = `선택: ${id}`;
       restoreWeekBtn.disabled = false;
       copyWeekBtn.disabled = false;
 
+      const q = (searchQuery || "").trim();
+      const days = data.days || {};
       const rows = [];
 
       for(let i=0;i<7;i++){
-        const arr = (data.days && data.days[String(i)]) ? data.days[String(i)] : [];
-        rows.push(`<div style="font-size:12px; color: rgba(30,30,30,0.58); margin-top: 6px;">${DOW_LABEL[i]}</div>`);
+        const arr = days[String(i)] || [];
+        const dateStr = (() => {
+          const startStr = id.split("~")[0].trim();
+          const start = ymdToDate(startStr);
+          if(!start) return "";
+          return dateToYmd(addDays(start, i));
+        })();
+
+        rows.push(`<div style="margin-top:6px; color:rgba(30,30,30,0.72); font-size:12.5px; font-family:EnterSanChaek, ui-sans-serif, system-ui;">${DOW_LABEL[i]} <span style="color:rgba(30,30,30,0.42); font-variant-numeric:tabular-nums;">${escapeHtml(dateStr)}</span></div>`);
+
         if(arr.length === 0){
-          rows.push(`<div class="pItem"><span class="badge">empty</span><span style="color: rgba(30,30,30,0.55);">-</span></div>`);
-        }else{
-          for(const it of arr){
-            const badgeCls = it.done ? "badge done" : "badge";
-            const badgeText = it.done ? "done" : "todo";
-            const textHtml = highlight(it.text || "", q);
-            rows.push(`
-              <div class="pItem">
-                <span class="${badgeCls}">${badgeText}</span>
-                <span style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
-                  ${textHtml}
-                </span>
-              </div>
-            `);
-          }
+          rows.push(`<div style="color: rgba(30,30,30,0.45); font-size:12px;">(empty)</div>`);
+          continue;
+        }
+
+        const view = q ? arr.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase()) || id.toLowerCase().includes(q.toLowerCase())) : arr;
+
+        for(const it of view){
+          const badgeCls = it.done ? "badge done" : "badge";
+          const badgeText = it.done ? "done" : "todo";
+          const textHtml = highlight(it.text || "", q);
+          rows.push(`
+            <div class="pItem">
+              <span class="${badgeCls}">${badgeText}</span>
+              <span style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
+                ${textHtml}
+              </span>
+            </div>
+          `);
         }
       }
 
+      // Next inbox preview
       const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
-      rows.push(`<div style="font-size:12px; color: rgba(30,30,30,0.58); margin-top: 10px;">Next Week Inbox</div>`);
+      rows.push(`<div style="margin-top:10px; color:rgba(30,30,30,0.72); font-size:12.5px; font-family:EnterSanChaek, ui-sans-serif, system-ui;">Next Week Inbox</div>`);
       if(nx.length === 0){
-        rows.push(`<div class="pItem"><span class="badge">empty</span><span style="color: rgba(30,30,30,0.55);">-</span></div>`);
+        rows.push(`<div style="color: rgba(30,30,30,0.45); font-size:12px;">(empty)</div>`);
       }else{
-        for(const it of nx){
+        const viewNx = q ? nx.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase())) : nx;
+        for(const it of viewNx){
           const badgeCls = it.done ? "badge done" : "badge";
           const badgeText = it.done ? "done" : "todo";
           const textHtml = highlight(it.text || "", q);
@@ -1798,106 +2109,7 @@
       previewBox.innerHTML = rows.join("");
     }
 
-    function restorePickedWeek(){
-      if(!pickedWeekId) return;
-      const data = weekArchive[pickedWeekId];
-      if(!data) return;
-
-      // restore to storage (overwrite)
-      const k = WEEK_PREFIX + pickedWeekId;
-      saveWeek(k, data);
-
-      // also set viewMonday to that week and load
-      viewMonday = ymdToDate(pickedWeekId) || startOfWeekMonday(new Date());
-      loadCurrentViewWeek();
-
-      showToast("선택 주를 복원했어.");
-      closeModal();
-    }
-
-    async function copyPickedWeek(){
-      if(!pickedWeekId) return;
-      const data = weekArchive[pickedWeekId] || defaultWeekState();
-      const text = formatWeekForCopy(pickedWeekId, data);
-      const ok = await copyToClipboard(text);
-      showToast(ok ? "선택 주를 복사했어." : "복사 실패 (권한 확인)");
-    }
-
-    /* ========= events ========= */
-    prevWeekBtn.addEventListener("click", goPrevWeek);
-    nextWeekBtn.addEventListener("click", goNextWeek);
-
-    // week list delegated
-    weekListEl.addEventListener("click", (e) => {
-      const tgl = e.target.closest("[data-toggle]");
-      if(tgl){
-        const dayKey = tgl.dataset.toggle;
-        const section = e.target.closest(".daySection");
-        if(!section) return;
-
-        if(expanded.has(dayKey)) expanded.delete(dayKey);
-        else expanded.add(dayKey);
-
-        // update only this section state text quickly by rerendering all (simple)
-        renderWeekList();
-        return;
-      }
-
-      const check = e.target.closest(".check[data-id]");
-      const del = e.target.closest("[data-del]");
-      const fromToday = e.target.closest("[data-fromtoday]");
-      const pull = e.target.closest("[data-pull]");
-      const push = e.target.closest("[data-push]");
-
-      if(check){
-        const id = check.dataset.id;
-        const dayKey = check.dataset.day;
-        toggleItem(dayKey, id);
-        return;
-      }
-      if(del){
-        const id = del.dataset.del;
-        const dayKey = del.dataset.day;
-        deleteItem(dayKey, id);
-        return;
-      }
-
-      // placeholders for future wiring
-      if(fromToday){
-        showToast("from today: (연동 예정)");
-        return;
-      }
-      if(pull){
-        showToast("pull: (연동 예정)");
-        return;
-      }
-      if(push){
-        showToast("push: (연동 예정)");
-        return;
-      }
-    });
-
-    weekListEl.addEventListener("keydown", (e) => {
-      const check = e.target.closest(".check[data-id]");
-      if(!check) return;
-      if(e.key === "Enter" || e.key === " "){
-        e.preventDefault();
-        toggleItem(check.dataset.day, check.dataset.id);
-      }
-    });
-
-    // footer
     historyBtn.addEventListener("click", openModal);
-
-    copyBtn.addEventListener("click", async () => {
-      const text = formatWeekForCopy(getWeekId(), weekState);
-      const ok = await copyToClipboard(text);
-      showToast(ok ? "주간 전체를 복사했어." : "복사 실패 (권한 확인)");
-    });
-
-    clearDoneBtn.addEventListener("click", clearDone);
-
-    // modal
     closeModalBtn.addEventListener("click", closeModal);
     modalOverlay.addEventListener("click", (e) => {
       if(e.target === modalOverlay) closeModal();
@@ -1909,8 +2121,24 @@
       renderWeekPreview(btn.dataset.week);
     });
 
-    restoreWeekBtn.addEventListener("click", restorePickedWeek);
-    copyWeekBtn.addEventListener("click", copyPickedWeek);
+    restoreWeekBtn.addEventListener("click", () => {
+      if(!pickedWeekId) return;
+      const data = weekArchive[pickedWeekId];
+      if(!data) return;
+
+      weekState = normalizeWeekState(JSON.parse(JSON.stringify(data)));
+      persistCurrentWeek();
+      renderWeekList();
+      showToast("선택한 주 기록으로 복원했어.");
+    });
+
+    copyWeekBtn.addEventListener("click", async () => {
+      if(!pickedWeekId) return;
+      const data = weekArchive[pickedWeekId];
+      const text = formatWeekForCopy(pickedWeekId, data);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "선택 주차를 복사했어." : "복사 실패 (권한 확인)");
+    });
 
     searchInput.addEventListener("input", () => {
       searchQuery = (searchInput.value || "").trim();
@@ -1924,67 +2152,12 @@
       showToast("검색을 초기화했어.");
     });
 
-    // next week inbox buttons
-    addToNextBtn.addEventListener("click", () => {
-      const text = prompt("Next Week에 넣을 한 줄:", "");
-      if(text === null) return;
-      addNextInbox(text);
-    });
-
-    openNextBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if(nextPopover.classList.contains("open")) closeNextPopover();
-      else openNextPopover(openNextBtn);
-    });
-
-    closeNextPopoverBtn.addEventListener("click", closeNextPopover);
-
-    // next popover actions
-    nextList.addEventListener("click", (e) => {
-      const check = e.target.closest("[data-nw-id]");
-      const del = e.target.closest("[data-nw-del]");
-      if(check){
-        toggleNextInbox(check.dataset.nwId);
-        return;
-      }
-      if(del){
-        deleteNextInbox(del.dataset.nwDel);
-        return;
-      }
-    });
-
-    nextList.addEventListener("keydown", (e) => {
-      const check = e.target.closest("[data-nw-id]");
-      if(!check) return;
-      if(e.key === "Enter" || e.key === " "){
-        e.preventDefault();
-        toggleNextInbox(check.dataset.nwId);
-      }
-    });
-
-    clearNextDoneBtn.addEventListener("click", clearNextDone);
-    copyNextBtn.addEventListener("click", copyNext);
-
-    // close next popover on outside click / Esc
-    document.addEventListener("click", () => closeNextPopover());
+    /* ========= Esc closes modal ========= */
     document.addEventListener("keydown", (e) => {
       if(e.key === "Escape"){
-        closeNextPopover();
         if(modalOverlay.classList.contains("open")) closeModal();
       }
     });
-
-    // reposition on resize/scroll
-    window.addEventListener("resize", () => {
-      if(nextPopover.classList.contains("open")) placeNextPopover(openNextBtn);
-    }, { passive: true });
-    window.addEventListener("scroll", () => {
-      if(nextPopover.classList.contains("open")) placeNextPopover(openNextBtn);
-    }, { passive: true });
-
-    /* ========= init ========= */
-    // ensure add button uses svg (in renderWeekList), but we also keep state safe
-    loadCurrentViewWeek();
   </script>
 </body>
 </html>
