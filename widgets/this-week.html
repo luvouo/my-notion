@@ -1038,6 +1038,9 @@
             <div>
               <button class="btn secondary" id="restoreWeekBtn" type="button" disabled>Restore</button>
               <button class="btn secondary" id="copyWeekBtn" type="button" disabled>Copy</button>
+             <!-- ✅ 추가 -->
+              <button class="btn secondary" id="exportWeekBtn" type="button" disabled>Export</button>
+              <button class="btn secondary" id="deleteWeekBtn" type="button" disabled>Delete</button>
             </div>
           </div>
 
@@ -1056,13 +1059,18 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { getWorkspaceId } from "../core/auth-lite.js";
+    
     /* ========= storage keys ========= */
     const WEEK_PREFIX = "soft_schedule_week_";
     const WEEK_ARCHIVE_KEY = "soft_schedule_week_archive_v1";
 
-    // Today widget keys (for Pull/Push)
-    const TODAY_PREFIX = "soft_schedule_today_";
+     // Today widget keys (for Pull/Push)
+    // ✅ Today 위젯 실제 저장 규칙: soft_schedule_today_${workspace_id}_YYYY-MM-DD (또는 YYYY.MM.DD)
+    let WORKSPACE_ID = null;
+    let TODAY_PREFIX = null; // soft_schedule_today_${workspace_id}_
+
 
     /* ========= utils ========= */
     function pad2(n){ return String(n).padStart(2,"0"); }
@@ -1118,6 +1126,54 @@
       }
     }
 
+      function downloadFile(filename, text, mime="text/plain;charset=utf-8"){
+        const blob = new Blob([text], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      }
+
+    
+        /* ========= Today key helpers (dash/dot both) ========= */
+        function dateDot(d){
+          return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+        }
+        function dateDash(d){
+          return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+        }
+        
+        function getTodayKeyCandidates(d){
+          if(!TODAY_PREFIX) return [];
+          return [
+            TODAY_PREFIX + dateDash(d),
+            TODAY_PREFIX + dateDot(d),
+          ];
+        }
+        
+        // 실제로 존재하는 포맷을 우선 채택해서 반환
+        function loadTodayRows(d){
+          const candidates = getTodayKeyCandidates(d);
+          for(const k of candidates){
+            try{
+              const raw = localStorage.getItem(k);
+              if(raw){
+                const parsed = JSON.parse(raw);
+                if(Array.isArray(parsed)) return { key: k, rows: parsed };
+              }
+            }catch(e){}
+          }
+          // 없으면 기본은 dash 형태로 저장(대부분 Today가 dash)
+          const fallbackKey = candidates[0] || null;
+          return { key: fallbackKey, rows: [] };
+        }
+
+
+    
     function mondayOfWeek(d){
       const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
       const day = x.getDay(); // 0 Sun .. 6 Sat
@@ -1297,9 +1353,41 @@
     const previewBox = document.getElementById("previewBox");
     const restoreWeekBtn = document.getElementById("restoreWeekBtn");
     const copyWeekBtn = document.getElementById("copyWeekBtn");
+    const exportWeekBtn = document.getElementById("exportWeekBtn");
+    const deleteWeekBtn = document.getElementById("deleteWeekBtn");
     const archiveCount = document.getElementById("archiveCount");
     const searchInput = document.getElementById("searchInput");
     const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+        /* ========= workspace init (Today 연동용) ========= */
+    function setTodayControlsEnabled(enabled){
+      fromTodayBtn.disabled = !enabled ? true : false;  // fromToday는 week 이동에도 쓰니 enabled면 켜기
+      pullBtn.disabled = !enabled;
+      pushBtn.disabled = !enabled;
+    }
+    
+    setTodayControlsEnabled(false);
+    
+    async function initWorkspace(){
+      try{
+        WORKSPACE_ID = await getWorkspaceId();
+        if(!WORKSPACE_ID){
+          TODAY_PREFIX = null;
+          setTodayControlsEnabled(false);
+          showToast("Today 연동: passcode/workspace가 없어.");
+          return false;
+        }
+        TODAY_PREFIX = `soft_schedule_today_${WORKSPACE_ID}_`;
+        setTodayControlsEnabled(true);
+        return true;
+      }catch(e){
+        TODAY_PREFIX = null;
+        setTodayControlsEnabled(false);
+        showToast("Today 연동 초기화 실패");
+        return false;
+      }
+    }
+
 
     /* ========= add icon for + ========= */
     addBtn.innerHTML = `
@@ -1658,39 +1746,40 @@
     fromTodayBtn.addEventListener("click", () => {
       const today = new Date();
       const mon = mondayOfWeek(today);
-      const sameWeek = (dateToYmd(mon) === dateToYmd(viewMonday));
-      if(!sameWeek){
-        showToast("현재 보고 있는 주가 이번 주가 아니야.");
-        return;
-      }
+    
+      // ✅ 다른 주 보고 있어도 이번 주로 이동
+      viewMonday = mon;
+      loadCurrentViewWeek();
+    
       const idx = Math.min(6, Math.max(0, Math.round((today - mon)/86400000)));
       setSelectedDay(idx);
       showToast("Today 기준으로 이동했어.");
     });
 
-    pullBtn.addEventListener("click", () => {
-      const todayKey = TODAY_PREFIX + ymd(new Date());
-      let src = [];
-      try{
-        const raw = localStorage.getItem(todayKey);
-        if(raw) src = JSON.parse(raw) || [];
-      }catch(e){ src = []; }
 
+    pullBtn.addEventListener("click", () => {
+      if(!TODAY_PREFIX){
+        showToast("Today 연동이 꺼져 있어.");
+        return;
+      }
+    
+      const { rows: src } = loadTodayRows(new Date());
+    
       if(!Array.isArray(src) || src.length === 0){
         showToast("Today 기록이 없어.");
         return;
       }
-
+    
       const unfinished = src.filter(x => !x.done && (x.text||"").trim());
       if(unfinished.length === 0){
         showToast("가져올 미완료가 없어.");
         return;
       }
-
+    
       const dayKey = String(selectedDayIndex);
       const arr = weekState.days[dayKey] || (weekState.days[dayKey] = []);
       const existing = new Set(arr.map(x => (x.text||"").trim()));
-
+    
       let added = 0;
       for(const it of unfinished){
         const tx = (it.text||"").trim();
@@ -1704,37 +1793,44 @@
         existing.add(tx);
         added++;
       }
-
+    
       if(added === 0){
         showToast("이미 이번 주에 있어.");
         return;
       }
-
+    
       persistCurrentWeek();
       renderWeekList();
       showToast(`Today에서 ${added}개 가져왔어.`);
     });
 
-    pushBtn.addEventListener("click", () => {
-      const todayKey = TODAY_PREFIX + ymd(new Date());
-      let dest = [];
-      try{
-        const raw = localStorage.getItem(todayKey);
-        if(raw) dest = JSON.parse(raw) || [];
-      }catch(e){ dest = []; }
 
+        pushBtn.addEventListener("click", () => {
+      if(!TODAY_PREFIX){
+        showToast("Today 연동이 꺼져 있어.");
+        return;
+      }
+    
+      const loaded = loadTodayRows(new Date());
+      const todayKey = loaded.key;
+      let dest = loaded.rows;
+    
+      if(!todayKey){
+        showToast("Today 키 생성 실패");
+        return;
+      }
       if(!Array.isArray(dest)) dest = [];
-
+    
       const dayArr = weekState.days[String(selectedDayIndex)] || [];
       const unfinished = dayArr.filter(x => !x.done && (x.text||"").trim());
       if(unfinished.length === 0){
         showToast("보낼 미완료가 없어.");
         return;
       }
-
+    
       const existing = new Set(dest.map(x => (x.text||"").trim()));
       let added = 0;
-
+    
       for(const it of unfinished){
         const tx = (it.text||"").trim();
         if(!tx) continue;
@@ -1747,15 +1843,16 @@
         existing.add(tx);
         added++;
       }
-
+    
       if(added === 0){
         showToast("이미 Today에 있어.");
         return;
       }
-
+    
       localStorage.setItem(todayKey, JSON.stringify(dest));
       showToast(`Today로 ${added}개 보냈어.`);
     });
+
 
     /* ========= Next Week Inbox UI / Popover ========= */
     function placeNextPopover(anchorEl){
@@ -1891,6 +1988,9 @@
 
       weekState = loadWeek(getWeekKey());
       expanded.clear();
+      // ✅ workspace 준비 (Today 연동)
+      initWorkspace();
+      
       buildWeekdayPills();
       renderWeekList();
     }
@@ -1928,6 +2028,9 @@
       pickedWeekText.textContent = "주차를 선택해줘";
       restoreWeekBtn.disabled = true;
       copyWeekBtn.disabled = true;
+      exportWeekBtn.disabled = true;
+      deleteWeekBtn.disabled = true;
+
 
       previewBox.innerHTML = `
         <div style="color: rgba(30,30,30,0.55); font-size:12px;">
@@ -2046,6 +2149,9 @@
       pickedWeekText.textContent = `선택: ${id}`;
       restoreWeekBtn.disabled = false;
       copyWeekBtn.disabled = false;
+      exportWeekBtn.disabled = false;
+      deleteWeekBtn.disabled = false;
+
 
       const q = (searchQuery || "").trim();
       const days = data.days || {};
@@ -2140,6 +2246,63 @@
       showToast(ok ? "선택 주차를 복사했어." : "복사 실패 (권한 확인)");
     });
 
+    exportWeekBtn.addEventListener("click", () => {
+      if(!pickedWeekId) return;
+      const data = weekArchive[pickedWeekId];
+      if(!data) return;
+    
+      const mode = prompt("Export 형식 선택: 1) TXT  2) JSON", "1");
+      if(mode === null) return;
+    
+      const safeId = pickedWeekId.replaceAll(" ", "").replaceAll("~", "_to_").replaceAll(".", "-");
+      if(String(mode).trim() === "2"){
+        const json = JSON.stringify(data, null, 2);
+        downloadFile(`week_${safeId}.json`, json, "application/json;charset=utf-8");
+        showToast("JSON으로 내보냈어.");
+      }else{
+        const txt = formatWeekForCopy(pickedWeekId, data);
+        downloadFile(`week_${safeId}.txt`, txt, "text/plain;charset=utf-8");
+        showToast("TXT로 내보냈어.");
+      }
+    });
+
+      deleteWeekBtn.addEventListener("click", () => {
+        if(!pickedWeekId) return;
+      
+        const ok = confirm(`정말 삭제할까?\n- Archive에서 제거됨\n- 주차: ${pickedWeekId}`);
+        if(!ok) return;
+      
+        // 1) archive에서 삭제
+        const archive = loadWeekArchive();
+        delete archive[pickedWeekId];
+        saveWeekArchive(archive);
+        weekArchive = archive;
+      
+        // 2) live localStorage(week key)도 있으면 같이 제거할지 선택
+        const liveKey = WEEK_PREFIX + pickedWeekId;
+        if(localStorage.getItem(liveKey) !== null){
+          const ok2 = confirm("이 주차의 live 데이터(localStorage)도 같이 지울까?");
+          if(ok2) localStorage.removeItem(liveKey);
+        }
+      
+        pickedWeekId = null;
+        pickedWeekText.textContent = "주차를 선택해줘";
+        restoreWeekBtn.disabled = true;
+        copyWeekBtn.disabled = true;
+        exportWeekBtn.disabled = true;
+        deleteWeekBtn.disabled = true;
+      
+        previewBox.innerHTML = `
+          <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+            삭제했어. 다른 주차를 선택해줘.
+          </div>
+        `;
+      
+        buildWeeks();
+        showToast("주차를 삭제했어.");
+      });
+
+    
     searchInput.addEventListener("input", () => {
       searchQuery = (searchInput.value || "").trim();
       buildWeeks();
