@@ -800,12 +800,23 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ===== Next Week Popover ===== */
+    /* ✅ Next Week Popover base (hidden by default) */
     #nextPopover{
-      min-width: 240px;
-      max-width: min(300px, calc(100vw - 16px));
-      padding: 10px;
-      border-radius: 16px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 9999;
+    
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(6px);
+      transition: opacity .14s ease, transform .14s ease;
+    }
+    
+    #nextPopover.open{
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
     }
     
     .nwHead{
@@ -884,6 +895,12 @@
       padding: 9px 10px;
       border-radius: 12px;
       font-size: 12px;
+    }
+
+    #clearNextDoneBtn,
+    #copyNextBtn{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
 
     
@@ -1219,6 +1236,7 @@
     const closeNextPopoverBtn = document.getElementById("closeNextPopoverBtn");
     const clearNextDoneBtn = document.getElementById("clearNextDoneBtn");
     const copyNextBtn = document.getElementById("copyNextBtn");
+    const cardEl = document.querySelector(".card"); // ✅ 추가
 
     
     const openNextBtn = document.getElementById("openNextBtn");
@@ -1494,38 +1512,42 @@
       }
     }
 
-      function placeNextPopover(){
-        const btnRect = openNextBtn.getBoundingClientRect();
+      function placeNextPopover(anchorEl){
+        const btnRect = anchorEl.getBoundingClientRect();
         const popRect = nextPopover.getBoundingClientRect();
+        const cardRect = cardEl.getBoundingClientRect();
       
         const gap = 8;
-        const pad = 8;
+        const pad = 10;
       
-        // 기본: 버튼 위쪽, 오른쪽 정렬
-        let top = btnRect.top - popRect.height - gap;
+        // 기본: 버튼 아래에 뜨게 (원하면 위로 바꿔도 됨)
+        let top = btnRect.bottom + gap;
         let left = btnRect.right - popRect.width;
       
-        // 위 공간이 부족하면 아래로
-        if(top < pad) top = btnRect.bottom + gap;
+        // ✅ 카드 영역 기준으로 clamp (노션 embed에서 중요)
+        const minLeft = cardRect.left + pad;
+        const maxLeft = cardRect.right - popRect.width - pad;
+        const minTop  = cardRect.top + pad;
+        const maxTop  = cardRect.bottom - popRect.height - pad;
       
-        // 좌우 클램프
-        left = Math.max(pad, Math.min(left, window.innerWidth - popRect.width - pad));
+        left = Math.max(minLeft, Math.min(left, maxLeft));
+        top  = Math.max(minTop,  Math.min(top,  maxTop));
       
         nextPopover.style.left = `${left}px`;
         nextPopover.style.top = `${top}px`;
       }
       
-      function openNextPopover(){
-        renderNextPopover();
+      function openNextPopover(anchorEl){
         nextPopover.classList.add("open");
         nextPopover.setAttribute("aria-hidden", "false");
-        requestAnimationFrame(placeNextPopover);
+        requestAnimationFrame(() => placeNextPopover(anchorEl));
       }
       
       function closeNextPopover(){
         nextPopover.classList.remove("open");
         nextPopover.setAttribute("aria-hidden", "true");
       }
+
 
     
     function toggleItem(dayIndex, id){
@@ -1672,25 +1694,30 @@
     openNextBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       if(nextPopover.classList.contains("open")) closeNextPopover();
-      else openNextPopover();
+      else openNextPopover(openNextBtn);
     });
     
-    closeNextPopoverBtn.addEventListener("click", closeNextPopover);
+    closeNextPopoverBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeNextPopover();
+    });
     
-    // outside click / Esc
+    // 바깥 클릭 닫기
     document.addEventListener("click", () => closeNextPopover());
+    
+    // ESC 닫기
     document.addEventListener("keydown", (e) => {
       if(e.key === "Escape") closeNextPopover();
     });
     
-    // reposition on resize/scroll
+    // 리사이즈/스크롤 시 위치 재계산
     window.addEventListener("resize", () => {
-      if(nextPopover.classList.contains("open")) placeNextPopover();
+      if(nextPopover.classList.contains("open")) placeNextPopover(openNextBtn);
     }, { passive: true });
     
     window.addEventListener("scroll", () => {
-      if(nextPopover.classList.contains("open")) placeNextPopover();
-    }, { passive: true });
+      if(nextPopover.classList.contains("open")) placeNextPopover(openNextBtn);
+    }, { passive: true })
     
     // popover 내부 클릭은 닫힘 방지
     nextPopover.addEventListener("click", (e) => e.stopPropagation());
