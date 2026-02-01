@@ -972,6 +972,9 @@
       throw new Error("passcode required");
     }
 
+console.log("env ok?", window.__ENV__);
+
+    
     const PREFIX_DAY = `soft_schedule_today_${workspace_id}_`;
     const KEY_ARCHIVE = `soft_schedule_today_${workspace_id}_archive_v1`;
 
