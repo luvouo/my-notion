@@ -5,7 +5,17 @@ export async function sbFetch(path, { method="GET", query=null, body=null } = {}
   }
 
   const url = new URL(`${SUPABASE_URL}/rest/v1/${path}`);
-  if (query) for (const [k,v] of Object.entries(query)) url.searchParams.set(k, v);
+
+  // ✅ query:
+  // - object: {k:v} 형태
+  // - array:  [[k,v],[k,v]] 형태 (같은 키 2번 가능)
+  if (query) {
+    if (Array.isArray(query)) {
+      for (const [k, v] of query) url.searchParams.append(k, v);
+    } else {
+      for (const [k, v] of Object.entries(query)) url.searchParams.set(k, v);
+    }
+  }
 
   const res = await fetch(url.toString(), {
     method,
@@ -22,6 +32,8 @@ export async function sbFetch(path, { method="GET", query=null, body=null } = {}
     const t = await res.text().catch(()=> "");
     throw new Error(`Supabase REST ${res.status}: ${t}`);
   }
-  return res.json();
-}
 
+  // 204 같은 경우 대비
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
