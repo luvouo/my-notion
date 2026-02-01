@@ -902,9 +902,77 @@
     </div>
   </div>
 
-  <script>
-    const PREFIX_DAY = "soft_schedule_today_";
-    const KEY_ARCHIVE = "soft_schedule_today_archive_v1";
+  <script type="module">
+    import { getWorkspaceId, savePasscode } from "../core/auth-lite.js";
+
+    /**
+     * today.html이 폴더 안에 있어서 "../core/..."로 잡았어.
+     * (네 파일에서 font 경로가 ../fonts 인 걸로 봐서 한 단계 위가 repo root일 확률이 높음)
+     * 만약 core 폴더가 다른 위치면 경로만 수정하면 됨.
+     */
+    
+    async function requireWorkspaceId() {
+      // 1) 저장된 패스코드가 있으면 바로 workspace_id 생성
+      let ws = await getWorkspaceId();
+      if (ws) return ws;
+    
+      // 2) 없으면 "현재 카드"를 패스코드 입력 화면으로 교체
+      const inner = document.querySelector(".wrap");
+      if (!inner) throw new Error("Cannot find .wrap");
+    
+      inner.innerHTML = `
+        <div class="card" role="application" aria-label="Passcode Gate">
+          <div class="inner" style="gap: 10px;">
+            <div class="top">
+              <div class="title">
+                <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+                <h1>Passcode</h1>
+              </div>
+              <div class="meta">sync</div>
+            </div>
+    
+            <div class="inputRow">
+              <input id="passInput" class="input" type="password" placeholder="패스코드 입력…" />
+              <button class="btn" id="passBtn" type="button" style="min-width:90px;">확인</button>
+            </div>
+    
+            <div style="font-size:12px; color: var(--muted); line-height:1.4;">
+              같은 패스코드를 사용하는 모든 위젯/기기가 같은 데이터를 보게 돼.
+            </div>
+          </div>
+        </div>
+      `;
+    
+      const passInput = document.getElementById("passInput");
+      const passBtn = document.getElementById("passBtn");
+    
+      const submit = async () => {
+        const pass = (passInput.value || "").trim();
+        if (!pass) return;
+        savePasscode(pass);
+        // 저장 후 새로고침(가장 안전)
+        location.reload();
+      };
+    
+      passBtn.addEventListener("click", submit);
+      passInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") submit();
+      });
+    
+      // 여기서 멈춤(새로고침 후 다시 진입)
+      return null;
+    }
+    
+    // ✅ workspace_id 확보 (없으면 게이트 화면에서 끝)
+    const workspace_id = await requireWorkspaceId();
+    if (!workspace_id) {
+      // 사용자가 패스코드를 넣고 새로고침하기 전까지 종료
+      throw new Error("passcode required");
+    }
+
+    const PREFIX_DAY = `soft_schedule_today_${workspace_id}_`;
+    const KEY_ARCHIVE = `soft_schedule_today_${workspace_id}_archive_v1`;
+
 
     function formatDateLabel(dateStr){
       const d = ymdToDate(dateStr);
