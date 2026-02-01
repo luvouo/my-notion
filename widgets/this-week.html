@@ -1538,10 +1538,14 @@
       }
       
       function openNextPopover(anchorEl){
+        // ✅ fallback: anchorEl이 없으면 Show 버튼을 기준으로
+        if(!anchorEl) anchorEl = document.getElementById("openNextBtn");
+      
         nextPopover.classList.add("open");
         nextPopover.setAttribute("aria-hidden", "false");
         requestAnimationFrame(() => placeNextPopover(anchorEl));
       }
+
       
       function closeNextPopover(){
         nextPopover.classList.remove("open");
@@ -1876,17 +1880,28 @@
     }
 
     prevWeekBtn.addEventListener("click", () => {
+      commitViewWeek();              // ✅ 추가: 이동 전 저장
       viewMonday = addDays(viewMonday, -7);
       loadCurrentViewWeek();
       showToast("이전 주로 이동했어.");
     });
-
+    
     nextWeekBtn.addEventListener("click", () => {
+      commitViewWeek();              // ✅ 추가: 이동 전 저장
       viewMonday = addDays(viewMonday, 7);
       loadCurrentViewWeek();
       showToast("다음 주로 이동했어.");
     });
 
+
+
+    function commitViewWeek(){
+      try{
+        saveWeek(getWeekKey(), weekState);
+      }catch(e){}
+    }
+
+    
     /* ========= History / Archive modal ========= */
     let pickedWeekId = null;
     let searchQuery = "";
