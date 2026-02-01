@@ -15,4 +15,3 @@ export async function getWorkspaceId() {
   if (!pass) return null;
   return await workspaceIdFromPasscode(pass);
 }
-
