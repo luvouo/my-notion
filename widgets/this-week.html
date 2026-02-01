@@ -800,6 +800,93 @@
       font-variant-numeric: tabular-nums;
     }
 
+    /* ===== Next Week Popover ===== */
+    #nextPopover{
+      min-width: 240px;
+      max-width: min(300px, calc(100vw - 16px));
+      padding: 10px;
+      border-radius: 16px;
+    }
+    
+    .nwHead{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 2px 2px 8px;
+    }
+    
+    .nwTitle{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: 13px;
+      color: rgba(30,30,30,0.78);
+    }
+    
+    .nwClose{
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.70);
+      border-radius: 12px;
+      width: 30px;
+      height: 30px;
+      display:grid;
+      place-items:center;
+      cursor: pointer;
+      color: rgba(30,30,30,0.60);
+    }
+    .nwClose:hover{
+      border-color: rgba(140,190,232,0.55);
+      background: rgba(218,239,251,0.22);
+    }
+    
+    .nwList{
+      display:grid;
+      gap: 8px;
+      max-height: 260px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+    
+    .nwRow{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.66);
+      border-radius: 14px;
+      padding: 8px 10px;
+    }
+    
+    .nwText{
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.82);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .nwRow.done .nwText{
+      text-decoration: line-through;
+      color: rgba(30,30,30,0.46);
+    }
+    
+    .nwFoot{
+      display:flex;
+      justify-content:flex-end;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    
+    /* 팝오버 안 버튼 높이/톤을 Copy/Clear done과 같은 계열로 유지 */
+    #nextPopover .btn.secondary{
+      padding: 9px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    
     @media (max-width: 420px){
       .modalBody{ grid-template-columns: 1fr; }
       .weeks{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
@@ -920,6 +1007,21 @@
     </div>
   </div>
 
+    <!-- ✅ Next Week Popover (fixed) -->
+    <div class="popover" id="nextPopover" aria-hidden="true">
+      <div class="nwHead">
+        <div class="nwTitle">Next Week</div>
+        <button class="nwClose" id="closeNextPopoverBtn" type="button" aria-label="닫기">✕</button>
+      </div>
+      <div class="nwList" id="nextList"></div>
+      <div class="nwFoot">
+        <button class="btn secondary" id="clearNextDoneBtn" type="button">Clear done</button>
+        <button class="btn secondary" id="copyNextBtn" type="button">Copy</button>
+      </div>
+    </div>
+
+
+  
   <script>
     /* ========= storage keys ========= */
     const WEEK_PREFIX = "soft_schedule_week_";
@@ -1111,6 +1213,14 @@
 
     const nextInboxCount = document.getElementById("nextInboxCount");
     const addToNextBtn = document.getElementById("addToNextBtn");
+
+    const nextPopover = document.getElementById("nextPopover");
+    const nextList = document.getElementById("nextList");
+    const closeNextPopoverBtn = document.getElementById("closeNextPopoverBtn");
+    const clearNextDoneBtn = document.getElementById("clearNextDoneBtn");
+    const copyNextBtn = document.getElementById("copyNextBtn");
+
+    
     const openNextBtn = document.getElementById("openNextBtn");
 
     const countText = document.getElementById("countText");
@@ -1348,6 +1458,75 @@
     }
 
 
+    function renderNextPopover(){
+      const arr = weekState.nextInbox || [];
+    
+      if(arr.length === 0){
+        nextList.innerHTML = `<div style="color: rgba(30,30,30,0.45); font-size:12px; padding: 6px 2px;">
+          비어있어.
+        </div>`;
+        clearNextDoneBtn.disabled = true;
+        copyNextBtn.disabled = true;
+        return;
+      }
+    
+      clearNextDoneBtn.disabled = arr.every(x => !x.done);
+      copyNextBtn.disabled = false;
+    
+      nextList.innerHTML = arr.map(it => `
+        <div class="nwRow ${it.done ? "done" : ""}" data-nw-id="${it.id}">
+          <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-nw-toggle="${it.id}">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="nwText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+          <button class="del" type="button" aria-label="삭제" data-nw-del="${it.id}">✕</button>
+        </div>
+      `).join("");
+    
+      // 체크 표시 SVG on/off는 기존 .check svg opacity 규칙을 그대로 쓰므로
+      // done 상태는 .check svg가 보이게 하려면 done일 때 class 처리 필요:
+      // 여기서는 nwRow.done이면 체크도 done처럼 보이게 하려고 아래와 같이 강제:
+      for(const row of nextList.querySelectorAll(".nwRow.done .check svg")){
+        row.style.opacity = "1";
+        row.style.transform = "scale(1)";
+      }
+    }
+
+      function placeNextPopover(){
+        const btnRect = openNextBtn.getBoundingClientRect();
+        const popRect = nextPopover.getBoundingClientRect();
+      
+        const gap = 8;
+        const pad = 8;
+      
+        // 기본: 버튼 위쪽, 오른쪽 정렬
+        let top = btnRect.top - popRect.height - gap;
+        let left = btnRect.right - popRect.width;
+      
+        // 위 공간이 부족하면 아래로
+        if(top < pad) top = btnRect.bottom + gap;
+      
+        // 좌우 클램프
+        left = Math.max(pad, Math.min(left, window.innerWidth - popRect.width - pad));
+      
+        nextPopover.style.left = `${left}px`;
+        nextPopover.style.top = `${top}px`;
+      }
+      
+      function openNextPopover(){
+        renderNextPopover();
+        nextPopover.classList.add("open");
+        nextPopover.setAttribute("aria-hidden", "false");
+        requestAnimationFrame(placeNextPopover);
+      }
+      
+      function closeNextPopover(){
+        nextPopover.classList.remove("open");
+        nextPopover.setAttribute("aria-hidden", "true");
+      }
+
     
     function toggleItem(dayIndex, id){
       const dayKey = String(dayIndex);
@@ -1409,6 +1588,63 @@
       }
     });
 
+    nextList.addEventListener("click", (e) => {
+      const tgl = e.target.closest("[data-nw-toggle]");
+      const del = e.target.closest("[data-nw-del]");
+    
+      if(tgl){
+        const id = tgl.dataset.nwToggle;
+        weekState.nextInbox = (weekState.nextInbox || []).map(it =>
+          it.id === id ? ({ ...it, done: !it.done }) : it
+        );
+        saveWeek(getWeekKey(), weekState);
+        renderWeekList();      // ✅ 카운트 갱신
+        renderNextPopover();   // ✅ 팝오버 갱신
+        return;
+      }
+    
+      if(del){
+        const id = del.dataset.nwDel;
+        weekState.nextInbox = (weekState.nextInbox || []).filter(it => it.id !== id);
+        saveWeek(getWeekKey(), weekState);
+        renderWeekList();
+        renderNextPopover();
+        return;
+      }
+    });
+    
+    nextList.addEventListener("keydown", (e) => {
+      const tgl = e.target.closest("[data-nw-toggle]");
+      if(!tgl) return;
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        tgl.click();
+      }
+    });
+    
+    clearNextDoneBtn.addEventListener("click", () => {
+      const arr = weekState.nextInbox || [];
+      weekState.nextInbox = arr.filter(it => !it.done);
+      saveWeek(getWeekKey(), weekState);
+      renderWeekList();
+      renderNextPopover();
+      showToast("Next Week done을 지웠어.");
+    });
+    
+    copyNextBtn.addEventListener("click", async () => {
+      const arr = weekState.nextInbox || [];
+      if(arr.length === 0) return;
+    
+      const lines = [];
+      lines.push(`[Next Week Inbox | from ${getWeekId()}]`);
+      for(const it of arr){
+        lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+      }
+      const ok = await copyToClipboard(lines.join("\n"));
+      showToast(ok ? "Next Week를 복사했어." : "복사 실패 (권한 확인)");
+    });
+
+
     /* ========= Add events ========= */
     addBtn.addEventListener("click", () => {
       addItemToDay(selectedDayIndex, taskInput.value);
@@ -1431,21 +1667,34 @@
       showToast("Next Week에 넣었어.");
     });
     
-    // ✅ Show Next Week inbox as a simple copy (no modal, one-line feature 유지)
-    openNextBtn.addEventListener("click", async () => {
-      const arr = weekState.nextInbox || [];
-      if(arr.length === 0){
-        showToast("Next Week가 비어있어.");
-        return;
-      }
-      const lines = [];
-      lines.push(`[Next Week Inbox | from ${getWeekId()}]`);
-      for(const it of arr){
-        lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
-      }
-      const ok = await copyToClipboard(lines.join("\n"));
-      showToast(ok ? "Next Week 목록을 복사했어." : "복사 실패 (권한 확인)");
+   
+   // Show -> popover toggle
+    openNextBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if(nextPopover.classList.contains("open")) closeNextPopover();
+      else openNextPopover();
     });
+    
+    closeNextPopoverBtn.addEventListener("click", closeNextPopover);
+    
+    // outside click / Esc
+    document.addEventListener("click", () => closeNextPopover());
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape") closeNextPopover();
+    });
+    
+    // reposition on resize/scroll
+    window.addEventListener("resize", () => {
+      if(nextPopover.classList.contains("open")) placeNextPopover();
+    }, { passive: true });
+    
+    window.addEventListener("scroll", () => {
+      if(nextPopover.classList.contains("open")) placeNextPopover();
+    }, { passive: true });
+    
+    // popover 내부 클릭은 닫힘 방지
+    nextPopover.addEventListener("click", (e) => e.stopPropagation());
+
 
 
     
