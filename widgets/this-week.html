@@ -190,11 +190,6 @@
       box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
       color: var(--accent-1);
     }
-    .btn.secondary:disabled{
-      opacity: .55;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
 
     /* + add button */
     #addBtn{
@@ -690,6 +685,7 @@
     .footer-actions::-webkit-scrollbar{ display:none; }
     .footer-actions > .btn{ flex: 0 0 auto; }
 
+    /* Keep History / Archive + Copy + Clear done */
     #historyBtn, #copyBtn, #clearDoneBtn{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
@@ -801,6 +797,59 @@
       min-height: 0;
     }
 
+    /* week row with checkbox + pin */
+    .weekRow{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .wkChk{
+      width: 16px;
+      height: 16px;
+      border-radius: 6px;
+      border: 1.4px solid rgba(140,190,232,0.55);
+      background: rgba(255,255,255,0.60);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      flex: 0 0 auto;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wkChk svg{
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+    }
+    .wkChk.on{
+      background: rgba(165,206,240,0.20);
+      border-color: rgba(140,190,232,0.75);
+    }
+    .wkChk.on svg{ opacity: 1; }
+
+    .pinBtn{
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.62);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      flex: 0 0 auto;
+      transition: background .18s ease, border-color .18s ease, transform .08s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pinBtn:hover{
+      border-color: rgba(140,190,232,0.55);
+      background: rgba(255,255,255,0.72);
+    }
+    .pinBtn:active{ transform: scale(0.98); }
+    .pinBtn.on{
+      border-color: rgba(140,190,232,0.70);
+      background: rgba(165,206,240,0.14);
+    }
+
     .weekBtn{
       width: fit-content;
       max-width: 100%;
@@ -819,7 +868,6 @@
       -webkit-tap-highlight-color: transparent;
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      margin: 0;
     }
     .weekBtn:hover{
       border-color: rgba(140,190,232,0.45);
@@ -837,6 +885,13 @@
       border-color: rgba(140,190,232,0.70);
       background: rgba(165,206,240,0.14);
       box-shadow: 0 10px 26px rgba(140,190,232,0.10);
+    }
+    .weekBtn .pinTag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size: 11px;
+      color: rgba(30,30,30,0.55);
     }
 
     .preview{
@@ -927,50 +982,67 @@
 
     @media (max-width: 420px){
       .modalBody{ grid-template-columns: 1fr; }
-      .weeks{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); width: auto; }
+      .weeks{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
     }
 
-    /* ===== Archive manage UI (NEW) ===== */
-    .weekRow{
+    /* ===== Custom mini modal (for Next Week Add) ===== */
+    .miniOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      z-index: 9000;
+    }
+    .miniOverlay.open{ display:flex; }
+
+    .miniModal{
+      width: min(420px, calc(100vw - 20px));
+      border-radius: 18px;
+      border: 1px solid rgba(140,190,232,0.38);
+      background: rgba(255,255,255,0.86);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      overflow: hidden;
+    }
+    .miniHead{
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
       display:flex;
+      justify-content: space-between;
       align-items:center;
-      gap: 8px;
-      margin-bottom: 10px;
+      gap: 10px;
     }
-    .weekPick{
-      width: 16px;
-      height: 16px;
-      accent-color: rgba(140,190,232,0.90);
-      cursor: pointer;
-      flex: 0 0 auto;
+    .miniHead strong{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: 14px;
+      color: rgba(30,30,30,0.86);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
     }
-    .weekTools{
-      display:flex;
-      gap: 6px;
-      align-items:center;
-      flex: 0 0 auto;
-    }
-    .iconBtn{
-      width: 30px;
-      height: 30px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.08);
+    .miniBody{ padding: 12px 14px; display:grid; gap:10px; }
+    .miniInput{
+      border: 1px solid rgba(140,190,232,0.45);
       background: rgba(255,255,255,0.70);
-      cursor: pointer;
-      display:grid;
-      place-items:center;
-      color: rgba(30,30,30,0.70);
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
-      -webkit-tap-highlight-color: transparent;
+      border-radius: 14px;
+      padding: 12px 12px;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
-    .iconBtn:hover{
-      border-color: rgba(140,190,232,0.55);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
-    }
-    .iconBtn:active{ transform: scale(0.98); }
-    .pinOn{
-      border-color: rgba(140,190,232,0.55);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+    .miniFoot{
+      padding: 12px 14px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      display:flex;
+      justify-content:flex-end;
+      gap: 8px;
     }
   </style>
 </head>
@@ -1071,14 +1143,15 @@
 
         <div class="mhRight">
           <input id="searchInput" class="search" type="text" placeholder="검색: 주차(YYYY.MM.DD~) 또는 할 일 키워드…" />
-
-          <!-- Bulk actions (NEW) -->
-          <button class="btn secondary" id="pinToggleSelectedBtn" type="button" disabled>Pin Toggle</button>
-          <button class="btn secondary" id="exportSelectedBtn" type="button" disabled>Export MD</button>
-          <button class="btn secondary" id="deleteSelectedBtn" type="button" disabled>Delete</button>
-          <button class="btn secondary" id="clearSelectedBtn" type="button" disabled>Clear</button>
-
           <button class="btn secondary" id="clearSearchBtn" type="button">검색 초기화</button>
+
+          <!-- ✅ Bulk actions -->
+          <button class="btn secondary" id="bulkPinBtn" type="button" title="선택한 주차 Pin">Pin</button>
+          <button class="btn secondary" id="bulkUnpinBtn" type="button" title="선택한 주차 Unpin">Unpin</button>
+          <button class="btn secondary" id="bulkCopyMdBtn" type="button" title="선택한 주차 Markdown 복사">Copy MD</button>
+          <button class="btn secondary" id="bulkDownloadMdBtn" type="button" title="선택한 주차 Markdown 다운로드">Download</button>
+          <button class="btn secondary" id="bulkDeleteBtn" type="button" title="선택한 주차 삭제">Delete</button>
+
           <button class="btn secondary" id="closeModalBtn" type="button">닫기</button>
         </div>
       </div>
@@ -1091,9 +1164,11 @@
             <div class="picked" id="pickedWeekText">주차를 선택해줘</div>
             <div>
               <button class="btn secondary" id="restoreWeekBtn" type="button" disabled>Restore</button>
-              <button class="btn secondary" id="copyWeekBtn" type="button" disabled>Copy MD</button>
-              <button class="btn secondary" id="downloadWeekMdBtn" type="button" disabled>Download MD</button>
-              <button class="btn secondary" id="downloadWeekJsonBtn" type="button" disabled>JSON</button>
+              <button class="btn secondary" id="copyWeekBtn" type="button" disabled>Copy</button>
+
+              <!-- ✅ Single week export -->
+              <button class="btn secondary" id="copyWeekMdBtn" type="button" disabled>Copy MD</button>
+              <button class="btn secondary" id="downloadWeekMdBtn" type="button" disabled>Download</button>
             </div>
           </div>
 
@@ -1112,23 +1187,42 @@
     </div>
   </div>
 
-  <script>
-    /* ========= workspace id (OPTIONAL) =========
-       - Today 위젯이 workspace_id 기반 키를 쓰면, 여기에서도 동일하게 맞춰야 함.
-       - 기본값: "default"
-       - URL에서 ?wid=xxxx 로 넘길 수 있음.
-    */
-    const workspace_id = (new URLSearchParams(location.search).get("wid") || "default").trim() || "default";
+  <!-- ✅ Custom mini modal for Next Week Add -->
+  <div class="miniOverlay" id="miniOverlay" aria-hidden="true">
+    <div class="miniModal" role="dialog" aria-modal="true" aria-label="Next Week Add">
+      <div class="miniHead">
+        <strong>Next Week Inbox에 넣을 한 줄</strong>
+        <button class="popClose" id="miniCloseBtn" type="button" aria-label="닫기">✕</button>
+      </div>
+      <div class="miniBody">
+        <input id="miniInput" class="miniInput" type="text" maxlength="120" placeholder="한 줄 입력…" />
+      </div>
+      <div class="miniFoot">
+        <button class="btn secondary" id="miniCancelBtn" type="button">취소</button>
+        <button class="btn secondary" id="miniOkBtn" type="button">확인</button>
+      </div>
+    </div>
+  </div>
 
+  <script>
     /* ========= storage keys ========= */
     const WEEK_PREFIX = "soft_schedule_week_";
-    const WEEK_ARCHIVE_KEY = "soft_schedule_week_archive_v1";
+    const WEEK_ARCHIVE_KEY = "soft_schedule_week_archive_v2"; // ✅ v2: meta(pinned) 포함
 
-    // Archive meta (label/pin)
-    const WEEK_ARCHIVE_META_KEY = "soft_schedule_week_archive_meta_v1";
-
-    // Today widget keys (workspace-aware)
-    const TODAY_PREFIX = `soft_schedule_today_${workspace_id}_`; // e.g. soft_schedule_today_default_YYYY.MM.DD
+    // ✅ Today widget keys (workspace-aware)
+    // 너의 Today 코드가: soft_schedule_today_${workspace_id}_ ... 형태라면
+    // 여기서 workspace_id를 같은 방식으로 구해서 prefix를 맞춰야 함.
+    //
+    // 아래는 "workspace_id를 localStorage에서 읽는다" 가정의 기본값.
+    // 네 프로젝트에서 workspace_id를 저장하는 키가 다르면 이 한 줄만 바꾸면 됨.
+    const WORKSPACE_ID_STORAGE_KEY = "soft_schedule_workspace_id_v1"; // <-- 필요시 수정
+    function getWorkspaceIdMaybe(){
+      const v = localStorage.getItem(WORKSPACE_ID_STORAGE_KEY);
+      return (v && String(v).trim()) ? String(v).trim() : "";
+    }
+    const workspace_id = getWorkspaceIdMaybe();
+    const TODAY_PREFIX_SCOPED = workspace_id ? `soft_schedule_today_${workspace_id}_` : "soft_schedule_today_";
+    const TODAY_PREFIX_FALLBACK = "soft_schedule_today_"; // 이전 키 호환
 
     /* ========= utils ========= */
     function pad2(n){ return String(n).padStart(2,"0"); }
@@ -1183,8 +1277,8 @@
         }
       }
     }
-    function downloadText(filename, text, mime="text/plain;charset=utf-8"){
-      const blob = new Blob([text], { type: mime });
+    function downloadText(filename, text){
+      const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -1203,18 +1297,22 @@
       x.setHours(0,0,0,0);
       return x;
     }
+
     function addDays(d, n){
       const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
       x.setDate(x.getDate() + n);
       x.setHours(0,0,0,0);
       return x;
     }
+
     function weekIdFromMonday(monday){
       const start = dateToYmd(monday);
       const end = dateToYmd(addDays(monday, 6));
       return `${start} ~ ${end}`;
     }
+
     function parseWeekRangeId(weekId){
+      // "YYYY.MM.DD ~ YYYY.MM.DD"
       const parts = String(weekId || "").split("~");
       if(parts.length < 2) return null;
       const startStr = parts[0].trim();
@@ -1226,6 +1324,7 @@
       end.setHours(0,0,0,0);
       return { startStr, endStr, start, end };
     }
+
     function highlight(text, query){
       const t = String(text);
       const q = String(query || "").trim();
@@ -1238,29 +1337,41 @@
       return `${before}<span class="mark">${mid}</span>${after}`;
     }
 
-    /* ========= archive helpers ========= */
-    function loadWeekArchive(){
+    /* ========= archive helpers (v2) =========
+       저장 형태:
+       {
+         "weeks": {
+           "YYYY.MM.DD ~ YYYY.MM.DD": { state: {days..., nextInbox...}, meta: { pinned: true } }
+         }
+       }
+       v1(구버전): { "weekId": state, ... } 도 자동 마이그레이션
+    */
+    function loadWeekArchiveV2(){
       try{
         const raw = localStorage.getItem(WEEK_ARCHIVE_KEY);
-        if(!raw) return {};
+        if(!raw) return { weeks: {} };
         const parsed = JSON.parse(raw);
-        return (parsed && typeof parsed === "object") ? parsed : {};
-      }catch(e){ return {}; }
+        if(parsed && parsed.weeks && typeof parsed.weeks === "object"){
+          return { weeks: parsed.weeks };
+        }
+        // v1 -> v2 migrate
+        if(parsed && typeof parsed === "object"){
+          const weeks = {};
+          for(const [id, val] of Object.entries(parsed)){
+            if(!val || typeof val !== "object") continue;
+            weeks[id] = { state: normalizeWeekState(val), meta: { pinned: false } };
+          }
+          const out = { weeks };
+          saveWeekArchiveV2(out);
+          return out;
+        }
+        return { weeks: {} };
+      }catch(e){
+        return { weeks: {} };
+      }
     }
-    function saveWeekArchive(archive){
-      localStorage.setItem(WEEK_ARCHIVE_KEY, JSON.stringify(archive || {}));
-    }
-
-    function loadWeekArchiveMeta(){
-      try{
-        const raw = localStorage.getItem(WEEK_ARCHIVE_META_KEY);
-        if(!raw) return {};
-        const parsed = JSON.parse(raw);
-        return (parsed && typeof parsed === "object") ? parsed : {};
-      }catch(e){ return {}; }
-    }
-    function saveWeekArchiveMeta(meta){
-      localStorage.setItem(WEEK_ARCHIVE_META_KEY, JSON.stringify(meta || {}));
+    function saveWeekArchiveV2(archive){
+      localStorage.setItem(WEEK_ARCHIVE_KEY, JSON.stringify(archive));
     }
 
     // state per week:
@@ -1270,6 +1381,7 @@
       for(let i=0;i<7;i++) days[String(i)] = [];
       return { days, nextInbox: [] };
     }
+
     function normalizeWeekState(parsed){
       const base = emptyWeekState();
       if(!parsed || typeof parsed !== "object") return base;
@@ -1283,6 +1395,7 @@
       base.nextInbox = Array.isArray(parsed.nextInbox) ? parsed.nextInbox : [];
       return base;
     }
+
     function loadWeek(key){
       try{
         const raw = localStorage.getItem(key);
@@ -1291,13 +1404,14 @@
         return normalizeWeekState(parsed);
       }catch(e){ return emptyWeekState(); }
     }
+
     function saveWeek(key, data){
       localStorage.setItem(key, JSON.stringify(normalizeWeekState(data)));
     }
 
-    // ✅ FIX: 주 이동 시 “사라짐” 방지 (archive는 스냅샷 복사만)
+    // ✅ FIX: 주 이동 시 “사라짐” 방지 (삭제 금지)
     function autoArchivePastWeeks(){
-      const archive = loadWeekArchive();
+      const archive = loadWeekArchiveV2();
       const thisWeekMon = mondayOfWeek(new Date());
 
       let changed = false;
@@ -1312,13 +1426,17 @@
         const rng = parseWeekRangeId(weekId);
         if(!rng) continue;
 
+        // past week only: end < thisWeekMon
         if(rng.end.getTime() < thisWeekMon.getTime()){
-          if(!archive[weekId]){
+          if(!archive.weeks[weekId]){
             try{
               const raw = localStorage.getItem(k);
               const data = raw ? JSON.parse(raw) : null;
               if(data && typeof data === "object"){
-                archive[weekId] = normalizeWeekState(data);
+                archive.weeks[weekId] = {
+                  state: normalizeWeekState(data),
+                  meta: { pinned: false }
+                };
                 changed = true;
               }
             }catch(e){}
@@ -1326,7 +1444,7 @@
         }
       }
 
-      if(changed) saveWeekArchive(archive);
+      if(changed) saveWeekArchiveV2(archive);
       return archive;
     }
 
@@ -1363,7 +1481,6 @@
     const nextPopList = document.getElementById("nextPopList");
     const nextCopyBtn = document.getElementById("nextCopyBtn");
     const nextClearDoneBtn = document.getElementById("nextClearDoneBtn");
-
     const cardEl = document.querySelector(".card");
 
     // modal
@@ -1374,17 +1491,27 @@
     const previewBox = document.getElementById("previewBox");
     const restoreWeekBtn = document.getElementById("restoreWeekBtn");
     const copyWeekBtn = document.getElementById("copyWeekBtn");
-    const downloadWeekMdBtn = document.getElementById("downloadWeekMdBtn");
-    const downloadWeekJsonBtn = document.getElementById("downloadWeekJsonBtn");
     const archiveCount = document.getElementById("archiveCount");
     const searchInput = document.getElementById("searchInput");
     const clearSearchBtn = document.getElementById("clearSearchBtn");
 
-    // bulk buttons (NEW)
-    const pinToggleSelectedBtn = document.getElementById("pinToggleSelectedBtn");
-    const exportSelectedBtn = document.getElementById("exportSelectedBtn");
-    const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
-    const clearSelectedBtn  = document.getElementById("clearSelectedBtn");
+    // bulk buttons
+    const bulkPinBtn = document.getElementById("bulkPinBtn");
+    const bulkUnpinBtn = document.getElementById("bulkUnpinBtn");
+    const bulkCopyMdBtn = document.getElementById("bulkCopyMdBtn");
+    const bulkDownloadMdBtn = document.getElementById("bulkDownloadMdBtn");
+    const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+
+    // single week export buttons
+    const copyWeekMdBtn = document.getElementById("copyWeekMdBtn");
+    const downloadWeekMdBtn = document.getElementById("downloadWeekMdBtn");
+
+    // mini modal
+    const miniOverlay = document.getElementById("miniOverlay");
+    const miniCloseBtn = document.getElementById("miniCloseBtn");
+    const miniCancelBtn = document.getElementById("miniCancelBtn");
+    const miniOkBtn = document.getElementById("miniOkBtn");
+    const miniInput = document.getElementById("miniInput");
 
     /* ========= add icon for + ========= */
     addBtn.innerHTML = `
@@ -1400,6 +1527,7 @@
     const WK = ["M","T","W","T","F","S","S"];
     const DOW_LABEL = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
+    // current viewing monday (can navigate)
     let viewMonday = mondayOfWeek(new Date());
     let selectedDayIndex = (() => {
       const today = new Date();
@@ -1408,12 +1536,14 @@
       return Math.min(6, Math.max(0, diff));
     })();
 
-    const expanded = new Map(); // dayIndex -> bool
+    // section expanded states (UI only)
+    const expanded = new Map(); // key: dayIndex -> bool
+
     function getWeekId(){ return weekIdFromMonday(viewMonday); }
     function getWeekKey(){ return WEEK_PREFIX + getWeekId(); }
 
     // init
-    let weekArchive = autoArchivePastWeeks();
+    let weekArchive = autoArchivePastWeeks(); // { weeks: ... }
     let weekState = loadWeek(getWeekKey());
 
     function persistCurrentWeek(){
@@ -1440,11 +1570,13 @@
         weekdayPills.appendChild(b);
       }
     }
+
     function setSelectedDay(i){
       selectedDayIndex = i;
       buildWeekdayPills();
       renderWeekList();
     }
+
     weekdayPills.addEventListener("click", (e) => {
       const btn = e.target.closest(".dayPill");
       if(!btn) return;
@@ -1457,16 +1589,19 @@
       const d = addDays(viewMonday, i);
       return dateToYmd(d);
     }
+
     function totalAndDoneForDay(i){
       const arr = weekState.days[String(i)] || [];
       const total = arr.length;
       const done = arr.filter(x => x.done).length;
       return { total, done };
     }
+
     function renderNextInboxRow(){
       const arr = weekState.nextInbox || [];
       nextInboxCount.textContent = String(arr.length);
     }
+
     function renderNextPopover(){
       const arr = weekState.nextInbox || [];
       nextPopList.innerHTML = "";
@@ -1493,7 +1628,7 @@
     }
 
     function renderWeekList(){
-      rangeText.textContent = getWeekId().replace(" ~ ", " ~ ");
+      rangeText.textContent = getWeekId();
 
       weekList.innerHTML = "";
 
@@ -1594,6 +1729,7 @@
       persistCurrentWeek();
       renderWeekList();
     }
+
     function toggleItem(dayIndex, id){
       const dayKey = String(dayIndex);
       const arr = weekState.days[dayKey] || [];
@@ -1601,6 +1737,7 @@
       persistCurrentWeek();
       renderWeekList();
     }
+
     function deleteItem(dayIndex, id){
       const dayKey = String(dayIndex);
       const arr = weekState.days[dayKey] || [];
@@ -1608,6 +1745,7 @@
       persistCurrentWeek();
       renderWeekList();
     }
+
     function clearDone(){
       for(let i=0;i<7;i++){
         const k = String(i);
@@ -1634,6 +1772,7 @@
       if(nextPopover.classList.contains("open")) renderNextPopover();
       showToast("Next Week Inbox에 추가했어.");
     }
+
     function toggleNextInbox(id){
       const arr = weekState.nextInbox || [];
       weekState.nextInbox = arr.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
@@ -1641,6 +1780,7 @@
       renderNextInboxRow();
       renderNextPopover();
     }
+
     function deleteNextInbox(id){
       const arr = weekState.nextInbox || [];
       weekState.nextInbox = arr.filter(it => it.id !== id);
@@ -1648,6 +1788,7 @@
       renderNextInboxRow();
       renderNextPopover();
     }
+
     function clearNextDone(){
       const arr = weekState.nextInbox || [];
       weekState.nextInbox = arr.filter(it => !it.done);
@@ -1656,13 +1797,14 @@
       renderNextPopover();
       showToast("Next Week 완료를 지웠어.");
     }
+
     async function copyNextInbox(){
       const arr = weekState.nextInbox || [];
       const lines = [];
-      lines.push(`## Next Week Inbox`);
-      lines.push(`(from ${getWeekId()})`);
+      lines.push(`# Next Week Inbox`);
+      lines.push(`> from ${getWeekId()}`);
       lines.push("");
-      if(arr.length === 0) lines.push(`- [ ] (empty)`);
+      if(arr.length === 0) lines.push(`- (empty)`);
       else for(const it of arr) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
       const ok = await copyToClipboard(lines.join("\n"));
       showToast(ok ? "Next Week Inbox를 복사했어." : "복사 실패 (권한 확인)");
@@ -1691,6 +1833,7 @@
         deleteItem(day, del.dataset.del);
       }
     });
+
     weekList.addEventListener("keydown", (e) => {
       const check = e.target.closest(".check");
       if(!check) return;
@@ -1710,6 +1853,7 @@
       syncAddButtonState();
       showToast(`${DOW_LABEL[selectedDayIndex]}에 추가했어.`);
     });
+
     taskInput.addEventListener("keydown", (e) => {
       if(e.key === "Enter"){
         e.preventDefault();
@@ -1731,13 +1875,33 @@
       showToast("Today 기준으로 이동했어.");
     });
 
+    function readTodayList(){
+      // ✅ scoped key 우선, 없으면 fallback 키도 확인
+      const key1 = TODAY_PREFIX_SCOPED + ymd(new Date());
+      const key2 = TODAY_PREFIX_FALLBACK + ymd(new Date());
+
+      let data = null;
+      for(const k of [key1, key2]){
+        try{
+          const raw = localStorage.getItem(k);
+          if(!raw) continue;
+          const parsed = JSON.parse(raw);
+          if(Array.isArray(parsed)){
+            data = parsed;
+            break;
+          }
+        }catch(e){}
+      }
+      return Array.isArray(data) ? data : [];
+    }
+
+    function writeTodayList(list){
+      const key = TODAY_PREFIX_SCOPED + ymd(new Date());
+      localStorage.setItem(key, JSON.stringify(Array.isArray(list) ? list : []));
+    }
+
     pullBtn.addEventListener("click", () => {
-      const todayKey = TODAY_PREFIX + ymd(new Date());
-      let src = [];
-      try{
-        const raw = localStorage.getItem(todayKey);
-        if(raw) src = JSON.parse(raw) || [];
-      }catch(e){ src = []; }
+      const src = readTodayList();
 
       if(!Array.isArray(src) || src.length === 0){
         showToast("Today 기록이 없어.");
@@ -1779,13 +1943,7 @@
     });
 
     pushBtn.addEventListener("click", () => {
-      const todayKey = TODAY_PREFIX + ymd(new Date());
-      let dest = [];
-      try{
-        const raw = localStorage.getItem(todayKey);
-        if(raw) dest = JSON.parse(raw) || [];
-      }catch(e){ dest = []; }
-
+      let dest = readTodayList();
       if(!Array.isArray(dest)) dest = [];
 
       const dayArr = weekState.days[String(selectedDayIndex)] || [];
@@ -1816,7 +1974,7 @@
         return;
       }
 
-      localStorage.setItem(todayKey, JSON.stringify(dest));
+      writeTodayList(dest);
       showToast(`Today로 ${added}개 보냈어.`);
     });
 
@@ -1824,6 +1982,7 @@
     function placeNextPopover(anchorEl){
       if(!anchorEl || !cardEl) return;
 
+      // popRect는 open 상태에서 더 정확 -> open 이후 재배치함
       const popRect = nextPopover.getBoundingClientRect();
       const btnRect = anchorEl.getBoundingClientRect();
       const cardRect = cardEl.getBoundingClientRect();
@@ -1845,6 +2004,7 @@
       nextPopover.style.left = `${left}px`;
       nextPopover.style.top  = `${top}px`;
     }
+
     function openNextPopover(anchorEl){
       renderNextPopover();
       nextPopover.classList.add("open");
@@ -1855,21 +2015,49 @@
         requestAnimationFrame(() => placeNextPopover(anchorEl || nextShowBtn));
       });
     }
+
     function closeNextPopover(){
       nextPopover.classList.remove("open");
       nextPopover.setAttribute("aria-hidden", "true");
     }
 
-    nextAddBtn.addEventListener("click", () => {
-      const text = prompt("Next Week Inbox에 넣을 한 줄:", "");
-      if(text === null) return;
+    // ✅ custom mini modal for add (replaces prompt)
+    function openMiniAdd(){
+      miniOverlay.classList.add("open");
+      miniOverlay.setAttribute("aria-hidden","false");
+      miniInput.value = "";
+      setTimeout(()=> miniInput.focus(), 0);
+    }
+    function closeMiniAdd(){
+      miniOverlay.classList.remove("open");
+      miniOverlay.setAttribute("aria-hidden","true");
+    }
+    function confirmMiniAdd(){
+      const text = (miniInput.value || "").trim();
+      if(!text){
+        closeMiniAdd();
+        return;
+      }
       addNextInbox(text);
+      closeMiniAdd();
+    }
+
+    nextAddBtn.addEventListener("click", () => openMiniAdd());
+    miniCloseBtn.addEventListener("click", closeMiniAdd);
+    miniCancelBtn.addEventListener("click", closeMiniAdd);
+    miniOkBtn.addEventListener("click", confirmMiniAdd);
+    miniOverlay.addEventListener("click", (e)=>{ if(e.target === miniOverlay) closeMiniAdd(); });
+    miniInput.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter"){ e.preventDefault(); confirmMiniAdd(); }
+      if(e.key === "Escape"){ closeMiniAdd(); }
     });
+
     nextShowBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       if(nextPopover.classList.contains("open")) closeNextPopover();
       else openNextPopover(nextShowBtn);
     });
+
     nextPopCloseBtn.addEventListener("click", closeNextPopover);
 
     nextPopList.addEventListener("click", (e) => {
@@ -1884,6 +2072,7 @@
         return;
       }
     });
+
     nextPopList.addEventListener("keydown", (e) => {
       const check = e.target.closest("[data-nx-id]");
       if(!check) return;
@@ -1896,7 +2085,16 @@
     nextCopyBtn.addEventListener("click", copyNextInbox);
     nextClearDoneBtn.addEventListener("click", clearNextDone);
 
-    document.addEventListener("click", () => closeNextPopover());
+    // ✅ popover: 내부 클릭은 닫히지 않게
+    nextPopover.addEventListener("click", (e)=> e.stopPropagation());
+
+    // ✅ popover close on outside click / esc / resize / scroll
+    document.addEventListener("click", (e) => {
+      if(!nextPopover.classList.contains("open")) return;
+      const inside = nextPopover.contains(e.target);
+      const onBtn = nextShowBtn.contains(e.target);
+      if(!inside && !onBtn) closeNextPopover();
+    });
     document.addEventListener("keydown", (e) => {
       if(e.key === "Escape") closeNextPopover();
     });
@@ -1907,126 +2105,75 @@
       if(nextPopover.classList.contains("open")) placeNextPopover(nextShowBtn);
     }, { passive: true });
 
-    /* ========= Notion-friendly Markdown export (NEW) ========= */
-    function safeLabelForTitle(label, weekId){
-      const t = String(label || "").trim();
-      return t ? t : weekId;
-    }
-
-    function formatWeekAsNotionMarkdown(weekId, data, meta){
-      const st = normalizeWeekState(data);
-      const label = meta && meta.label ? String(meta.label).trim() : "";
-      const title = safeLabelForTitle(label, weekId);
-
+    /* ========= Copy ========= */
+    function formatWeekForCopy(weekId, data){
       const lines = [];
-      lines.push(`## ${title}`);
-      if(title !== weekId) lines.push(`> ${weekId}`);
-      lines.push("");
-
+      lines.push(`[This Week | ${weekId}]`);
       for(let i=0;i<7;i++){
         const dateStr = (() => {
           const rng = parseWeekRangeId(weekId);
-          if(!rng) return "";
+          if(!rng) return dayDateStr(i);
           return dateToYmd(addDays(rng.start, i));
         })();
-
-        lines.push(`### ${DOW_LABEL[i]} (${dateStr})`);
-        const arr = (st.days && st.days[String(i)]) ? st.days[String(i)] : [];
+        const arr = (data.days && data.days[String(i)]) ? data.days[String(i)] : [];
+        lines.push(`\n${DOW_LABEL[i]} (${dateStr})`);
         if(arr.length === 0){
-          lines.push(`- [ ] (empty)`);
-        }else{
+          lines.push(`- (empty)`);
+          continue;
+        }
+        for(const it of arr){
+          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+        }
+      }
+
+      const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
+      lines.push(`\nNext Week Inbox`);
+      if(nx.length === 0) lines.push(`- (empty)`);
+      else for(const it of nx) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+
+      return lines.join("\n");
+    }
+
+    // ✅ Notion-friendly Markdown (heading + checklist)
+    function formatWeekAsMarkdown(weekId, data){
+      const rng = parseWeekRangeId(weekId);
+      const title = rng ? `# This Week (${rng.startStr} ~ ${rng.endStr})` : `# This Week (${weekId})`;
+      const lines = [title, ""];
+
+      for(let i=0;i<7;i++){
+        const dateStr = (() => {
+          if(rng) return dateToYmd(addDays(rng.start, i));
+          return dayDateStr(i);
+        })();
+        lines.push(`## ${DOW_LABEL[i]} (${dateStr})`);
+        const arr = (data.days && data.days[String(i)]) ? data.days[String(i)] : [];
+        if(arr.length === 0){
+          lines.push(`- (empty)`);
+        } else {
           for(const it of arr){
-            const box = it.done ? "x" : " ";
-            lines.push(`- [${box}] ${it.text}`);
+            lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
           }
         }
         lines.push("");
       }
 
-      lines.push(`### Next Week Inbox`);
-      const nx = Array.isArray(st.nextInbox) ? st.nextInbox : [];
+      lines.push(`## Next Week Inbox`);
+      const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
       if(nx.length === 0){
-        lines.push(`- [ ] (empty)`);
+        lines.push(`- (empty)`);
       }else{
         for(const it of nx){
-          const box = it.done ? "x" : " ";
-          lines.push(`- [${box}] ${it.text}`);
+          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
         }
       }
 
-      return lines.join("\n").trim() + "\n";
+      return lines.join("\n");
     }
 
-    function formatWeekAsJsonPayload(weekId, data, meta){
-      return {
-        weekId,
-        label: meta && meta.label ? meta.label : "",
-        pinned: meta && meta.pinned === true,
-        exportedAt: new Date().toISOString(),
-        data: normalizeWeekState(data)
-      };
-    }
-
-    function exportWeekMdDownload(weekId, data, meta){
-      const md = formatWeekAsNotionMarkdown(weekId, data, meta);
-      const fnameBase = weekId.replaceAll(".", "-").replaceAll("~", "-").replaceAll(" ", "");
-      downloadText(`week-${fnameBase}.md`, md, "text/markdown;charset=utf-8");
-      showToast("MD로 내보냈어.");
-    }
-
-    function exportWeekJsonDownload(weekId, data, meta){
-      const payload = formatWeekAsJsonPayload(weekId, data, meta);
-      const fnameBase = weekId.replaceAll(".", "-").replaceAll("~", "-").replaceAll(" ", "");
-      downloadText(`week-${fnameBase}.json`, JSON.stringify(payload, null, 2), "application/json;charset=utf-8");
-      showToast("JSON으로 내보냈어.");
-    }
-
-    async function copyWeekAsMarkdown(weekId, data, meta){
-      const md = formatWeekAsNotionMarkdown(weekId, data, meta);
-      const ok = await copyToClipboard(md);
-      showToast(ok ? "MD를 복사했어." : "복사 실패 (권한 확인)");
-    }
-
-    function exportSelectedWeeksAsMarkdown(){
-      const ids = Array.from(selectedWeeks);
-      if(ids.length === 0){
-        showToast("선택된 주차가 없어.");
-        return;
-      }
-
-      // pinned 순 + 날짜 순으로 export되게 (보기 좋게)
-      ids.sort((a,b) => {
-        const ap = archiveMeta && archiveMeta[a] && archiveMeta[a].pinned === true;
-        const bp = archiveMeta && archiveMeta[b] && archiveMeta[b].pinned === true;
-        if(ap !== bp) return ap ? -1 : 1;
-
-        const as = a.split("~")[0].trim();
-        const bs = b.split("~")[0].trim();
-        const ad = ymdToDate(as);
-        const bd = ymdToDate(bs);
-        return (bd?bd.getTime():0) - (ad?ad.getTime():0);
-      });
-
-      const chunks = [];
-      for(const id of ids){
-        const data = weekArchive[id];
-        if(!data) continue;
-        const meta = archiveMeta ? archiveMeta[id] : null;
-        chunks.push(formatWeekAsNotionMarkdown(id, data, meta));
-        chunks.push("\n---\n");
-      }
-      const mdAll = chunks.join("\n").trim() + "\n";
-      downloadText(`week-archive-selected.md`, mdAll, "text/markdown;charset=utf-8");
-      showToast(`${ids.length}개를 MD로 내보냈어.`);
-    }
-
-    /* ========= Copy (main widget) =========
-       - 기존 텍스트 복사 → Notion-friendly MD로 교체
-    */
     copyBtn.addEventListener("click", async () => {
-      const md = formatWeekAsNotionMarkdown(getWeekId(), weekState, null);
-      const ok = await copyToClipboard(md);
-      showToast(ok ? "주간 MD를 복사했어." : "복사 실패 (권한 확인)");
+      const text = formatWeekForCopy(getWeekId(), weekState);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "주간 전체를 복사했어." : "복사 실패 (권한 확인)");
     });
 
     clearDoneBtn.addEventListener("click", clearDone);
@@ -2046,6 +2193,7 @@
       loadCurrentViewWeek();
       showToast("이전 주로 이동했어.");
     });
+
     nextWeekBtn.addEventListener("click", () => {
       persistCurrentWeek();
       viewMonday = addDays(viewMonday, 7);
@@ -2053,31 +2201,15 @@
       showToast("다음 주로 이동했어.");
     });
 
-    /* ========= History / Archive modal (MANAGE + BULK) ========= */
+    /* ========= History / Archive modal ========= */
     let pickedWeekId = null;
     let searchQuery = "";
-
-    let weekArchiveMeta = {};     // weekId -> { label, pinned }
-    let selectedWeeks = new Set(); // bulk selection
-
-    function syncBulkButtons(){
-      const n = selectedWeeks.size;
-      pinToggleSelectedBtn.disabled = (n === 0);
-      exportSelectedBtn.disabled = (n === 0);
-      deleteSelectedBtn.disabled = (n === 0);
-      clearSelectedBtn.disabled  = (n === 0);
-    }
+    const selectedWeeks = new Set(); // ✅ for bulk actions
 
     function openModal(){
-      weekArchive = loadWeekArchive();
-      weekArchiveMeta = loadWeekArchiveMeta();
-
-      selectedWeeks = new Set();
-      syncBulkButtons();
-
+      weekArchive = loadWeekArchiveV2();
       searchQuery = (searchInput.value || "").trim();
       buildWeeks();
-
       modalOverlay.classList.add("open");
       modalOverlay.setAttribute("aria-hidden", "false");
 
@@ -2085,8 +2217,8 @@
       pickedWeekText.textContent = "주차를 선택해줘";
       restoreWeekBtn.disabled = true;
       copyWeekBtn.disabled = true;
+      copyWeekMdBtn.disabled = true;
       downloadWeekMdBtn.disabled = true;
-      downloadWeekJsonBtn.disabled = true;
 
       previewBox.innerHTML = `
         <div style="color: rgba(30,30,30,0.55); font-size:12px;">
@@ -2100,16 +2232,12 @@
       modalOverlay.setAttribute("aria-hidden", "true");
     }
 
-    function weekMatchesQuery(weekId, data, q){
+    function weekMatchesQuery(weekId, entry, q){
       if(!q) return true;
       const lowerQ = q.toLowerCase();
-
       if(String(weekId).toLowerCase().includes(lowerQ)) return true;
 
-      // label 검색 포함
-      const meta = weekArchiveMeta && weekArchiveMeta[weekId];
-      if(meta && meta.label && String(meta.label).toLowerCase().includes(lowerQ)) return true;
-
+      const data = entry && entry.state ? entry.state : normalizeWeekState(entry);
       const days = (data && data.days) ? data.days : {};
       for(let i=0;i<7;i++){
         const arr = days[String(i)] || [];
@@ -2137,15 +2265,32 @@
       return { total, done };
     }
 
+    function isPinned(id){
+      const entry = weekArchive.weeks[id];
+      return !!(entry && entry.meta && entry.meta.pinned);
+    }
+
+    function setPinned(id, pinned){
+      const entry = weekArchive.weeks[id];
+      if(!entry) return;
+      entry.meta = entry.meta || {};
+      entry.meta.pinned = !!pinned;
+    }
+
+    function toggleSelectWeek(id){
+      if(selectedWeeks.has(id)) selectedWeeks.delete(id);
+      else selectedWeeks.add(id);
+    }
+
     function buildWeeks(){
       const q = (searchQuery || "").trim();
-      const ids = Object.keys(weekArchive || {});
+      const ids = Object.keys((weekArchive && weekArchive.weeks) ? weekArchive.weeks : {});
 
-      // pinned 우선 + 최신 순
+      // sort: pinned first, then by start date desc
       ids.sort((a,b) => {
-        const ap = weekArchiveMeta && weekArchiveMeta[a] && weekArchiveMeta[a].pinned === true;
-        const bp = weekArchiveMeta && weekArchiveMeta[b] && weekArchiveMeta[b].pinned === true;
-        if(ap !== bp) return ap ? -1 : 1;
+        const ap = isPinned(a) ? 1 : 0;
+        const bp = isPinned(b) ? 1 : 0;
+        if(ap !== bp) return bp - ap;
 
         const as = a.split("~")[0].trim();
         const bs = b.split("~")[0].trim();
@@ -2156,7 +2301,7 @@
         return bt - at;
       });
 
-      const filtered = ids.filter(id => weekMatchesQuery(id, weekArchive[id], q));
+      const filtered = ids.filter(id => weekMatchesQuery(id, weekArchive.weeks[id], q));
 
       weeksPanel.innerHTML = "";
       if(filtered.length === 0){
@@ -2167,128 +2312,49 @@
         `;
       }else{
         for(const id of filtered){
-          const data = weekArchive[id];
+          const entry = weekArchive.weeks[id];
+          const data = entry.state;
           const { total, done } = getCountsForWeek(data);
-
-          const meta = (weekArchiveMeta && weekArchiveMeta[id]) ? weekArchiveMeta[id] : { label: "", pinned: false };
-          const label = (meta.label || "").trim();
-          const pinned = meta.pinned === true;
+          const pinned = !!(entry.meta && entry.meta.pinned);
+          const checked = selectedWeeks.has(id);
 
           const row = document.createElement("div");
           row.className = "weekRow";
+          row.dataset.weekRow = id;
 
-          const cb = document.createElement("input");
-          cb.type = "checkbox";
-          cb.className = "weekPick";
-          cb.checked = selectedWeeks.has(id);
-          cb.addEventListener("click", (ev) => ev.stopPropagation());
-          cb.addEventListener("change", () => {
-            if(cb.checked) selectedWeeks.add(id);
-            else selectedWeeks.delete(id);
-            syncBulkButtons();
-          });
+          const chk = document.createElement("div");
+          chk.className = "wkChk" + (checked ? " on" : "");
+          chk.title = "선택";
+          chk.dataset.chk = id;
+          chk.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.78)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          `;
+
+          const pin = document.createElement("button");
+          pin.type = "button";
+          pin.className = "pinBtn" + (pinned ? " on" : "");
+          pin.dataset.pin = id;
+          pin.title = pinned ? "Unpin" : "Pin";
+          pin.innerHTML = `
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
+              <path d="M14 3l7 7-3 3v5l-2 2-4-4-6 6-1-1 6-6-4-4 2-2h5l3-3z"
+                stroke="rgba(30,30,30,0.72)" stroke-width="1.4" stroke-linejoin="round"/>
+            </svg>
+          `;
 
           const btn = document.createElement("button");
           btn.className = "weekBtn";
           btn.type = "button";
           btn.dataset.week = id;
 
-          const titleLine = label ? `${escapeHtml(label)}` : `${escapeHtml(id)}`;
-          const subLine = label ? `<small>${escapeHtml(id)} · ${done}/${total}</small>` : `<small>${done}/${total}</small>`;
-          btn.innerHTML = `${titleLine}${subLine}`;
+          const pinTag = pinned ? `<span class="pinTag">• pinned</span>` : ``;
+          btn.innerHTML = `${escapeHtml(id)} ${pinTag}<small>${done}/${total}</small>`;
 
-          const tools = document.createElement("div");
-          tools.className = "weekTools";
-
-          // pin
-          const pinBtn = document.createElement("button");
-          pinBtn.type = "button";
-          pinBtn.className = "iconBtn" + (pinned ? " pinOn" : "");
-          pinBtn.title = pinned ? "Unpin" : "Pin";
-          pinBtn.textContent = "📌";
-          pinBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            const m = weekArchiveMeta[id] || (weekArchiveMeta[id] = { label: "", pinned: false });
-            m.pinned = !m.pinned;
-            saveWeekArchiveMeta(weekArchiveMeta);
-            buildWeeks();
-          });
-
-          // rename label
-          const renBtn = document.createElement("button");
-          renBtn.type = "button";
-          renBtn.className = "iconBtn";
-          renBtn.title = "Rename label";
-          renBtn.textContent = "✎";
-          renBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            const cur = (weekArchiveMeta[id] && weekArchiveMeta[id].label) ? weekArchiveMeta[id].label : "";
-            const next = prompt("라벨(비우면 제거):", cur);
-            if(next === null) return;
-            const m = weekArchiveMeta[id] || (weekArchiveMeta[id] = { label: "", pinned: false });
-            m.label = String(next || "").trim();
-            saveWeekArchiveMeta(weekArchiveMeta);
-            buildWeeks();
-            showToast("라벨을 저장했어.");
-          });
-
-          // Export MD (download)
-          const mdBtn = document.createElement("button");
-          mdBtn.type = "button";
-          mdBtn.className = "iconBtn";
-          mdBtn.title = "Download MD";
-          mdBtn.textContent = "⬇";
-          mdBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            exportWeekMdDownload(id, weekArchive[id], weekArchiveMeta[id]);
-          });
-
-          // delete
-          const delBtn = document.createElement("button");
-          delBtn.type = "button";
-          delBtn.className = "iconBtn";
-          delBtn.title = "Delete week";
-          delBtn.textContent = "🗑";
-          delBtn.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            const ok = confirm(`아카이브에서 삭제할까?\n\n${id}`);
-            if(!ok) return;
-
-            delete weekArchive[id];
-            if(weekArchiveMeta && weekArchiveMeta[id]) delete weekArchiveMeta[id];
-            saveWeekArchive(weekArchive);
-            saveWeekArchiveMeta(weekArchiveMeta);
-
-            selectedWeeks.delete(id);
-
-            if(pickedWeekId === id){
-              pickedWeekId = null;
-              pickedWeekText.textContent = "주차를 선택해줘";
-              restoreWeekBtn.disabled = true;
-              copyWeekBtn.disabled = true;
-              downloadWeekMdBtn.disabled = true;
-              downloadWeekJsonBtn.disabled = true;
-              previewBox.innerHTML = `
-                <div style="color: rgba(30,30,30,0.55); font-size:12px;">
-                  왼쪽에서 주차를 선택하면, 그 주의 기록을 보여줘.
-                </div>
-              `;
-            }
-
-            buildWeeks();
-            syncBulkButtons();
-            showToast("삭제했어.");
-          });
-
-          tools.appendChild(pinBtn);
-          tools.appendChild(renBtn);
-          tools.appendChild(mdBtn);
-          tools.appendChild(delBtn);
-
-          row.appendChild(cb);
+          row.appendChild(chk);
+          row.appendChild(pin);
           row.appendChild(btn);
-          row.appendChild(tools);
-
           weeksPanel.appendChild(row);
         }
       }
@@ -2300,8 +2366,8 @@
         pickedWeekText.textContent = "주차를 선택해줘";
         restoreWeekBtn.disabled = true;
         copyWeekBtn.disabled = true;
+        copyWeekMdBtn.disabled = true;
         downloadWeekMdBtn.disabled = true;
-        downloadWeekJsonBtn.disabled = true;
         previewBox.innerHTML = `
           <div style="color: rgba(30,30,30,0.55); font-size:12px;">
             검색 결과에서 주차를 선택해줘.
@@ -2319,7 +2385,8 @@
     }
 
     function renderWeekPreview(id){
-      const data = weekArchive[id];
+      const entry = weekArchive.weeks[id];
+      const data = entry ? entry.state : null;
       if(!data){
         previewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">표시할 내용이 없어.</div>`;
         return;
@@ -2328,19 +2395,14 @@
       pickedWeekId = id;
       setActiveWeekButton(id);
 
-      const meta = weekArchiveMeta ? weekArchiveMeta[id] : null;
-      const label = meta && meta.label ? String(meta.label).trim() : "";
-      const title = label ? `${label} (${id})` : `선택: ${id}`;
-      pickedWeekText.textContent = title;
-
+      pickedWeekText.textContent = `선택: ${id}`;
       restoreWeekBtn.disabled = false;
       copyWeekBtn.disabled = false;
+      copyWeekMdBtn.disabled = false;
       downloadWeekMdBtn.disabled = false;
-      downloadWeekJsonBtn.disabled = false;
 
       const q = (searchQuery || "").trim();
-      const st = normalizeWeekState(data);
-      const days = st.days || {};
+      const days = data.days || {};
       const rows = [];
 
       for(let i=0;i<7;i++){
@@ -2359,7 +2421,7 @@
           continue;
         }
 
-        const view = q ? arr.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase()) || id.toLowerCase().includes(q.toLowerCase()) || label.toLowerCase().includes(q.toLowerCase())) : arr;
+        const view = q ? arr.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase()) || id.toLowerCase().includes(q.toLowerCase())) : arr;
 
         for(const it of view){
           const badgeCls = it.done ? "badge done" : "badge";
@@ -2376,7 +2438,7 @@
         }
       }
 
-      const nx = Array.isArray(st.nextInbox) ? st.nextInbox : [];
+      const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
       rows.push(`<div style="margin-top:10px; color:rgba(30,30,30,0.72); font-size:12.5px; font-family:EnterSanChaek, ui-sans-serif, system-ui;">Next Week Inbox</div>`);
       if(nx.length === 0){
         rows.push(`<div style="color: rgba(30,30,30,0.45); font-size:12px;">(empty)</div>`);
@@ -2406,7 +2468,26 @@
       if(e.target === modalOverlay) closeModal();
     });
 
+    // ✅ weeks panel click handling (checkbox / pin / open)
     weeksPanel.addEventListener("click", (e) => {
+      const chk = e.target.closest("[data-chk]");
+      if(chk){
+        const id = chk.dataset.chk;
+        toggleSelectWeek(id);
+        buildWeeks();
+        return;
+      }
+
+      const pin = e.target.closest("[data-pin]");
+      if(pin){
+        const id = pin.dataset.pin;
+        setPinned(id, !isPinned(id));
+        saveWeekArchiveV2(weekArchive);
+        buildWeeks();
+        showToast(isPinned(id) ? "Pinned." : "Unpinned.");
+        return;
+      }
+
       const btn = e.target.closest(".weekBtn");
       if(!btn) return;
       renderWeekPreview(btn.dataset.week);
@@ -2414,7 +2495,8 @@
 
     restoreWeekBtn.addEventListener("click", () => {
       if(!pickedWeekId) return;
-      const data = weekArchive[pickedWeekId];
+      const entry = weekArchive.weeks[pickedWeekId];
+      const data = entry ? entry.state : null;
       if(!data) return;
 
       weekState = normalizeWeekState(JSON.parse(JSON.stringify(data)));
@@ -2423,28 +2505,38 @@
       showToast("선택한 주 기록으로 복원했어.");
     });
 
-    // Copy MD (Notion-friendly)
     copyWeekBtn.addEventListener("click", async () => {
       if(!pickedWeekId) return;
-      const data = weekArchive[pickedWeekId];
-      const meta = weekArchiveMeta ? weekArchiveMeta[pickedWeekId] : null;
-      await copyWeekAsMarkdown(pickedWeekId, data, meta);
+      const entry = weekArchive.weeks[pickedWeekId];
+      const data = entry ? entry.state : null;
+      if(!data) return;
+
+      const text = formatWeekForCopy(pickedWeekId, data);
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "선택 주차를 복사했어." : "복사 실패 (권한 확인)");
     });
 
-    // Download MD (selected week)
+    copyWeekMdBtn.addEventListener("click", async () => {
+      if(!pickedWeekId) return;
+      const entry = weekArchive.weeks[pickedWeekId];
+      const data = entry ? entry.state : null;
+      if(!data) return;
+
+      const md = formatWeekAsMarkdown(pickedWeekId, data);
+      const ok = await copyToClipboard(md);
+      showToast(ok ? "Markdown 복사 완료." : "복사 실패 (권한 확인)");
+    });
+
     downloadWeekMdBtn.addEventListener("click", () => {
       if(!pickedWeekId) return;
-      const data = weekArchive[pickedWeekId];
-      const meta = weekArchiveMeta ? weekArchiveMeta[pickedWeekId] : null;
-      exportWeekMdDownload(pickedWeekId, data, meta);
-    });
+      const entry = weekArchive.weeks[pickedWeekId];
+      const data = entry ? entry.state : null;
+      if(!data) return;
 
-    // Download JSON (selected week)
-    downloadWeekJsonBtn.addEventListener("click", () => {
-      if(!pickedWeekId) return;
-      const data = weekArchive[pickedWeekId];
-      const meta = weekArchiveMeta ? weekArchiveMeta[pickedWeekId] : null;
-      exportWeekJsonDownload(pickedWeekId, data, meta);
+      const md = formatWeekAsMarkdown(pickedWeekId, data);
+      const safe = pickedWeekId.replace(/[^\d.\s~]/g,"").replace(/\s+/g," ").trim().replace(/ /g,"_");
+      downloadText(`ThisWeek_${safe}.md`, md);
+      showToast("다운로드를 시작했어.");
     });
 
     searchInput.addEventListener("input", () => {
@@ -2459,70 +2551,87 @@
       showToast("검색을 초기화했어.");
     });
 
-    /* ========= Bulk actions (NEW) ========= */
-    pinToggleSelectedBtn.addEventListener("click", () => {
-      const ids = Array.from(selectedWeeks);
-      if(ids.length === 0) return;
+    /* ========= Bulk actions ========= */
+    function getSelectedIds(){
+      return Array.from(selectedWeeks).filter(id => weekArchive.weeks[id]);
+    }
 
-      // 선택된 것들 중 pin이 하나라도 false면 -> 모두 pin, 아니면 모두 unpin
-      let anyUnpinned = false;
-      for(const id of ids){
-        const m = weekArchiveMeta[id];
-        if(!m || m.pinned !== true){
-          anyUnpinned = true;
-          break;
-        }
-      }
-
-      for(const id of ids){
-        const m = weekArchiveMeta[id] || (weekArchiveMeta[id] = { label: "", pinned: false });
-        m.pinned = anyUnpinned; // true면 pin, false면 unpin
-      }
-
-      saveWeekArchiveMeta(weekArchiveMeta);
+    bulkPinBtn.addEventListener("click", () => {
+      const ids = getSelectedIds();
+      if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
+      for(const id of ids) setPinned(id, true);
+      saveWeekArchiveV2(weekArchive);
       buildWeeks();
-      showToast(anyUnpinned ? "선택 주차를 Pin 했어." : "선택 주차를 Unpin 했어.");
+      showToast(`${ids.length}개 pin.`);
     });
 
-    exportSelectedBtn.addEventListener("click", exportSelectedWeeksAsMarkdown);
+    bulkUnpinBtn.addEventListener("click", () => {
+      const ids = getSelectedIds();
+      if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
+      for(const id of ids) setPinned(id, false);
+      saveWeekArchiveV2(weekArchive);
+      buildWeeks();
+      showToast(`${ids.length}개 unpin.`);
+    });
 
-    deleteSelectedBtn.addEventListener("click", () => {
-      const ids = Array.from(selectedWeeks);
-      if(ids.length === 0) return;
-      const ok = confirm(`선택한 ${ids.length}개 주차를 아카이브에서 삭제할까?`);
+    bulkCopyMdBtn.addEventListener("click", async () => {
+      const ids = getSelectedIds();
+      if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
+
+      // pinned/date sort 그대로 export
+      const mdParts = [];
+      for(const id of ids){
+        const data = weekArchive.weeks[id].state;
+        mdParts.push(formatWeekAsMarkdown(id, data));
+      }
+      const md = mdParts.join("\n\n---\n\n");
+      const ok = await copyToClipboard(md);
+      showToast(ok ? "선택 주차 Markdown 복사 완료." : "복사 실패 (권한 확인)");
+    });
+
+    bulkDownloadMdBtn.addEventListener("click", () => {
+      const ids = getSelectedIds();
+      if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
+
+      const mdParts = [];
+      for(const id of ids){
+        const data = weekArchive.weeks[id].state;
+        mdParts.push(formatWeekAsMarkdown(id, data));
+      }
+      const md = mdParts.join("\n\n---\n\n");
+      downloadText(`ThisWeek_Export_${ymd(new Date())}.md`, md);
+      showToast("다운로드를 시작했어.");
+    });
+
+    bulkDeleteBtn.addEventListener("click", () => {
+      const ids = getSelectedIds();
+      if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
+      const ok = confirm(`선택한 ${ids.length}개 주차를 삭제할까? (되돌리기 불가)`);
       if(!ok) return;
 
       for(const id of ids){
-        delete weekArchive[id];
-        if(weekArchiveMeta && weekArchiveMeta[id]) delete weekArchiveMeta[id];
+        delete weekArchive.weeks[id];
+        selectedWeeks.delete(id);
         if(pickedWeekId === id) pickedWeekId = null;
       }
-      saveWeekArchive(weekArchive);
-      saveWeekArchiveMeta(weekArchiveMeta);
-
-      selectedWeeks = new Set();
-      syncBulkButtons();
+      saveWeekArchiveV2(weekArchive);
       buildWeeks();
 
-      pickedWeekText.textContent = "주차를 선택해줘";
-      restoreWeekBtn.disabled = true;
-      copyWeekBtn.disabled = true;
-      downloadWeekMdBtn.disabled = true;
-      downloadWeekJsonBtn.disabled = true;
-      previewBox.innerHTML = `
-        <div style="color: rgba(30,30,30,0.55); font-size:12px;">
-          왼쪽에서 주차를 선택하면, 그 주의 기록을 보여줘.
-        </div>
-      `;
+      // preview reset if needed
+      if(!pickedWeekId){
+        pickedWeekText.textContent = "주차를 선택해줘";
+        restoreWeekBtn.disabled = true;
+        copyWeekBtn.disabled = true;
+        copyWeekMdBtn.disabled = true;
+        downloadWeekMdBtn.disabled = true;
+        previewBox.innerHTML = `
+          <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+            왼쪽에서 주차를 선택하면, 그 주의 기록을 보여줘.
+          </div>
+        `;
+      }
 
-      showToast("선택 주차를 삭제했어.");
-    });
-
-    clearSelectedBtn.addEventListener("click", () => {
-      selectedWeeks = new Set();
-      syncBulkButtons();
-      buildWeeks();
-      showToast("선택을 해제했어.");
+      showToast("삭제 완료.");
     });
 
     /* ========= Esc closes modal ========= */
