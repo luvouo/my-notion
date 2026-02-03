@@ -556,6 +556,10 @@
       cursor:pointer;
       -webkit-tap-highlight-color: transparent;
       transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      padding: 0;
     }
     .check:hover{
       background: rgba(165,206,240,0.12);
@@ -729,14 +733,15 @@
       overflow: hidden;
     }
 
+    /* ✅ header: title + search same row */
     .modalHeader{
       display:flex;
       align-items:center;
       justify-content: space-between;
       gap: 10px;
-      padding: 14px 14px;
+      padding: 12px 14px;
       border-bottom: 1px solid rgba(0,0,0,0.06);
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       min-width: 0;
       box-sizing: border-box;
     }
@@ -746,6 +751,7 @@
       gap: 10px;
       align-items:center;
       min-width: 0;
+      flex: 1 1 auto;
     }
     .mhLeft strong{
       font-size: 14px;
@@ -755,16 +761,7 @@
       text-overflow: ellipsis;
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-
-    .mhRight{
-      display:flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items:center;
-      justify-content: flex-end;
-      flex: 1 1 360px;
-      min-width: 0;
+      flex: 0 0 auto;
     }
 
     .search{
@@ -780,6 +777,16 @@
       box-sizing: border-box;
     }
     .search::placeholder{ color: rgba(30,30,30,0.45); }
+
+    .mhRight{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+      min-width: 0;
+      flex-wrap: nowrap;
+    }
 
     .modalBody{
       display: grid;
@@ -797,16 +804,18 @@
       min-height: 0;
     }
 
-    /* week row with checkbox + pin */
+    /* ✅ week row: checkbox + content (weekBtn + actions under it) */
     .weekRow{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      margin-bottom: 10px;
+      display:grid;
+      grid-template-columns: 18px 1fr;
+      gap: 10px;
+      align-items:start;
+      margin-bottom: 12px;
     }
+
     .wkChk{
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       border-radius: 6px;
       border: 1.4px solid rgba(140,190,232,0.55);
       background: rgba(255,255,255,0.60);
@@ -821,33 +830,20 @@
       height: 12px;
       opacity: 0;
     }
+    /* ✅ 체크 표시 색: 진한 회색 */
+    .wkChk svg path{
+      stroke: rgba(70,70,70,0.95);
+    }
     .wkChk.on{
       background: rgba(165,206,240,0.20);
       border-color: rgba(140,190,232,0.75);
     }
     .wkChk.on svg{ opacity: 1; }
 
-    .pinBtn{
-      width: 28px;
-      height: 28px;
-      border-radius: 999px;
-      border: 1px solid rgba(140,190,232,0.22);
-      background: rgba(255,255,255,0.62);
-      cursor:pointer;
+    .weekCol{
       display:grid;
-      place-items:center;
-      flex: 0 0 auto;
-      transition: background .18s ease, border-color .18s ease, transform .08s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .pinBtn:hover{
-      border-color: rgba(140,190,232,0.55);
-      background: rgba(255,255,255,0.72);
-    }
-    .pinBtn:active{ transform: scale(0.98); }
-    .pinBtn.on{
-      border-color: rgba(140,190,232,0.70);
-      background: rgba(165,206,240,0.14);
+      gap: 6px;
+      min-width: 0;
     }
 
     .weekBtn{
@@ -868,6 +864,8 @@
       -webkit-tap-highlight-color: transparent;
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .weekBtn:hover{
       border-color: rgba(140,190,232,0.45);
@@ -886,12 +884,55 @@
       background: rgba(165,206,240,0.14);
       box-shadow: 0 10px 26px rgba(140,190,232,0.10);
     }
-    .weekBtn .pinTag{
+
+    .pinTag{
       display:inline-flex;
       align-items:center;
       gap:6px;
       font-size: 11px;
-      color: rgba(30,30,30,0.55);
+      color: rgba(30,30,30,0.50);
+      margin-left: 6px;
+    }
+
+    /* ✅ action icons moved UNDER weekBtn, smaller + lighter */
+    .weekActions{
+      display:flex;
+      gap: 6px;
+      align-items:center;
+      flex-wrap: nowrap;
+    }
+
+    .iconBtn{
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.70);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, transform .08s ease;
+    }
+    .iconBtn:hover{
+      border-color: rgba(140,190,232,0.38);
+      background: rgba(255,255,255,0.78);
+    }
+    .iconBtn:active{ transform: scale(0.98); }
+
+    /* ✅ 아이콘 색: 연한색 (휴지통보다 약간 진한 톤) */
+    .iconBtn svg{
+      width: 10.5px;
+      height: 10.5px;
+      stroke: rgba(110,110,110,0.68);
+    }
+    .iconBtn.danger svg{
+      stroke: rgba(120,120,120,0.72);
+    }
+    .iconBtn.on{
+      border-color: rgba(140,190,232,0.45);
+      background: rgba(165,206,240,0.18);
     }
 
     .preview{
@@ -945,7 +986,13 @@
       font-size: 13px;
       color: rgba(30,30,30,0.86);
       line-height: 1.25;
+      min-width: 0;
     }
+    .pItem .pText{
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
     .badge{
       font-size: 11px;
       padding: 4px 9px;
@@ -967,6 +1014,33 @@
       padding: 0 3px;
     }
 
+    /* ✅ preview item delete button (trash icon) */
+    .pDel{
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.70);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      padding: 0;
+      flex: 0 0 auto;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, transform .08s ease;
+    }
+    .pDel:hover{
+      border-color: rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.82);
+    }
+    .pDel:active{ transform: scale(0.98); }
+    /* ✅ 연한 그레이 휴지통 */
+    .pDel svg{
+      width: 12px;
+      height: 12px;
+      stroke: rgba(150,150,150,0.92);
+    }
+
     .modalFooter{
       padding: 12px 14px;
       border-top: 1px solid rgba(0,0,0,0.06);
@@ -983,6 +1057,8 @@
     @media (max-width: 420px){
       .modalBody{ grid-template-columns: 1fr; }
       .weeks{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
+      .modalHeader{ flex-wrap: wrap; }
+      .mhRight{ width: 100%; justify-content: flex-end; }
     }
 
     /* ===== Custom mini modal (for Next Week Add) ===== */
@@ -1139,19 +1215,15 @@
         <div class="mhLeft">
           <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
           <strong>Week History / Archive</strong>
+          <input id="searchInput" class="search" type="text" placeholder="검색: 주차(YYYY.MM.DD~) 또는 할 일 키워드…" />
         </div>
 
         <div class="mhRight">
-          <input id="searchInput" class="search" type="text" placeholder="검색: 주차(YYYY.MM.DD~) 또는 할 일 키워드…" />
-          <button class="btn secondary" id="clearSearchBtn" type="button">검색 초기화</button>
-
-          <!-- ✅ Bulk actions -->
+          <!-- ✅ Bulk actions (텍스트 수정) -->
           <button class="btn secondary" id="bulkPinBtn" type="button" title="선택한 주차 Pin">Pin</button>
-          <button class="btn secondary" id="bulkUnpinBtn" type="button" title="선택한 주차 Unpin">Unpin</button>
-          <button class="btn secondary" id="bulkCopyMdBtn" type="button" title="선택한 주차 Markdown 복사">Copy MD</button>
-          <button class="btn secondary" id="bulkDownloadMdBtn" type="button" title="선택한 주차 Markdown 다운로드">Download</button>
+          <button class="btn secondary" id="bulkCopyMdBtn" type="button" title="선택한 주차 Markdown 내보내기">Export</button>
           <button class="btn secondary" id="bulkDeleteBtn" type="button" title="선택한 주차 삭제">Delete</button>
-
+          <button class="btn secondary" id="bulkUnpinBtn" type="button" title="선택한 주차 Unpin">Clear</button>
           <button class="btn secondary" id="closeModalBtn" type="button">닫기</button>
         </div>
       </div>
@@ -1165,10 +1237,8 @@
             <div>
               <button class="btn secondary" id="restoreWeekBtn" type="button" disabled>Restore</button>
               <button class="btn secondary" id="copyWeekBtn" type="button" disabled>Copy</button>
-
-              <!-- ✅ Single week export -->
               <button class="btn secondary" id="copyWeekMdBtn" type="button" disabled>Copy MD</button>
-              <button class="btn secondary" id="downloadWeekMdBtn" type="button" disabled>Download</button>
+              <button class="btn secondary" id="downloadWeekMdBtn" type="button" disabled>Download MD</button>
             </div>
           </div>
 
@@ -1210,11 +1280,6 @@
     const WEEK_ARCHIVE_KEY = "soft_schedule_week_archive_v2"; // ✅ v2: meta(pinned) 포함
 
     // ✅ Today widget keys (workspace-aware)
-    // 너의 Today 코드가: soft_schedule_today_${workspace_id}_ ... 형태라면
-    // 여기서 workspace_id를 같은 방식으로 구해서 prefix를 맞춰야 함.
-    //
-    // 아래는 "workspace_id를 localStorage에서 읽는다" 가정의 기본값.
-    // 네 프로젝트에서 workspace_id를 저장하는 키가 다르면 이 한 줄만 바꾸면 됨.
     const WORKSPACE_ID_STORAGE_KEY = "soft_schedule_workspace_id_v1"; // <-- 필요시 수정
     function getWorkspaceIdMaybe(){
       const v = localStorage.getItem(WORKSPACE_ID_STORAGE_KEY);
@@ -1297,22 +1362,18 @@
       x.setHours(0,0,0,0);
       return x;
     }
-
     function addDays(d, n){
       const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
       x.setDate(x.getDate() + n);
       x.setHours(0,0,0,0);
       return x;
     }
-
     function weekIdFromMonday(monday){
       const start = dateToYmd(monday);
       const end = dateToYmd(addDays(monday, 6));
       return `${start} ~ ${end}`;
     }
-
     function parseWeekRangeId(weekId){
-      // "YYYY.MM.DD ~ YYYY.MM.DD"
       const parts = String(weekId || "").split("~");
       if(parts.length < 2) return null;
       const startStr = parts[0].trim();
@@ -1337,15 +1398,7 @@
       return `${before}<span class="mark">${mid}</span>${after}`;
     }
 
-    /* ========= archive helpers (v2) =========
-       저장 형태:
-       {
-         "weeks": {
-           "YYYY.MM.DD ~ YYYY.MM.DD": { state: {days..., nextInbox...}, meta: { pinned: true } }
-         }
-       }
-       v1(구버전): { "weekId": state, ... } 도 자동 마이그레이션
-    */
+    /* ========= archive helpers (v2) ========= */
     function loadWeekArchiveV2(){
       try{
         const raw = localStorage.getItem(WEEK_ARCHIVE_KEY);
@@ -1374,14 +1427,11 @@
       localStorage.setItem(WEEK_ARCHIVE_KEY, JSON.stringify(archive));
     }
 
-    // state per week:
-    // { days: { "0": [items], ... "6": [items] }, nextInbox: [items] }
     function emptyWeekState(){
       const days = {};
       for(let i=0;i<7;i++) days[String(i)] = [];
       return { days, nextInbox: [] };
     }
-
     function normalizeWeekState(parsed){
       const base = emptyWeekState();
       if(!parsed || typeof parsed !== "object") return base;
@@ -1404,16 +1454,14 @@
         return normalizeWeekState(parsed);
       }catch(e){ return emptyWeekState(); }
     }
-
     function saveWeek(key, data){
       localStorage.setItem(key, JSON.stringify(normalizeWeekState(data)));
     }
 
-    // ✅ FIX: 주 이동 시 “사라짐” 방지 (삭제 금지)
+    // ✅ 주 이동 시 “사라짐” 방지: past week를 archive에 복사만 하고, 원본 localStorage는 유지
     function autoArchivePastWeeks(){
       const archive = loadWeekArchiveV2();
       const thisWeekMon = mondayOfWeek(new Date());
-
       let changed = false;
 
       for(let i=0;i<localStorage.length;i++){
@@ -1426,7 +1474,6 @@
         const rng = parseWeekRangeId(weekId);
         if(!rng) continue;
 
-        // past week only: end < thisWeekMon
         if(rng.end.getTime() < thisWeekMon.getTime()){
           if(!archive.weeks[weekId]){
             try{
@@ -1493,14 +1540,12 @@
     const copyWeekBtn = document.getElementById("copyWeekBtn");
     const archiveCount = document.getElementById("archiveCount");
     const searchInput = document.getElementById("searchInput");
-    const clearSearchBtn = document.getElementById("clearSearchBtn");
 
-    // bulk buttons
-    const bulkPinBtn = document.getElementById("bulkPinBtn");
-    const bulkUnpinBtn = document.getElementById("bulkUnpinBtn");
-    const bulkCopyMdBtn = document.getElementById("bulkCopyMdBtn");
-    const bulkDownloadMdBtn = document.getElementById("bulkDownloadMdBtn");
-    const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+    // bulk buttons (텍스트만 바뀜 / 역할 재배치)
+    const bulkPinBtn = document.getElementById("bulkPinBtn");       // Pin
+    const bulkCopyMdBtn = document.getElementById("bulkCopyMdBtn"); // Export
+    const bulkDeleteBtn = document.getElementById("bulkDeleteBtn"); // Delete
+    const bulkUnpinBtn = document.getElementById("bulkUnpinBtn");   // Clear(=Unpin)
 
     // single week export buttons
     const copyWeekMdBtn = document.getElementById("copyWeekMdBtn");
@@ -1527,7 +1572,6 @@
     const WK = ["M","T","W","T","F","S","S"];
     const DOW_LABEL = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
-    // current viewing monday (can navigate)
     let viewMonday = mondayOfWeek(new Date());
     let selectedDayIndex = (() => {
       const today = new Date();
@@ -1536,14 +1580,13 @@
       return Math.min(6, Math.max(0, diff));
     })();
 
-    // section expanded states (UI only)
     const expanded = new Map(); // key: dayIndex -> bool
 
     function getWeekId(){ return weekIdFromMonday(viewMonday); }
     function getWeekKey(){ return WEEK_PREFIX + getWeekId(); }
 
     // init
-    let weekArchive = autoArchivePastWeeks(); // { weeks: ... }
+    let weekArchive = autoArchivePastWeeks();
     let weekState = loadWeek(getWeekKey());
 
     function persistCurrentWeek(){
@@ -1615,11 +1658,11 @@
         const row = document.createElement("div");
         row.className = "popItem" + (it.done ? " done" : "");
         row.innerHTML = `
-          <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-nx-id="${escapeHtml(it.id)}">
+          <button class="check" type="button" role="checkbox" aria-checked="${it.done}" data-nx-id="${escapeHtml(it.id)}">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-          </div>
+          </button>
           <div class="popText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
           <button class="del" type="button" aria-label="삭제" data-nx-del="${escapeHtml(it.id)}">✕</button>
         `;
@@ -1629,7 +1672,6 @@
 
     function renderWeekList(){
       rangeText.textContent = getWeekId();
-
       weekList.innerHTML = "";
 
       let allTotal = 0;
@@ -1682,11 +1724,11 @@
           const row = document.createElement("div");
           row.className = "item" + (it.done ? " done" : "");
           row.innerHTML = `
-            <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}" data-day="${i}">
+            <button class="check" type="button" role="checkbox" aria-checked="${it.done}" data-id="${it.id}" data-day="${i}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-            </div>
+            </button>
             <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
             <button class="del" type="button" aria-label="삭제" data-del="${it.id}" data-day="${i}">✕</button>
           `;
@@ -1834,17 +1876,6 @@
       }
     });
 
-    weekList.addEventListener("keydown", (e) => {
-      const check = e.target.closest(".check");
-      if(!check) return;
-      if(e.key === "Enter" || e.key === " "){
-        if(!check.dataset.id) return;
-        e.preventDefault();
-        const day = Number(check.dataset.day);
-        toggleItem(day, check.dataset.id);
-      }
-    });
-
     /* ========= Add events ========= */
     addBtn.addEventListener("click", () => {
       addItemToDay(selectedDayIndex, taskInput.value);
@@ -1876,7 +1907,6 @@
     });
 
     function readTodayList(){
-      // ✅ scoped key 우선, 없으면 fallback 키도 확인
       const key1 = TODAY_PREFIX_SCOPED + ymd(new Date());
       const key2 = TODAY_PREFIX_FALLBACK + ymd(new Date());
 
@@ -1982,7 +2012,6 @@
     function placeNextPopover(anchorEl){
       if(!anchorEl || !cardEl) return;
 
-      // popRect는 open 상태에서 더 정확 -> open 이후 재배치함
       const popRect = nextPopover.getBoundingClientRect();
       const btnRect = anchorEl.getBoundingClientRect();
       const cardRect = cardEl.getBoundingClientRect();
@@ -2021,7 +2050,6 @@
       nextPopover.setAttribute("aria-hidden", "true");
     }
 
-    // ✅ custom mini modal for add (replaces prompt)
     function openMiniAdd(){
       miniOverlay.classList.add("open");
       miniOverlay.setAttribute("aria-hidden","false");
@@ -2073,31 +2101,24 @@
       }
     });
 
-    nextPopList.addEventListener("keydown", (e) => {
-      const check = e.target.closest("[data-nx-id]");
-      if(!check) return;
-      if(e.key === "Enter" || e.key === " "){
-        e.preventDefault();
-        toggleNextInbox(check.dataset.nxId);
-      }
-    });
-
     nextCopyBtn.addEventListener("click", copyNextInbox);
     nextClearDoneBtn.addEventListener("click", clearNextDone);
 
-    // ✅ popover: 내부 클릭은 닫히지 않게
     nextPopover.addEventListener("click", (e)=> e.stopPropagation());
 
-    // ✅ popover close on outside click / esc / resize / scroll
     document.addEventListener("click", (e) => {
       if(!nextPopover.classList.contains("open")) return;
       const inside = nextPopover.contains(e.target);
       const onBtn = nextShowBtn.contains(e.target);
       if(!inside && !onBtn) closeNextPopover();
     });
+
     document.addEventListener("keydown", (e) => {
-      if(e.key === "Escape") closeNextPopover();
+      if(e.key !== "Escape") return;
+      if(miniOverlay.classList.contains("open")) return;
+      closeNextPopover();
     });
+
     window.addEventListener("resize", () => {
       if(nextPopover.classList.contains("open")) placeNextPopover(nextShowBtn);
     }, { passive: true });
@@ -2134,7 +2155,6 @@
       return lines.join("\n");
     }
 
-    // ✅ Notion-friendly Markdown (heading + checklist)
     function formatWeekAsMarkdown(weekId, data){
       const rng = parseWeekRangeId(weekId);
       const title = rng ? `# This Week (${rng.startStr} ~ ${rng.endStr})` : `# This Week (${weekId})`;
@@ -2204,12 +2224,14 @@
     /* ========= History / Archive modal ========= */
     let pickedWeekId = null;
     let searchQuery = "";
-    const selectedWeeks = new Set(); // ✅ for bulk actions
+    const selectedWeeks = new Set();
 
     function openModal(){
+      selectedWeeks.clear(); // ✅ 모달 열 때 선택 초기화
       weekArchive = loadWeekArchiveV2();
       searchQuery = (searchInput.value || "").trim();
       buildWeeks();
+
       modalOverlay.classList.add("open");
       modalOverlay.setAttribute("aria-hidden", "false");
 
@@ -2269,7 +2291,6 @@
       const entry = weekArchive.weeks[id];
       return !!(entry && entry.meta && entry.meta.pinned);
     }
-
     function setPinned(id, pinned){
       const entry = weekArchive.weeks[id];
       if(!entry) return;
@@ -2282,23 +2303,55 @@
       else selectedWeeks.add(id);
     }
 
+    /* ✅ 작은 아이콘 SVG들 (톤 맞춤, 일자 버튼 없음) */
+    function svgPin(){
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M9 3h6l1 6-2 2v5l-2 2-2-2v-5l-2-2 1-6z" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M12 21v-5" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      `;
+    }
+    function svgDownload(){
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v10" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M8 10l4 4 4-4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 20h14" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+      `;
+    }
+    function svgCopy(){
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M9 9h10v12H9V9z" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `;
+    }
+    function svgTrash(){
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 7h10l-1 14H8L7 7z" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M6 7h12" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      `;
+    }
+
     function buildWeeks(){
       const q = (searchQuery || "").trim();
       const ids = Object.keys((weekArchive && weekArchive.weeks) ? weekArchive.weeks : {});
 
-      // sort: pinned first, then by start date desc
+      // ✅ 정렬: 오래된 주가 위, 최근이 아래 (오름차순)
       ids.sort((a,b) => {
-        const ap = isPinned(a) ? 1 : 0;
-        const bp = isPinned(b) ? 1 : 0;
-        if(ap !== bp) return bp - ap;
-
         const as = a.split("~")[0].trim();
         const bs = b.split("~")[0].trim();
         const ad = ymdToDate(as);
         const bd = ymdToDate(bs);
         const at = ad ? ad.getTime() : 0;
         const bt = bd ? bd.getTime() : 0;
-        return bt - at;
+        return at - bt;
       });
 
       const filtered = ids.filter(id => weekMatchesQuery(id, weekArchive.weeks[id], q));
@@ -2328,21 +2381,12 @@
           chk.dataset.chk = id;
           chk.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.78)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M20 7L10 17l-5-5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           `;
 
-          const pin = document.createElement("button");
-          pin.type = "button";
-          pin.className = "pinBtn" + (pinned ? " on" : "");
-          pin.dataset.pin = id;
-          pin.title = pinned ? "Unpin" : "Pin";
-          pin.innerHTML = `
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
-              <path d="M14 3l7 7-3 3v5l-2 2-4-4-6 6-1-1 6-6-4-4 2-2h5l3-3z"
-                stroke="rgba(30,30,30,0.72)" stroke-width="1.4" stroke-linejoin="round"/>
-            </svg>
-          `;
+          const col = document.createElement("div");
+          col.className = "weekCol";
 
           const btn = document.createElement("button");
           btn.className = "weekBtn";
@@ -2352,9 +2396,51 @@
           const pinTag = pinned ? `<span class="pinTag">• pinned</span>` : ``;
           btn.innerHTML = `${escapeHtml(id)} ${pinTag}<small>${done}/${total}</small>`;
 
+          const actions = document.createElement("div");
+          actions.className = "weekActions";
+
+          // Pin (toggle)
+          const pinBtn = document.createElement("button");
+          pinBtn.type = "button";
+          pinBtn.className = "iconBtn" + (pinned ? " on" : "");
+          pinBtn.dataset.pin = id;
+          pinBtn.title = pinned ? "Unpin" : "Pin";
+          pinBtn.innerHTML = svgPin();
+
+          // Export(=Copy MD for single week)
+          const expBtn = document.createElement("button");
+          expBtn.type = "button";
+          expBtn.className = "iconBtn";
+          expBtn.dataset.exp = id;
+          expBtn.title = "Export (Copy MD)";
+          expBtn.innerHTML = svgCopy();
+
+          // Download MD
+          const dlBtn = document.createElement("button");
+          dlBtn.type = "button";
+          dlBtn.className = "iconBtn";
+          dlBtn.dataset.dl = id;
+          dlBtn.title = "Download MD";
+          dlBtn.innerHTML = svgDownload();
+
+          // Delete week
+          const delBtn = document.createElement("button");
+          delBtn.type = "button";
+          delBtn.className = "iconBtn danger";
+          delBtn.dataset.wdel = id;
+          delBtn.title = "Delete week";
+          delBtn.innerHTML = svgTrash();
+
+          actions.appendChild(pinBtn);
+          actions.appendChild(expBtn);
+          actions.appendChild(dlBtn);
+          actions.appendChild(delBtn);
+
+          col.appendChild(btn);
+          col.appendChild(actions);
+
           row.appendChild(chk);
-          row.appendChild(pin);
-          row.appendChild(btn);
+          row.appendChild(col);
           weeksPanel.appendChild(row);
         }
       }
@@ -2384,6 +2470,25 @@
       btns.forEach(b => b.classList.toggle("active", b.dataset.week === id));
     }
 
+    /* ✅ 프리뷰에서 아이템 삭제(주차 데이터에서 바로 삭제) */
+    function deletePreviewItem(weekId, section, itemId){
+      const entry = weekArchive.weeks[weekId];
+      if(!entry || !entry.state) return;
+
+      if(section === "nx"){
+        entry.state.nextInbox = (entry.state.nextInbox || []).filter(it => it.id !== itemId);
+      }else{
+        const day = String(section);
+        const arr = (entry.state.days && entry.state.days[day]) ? entry.state.days[day] : [];
+        entry.state.days[day] = arr.filter(it => it.id !== itemId);
+      }
+
+      saveWeekArchiveV2(weekArchive);
+      buildWeeks();                 // 카운트 갱신
+      renderWeekPreview(weekId);    // 프리뷰 갱신
+      showToast("삭제했어.");
+    }
+
     function renderWeekPreview(id){
       const entry = weekArchive.weeks[id];
       const data = entry ? entry.state : null;
@@ -2404,6 +2509,16 @@
       const q = (searchQuery || "").trim();
       const days = data.days || {};
       const rows = [];
+
+      const trashBtnHtml = (weekId, sec, itemId) => `
+        <button class="pDel" type="button" title="삭제" data-pdel-week="${escapeHtml(weekId)}" data-pdel-sec="${escapeHtml(sec)}" data-pdel-id="${escapeHtml(itemId)}">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 7h10l-1 14H8L7 7z" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M6 7h12" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      `;
 
       for(let i=0;i<7;i++){
         const arr = days[String(i)] || [];
@@ -2430,9 +2545,10 @@
           rows.push(`
             <div class="pItem">
               <span class="${badgeCls}">${badgeText}</span>
-              <span style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
+              <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}
               </span>
+              ${trashBtnHtml(id, String(i), it.id)}
             </div>
           `);
         }
@@ -2451,9 +2567,10 @@
           rows.push(`
             <div class="pItem">
               <span class="${badgeCls}">${badgeText}</span>
-              <span style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
+              <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}
               </span>
+              ${trashBtnHtml(id, "nx", it.id)}
             </div>
           `);
         }
@@ -2468,8 +2585,8 @@
       if(e.target === modalOverlay) closeModal();
     });
 
-    // ✅ weeks panel click handling (checkbox / pin / open)
-    weeksPanel.addEventListener("click", (e) => {
+    /* ✅ weeks panel click handling */
+    weeksPanel.addEventListener("click", async (e) => {
       const chk = e.target.closest("[data-chk]");
       if(chk){
         const id = chk.dataset.chk;
@@ -2488,9 +2605,69 @@
         return;
       }
 
+      const exp = e.target.closest("[data-exp]");
+      if(exp){
+        const id = exp.dataset.exp;
+        const entry = weekArchive.weeks[id];
+        if(!entry || !entry.state) return;
+        const md = formatWeekAsMarkdown(id, entry.state);
+        const ok = await copyToClipboard(md);
+        showToast(ok ? "Export(복사) 완료." : "복사 실패 (권한 확인)");
+        return;
+      }
+
+      const dl = e.target.closest("[data-dl]");
+      if(dl){
+        const id = dl.dataset.dl;
+        const entry = weekArchive.weeks[id];
+        if(!entry || !entry.state) return;
+        const md = formatWeekAsMarkdown(id, entry.state);
+        const safe = id.replace(/[^\d.\s~]/g,"").replace(/\s+/g," ").trim().replace(/ /g,"_");
+        downloadText(`ThisWeek_${safe}.md`, md);
+        showToast("다운로드를 시작했어.");
+        return;
+      }
+
+      const wdel = e.target.closest("[data-wdel]");
+      if(wdel){
+        const id = wdel.dataset.wdel;
+        const ok = confirm(`이 주차를 삭제할까? (되돌리기 불가)\n\n${id}`);
+        if(!ok) return;
+        delete weekArchive.weeks[id];
+        selectedWeeks.delete(id);
+        if(pickedWeekId === id) pickedWeekId = null;
+        saveWeekArchiveV2(weekArchive);
+        buildWeeks();
+
+        if(!pickedWeekId){
+          pickedWeekText.textContent = "주차를 선택해줘";
+          restoreWeekBtn.disabled = true;
+          copyWeekBtn.disabled = true;
+          copyWeekMdBtn.disabled = true;
+          downloadWeekMdBtn.disabled = true;
+          previewBox.innerHTML = `
+            <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+              왼쪽에서 주차를 선택하면, 그 주의 기록을 보여줘.
+            </div>
+          `;
+        }
+        showToast("삭제 완료.");
+        return;
+      }
+
       const btn = e.target.closest(".weekBtn");
       if(!btn) return;
       renderWeekPreview(btn.dataset.week);
+    });
+
+    /* ✅ preview delete (trash icon) */
+    previewBox.addEventListener("click", (e) => {
+      const t = e.target.closest("[data-pdel-week]");
+      if(!t) return;
+      const weekId = t.dataset.pdelWeek;
+      const sec = t.dataset.pdelSec;
+      const itemId = t.dataset.pdelId;
+      deletePreviewItem(weekId, sec, itemId);
     });
 
     restoreWeekBtn.addEventListener("click", () => {
@@ -2539,16 +2716,11 @@
       showToast("다운로드를 시작했어.");
     });
 
+    /* ✅ search only (검색 초기화 버튼/기능 삭제) */
     searchInput.addEventListener("input", () => {
       searchQuery = (searchInput.value || "").trim();
       buildWeeks();
-    });
-
-    clearSearchBtn.addEventListener("click", () => {
-      searchInput.value = "";
-      searchQuery = "";
-      buildWeeks();
-      showToast("검색을 초기화했어.");
+      if(pickedWeekId) renderWeekPreview(pickedWeekId);
     });
 
     /* ========= Bulk actions ========= */
@@ -2556,6 +2728,7 @@
       return Array.from(selectedWeeks).filter(id => weekArchive.weeks[id]);
     }
 
+    // Pin (bulk)
     bulkPinBtn.addEventListener("click", () => {
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
@@ -2565,6 +2738,7 @@
       showToast(`${ids.length}개 pin.`);
     });
 
+    // Clear (= Unpin bulk)
     bulkUnpinBtn.addEventListener("click", () => {
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
@@ -2574,11 +2748,11 @@
       showToast(`${ids.length}개 unpin.`);
     });
 
+    // Export (bulk) = Copy MD joined
     bulkCopyMdBtn.addEventListener("click", async () => {
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
 
-      // pinned/date sort 그대로 export
       const mdParts = [];
       for(const id of ids){
         const data = weekArchive.weeks[id].state;
@@ -2586,23 +2760,10 @@
       }
       const md = mdParts.join("\n\n---\n\n");
       const ok = await copyToClipboard(md);
-      showToast(ok ? "선택 주차 Markdown 복사 완료." : "복사 실패 (권한 확인)");
+      showToast(ok ? "Export(복사) 완료." : "복사 실패 (권한 확인)");
     });
 
-    bulkDownloadMdBtn.addEventListener("click", () => {
-      const ids = getSelectedIds();
-      if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
-
-      const mdParts = [];
-      for(const id of ids){
-        const data = weekArchive.weeks[id].state;
-        mdParts.push(formatWeekAsMarkdown(id, data));
-      }
-      const md = mdParts.join("\n\n---\n\n");
-      downloadText(`ThisWeek_Export_${ymd(new Date())}.md`, md);
-      showToast("다운로드를 시작했어.");
-    });
-
+    // Delete (bulk)
     bulkDeleteBtn.addEventListener("click", () => {
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
@@ -2617,7 +2778,6 @@
       saveWeekArchiveV2(weekArchive);
       buildWeeks();
 
-      // preview reset if needed
       if(!pickedWeekId){
         pickedWeekText.textContent = "주차를 선택해줘";
         restoreWeekBtn.disabled = true;
