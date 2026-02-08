@@ -2012,7 +2012,12 @@
        - dpTrigger click handled via delegation
        - pmBody click closes dp (unless stopped)
     */
-    // 날짜 버튼 클릭을 캡처 단계에서 먼저 처리
+    pmBody.addEventListener("click", (e)=>{
+      // click anywhere in body closes dp if open
+      if(pmDpPop.classList.contains("open")) closeDP();
+    });
+
+    // Modal interactions (delegated)
     projectModalOverlay.addEventListener("click", (e)=>{
       if(!openProjectId) return;
       const pid = openProjectId;
