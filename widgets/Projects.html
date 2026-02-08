@@ -1957,6 +1957,8 @@
           </div>
         </div>
       `;
+      // innerHTML로 덮어쓰면 pmDpPop이 DOM에서 제거되므로 다시 붙여 줌
+      pmBody.appendChild(pmDpPop);
     }
 
     function openProjectModal(pid){
