@@ -2012,22 +2012,13 @@
        - dpTrigger click handled via delegation
        - pmBody click closes dp (unless stopped)
     */
-    pmBody.addEventListener("click", (e)=>{
-      // date picker trigger나 popover 내부 클릭은 무시
-      if(e.target.closest("[data-dp-trigger]") || e.target.closest(".dpPop")) return;
-      // click anywhere in body closes dp if open
-      if(pmDpPop.classList.contains("open")) closeDP();
-    });
-
-    // Modal interactions (delegated)
+    // 날짜 버튼 클릭을 캡처 단계에서 먼저 처리
     projectModalOverlay.addEventListener("click", (e)=>{
       if(!openProjectId) return;
       const pid = openProjectId;
-
-      // ✅ date picker trigger
       const dpTrig = e.target.closest("[data-dp-trigger]");
       if(dpTrig){
-        e.stopPropagation();
+        e.stopPropagation(); // pmBody 핸들러 실행 방지
         e.preventDefault();
         const txt = dpTrig.querySelector("[data-dp-text]");
         const p = findProject(pid);
@@ -2036,6 +2027,24 @@
         else openDP(dpTrig, txt, p.startDate || todayYmd());
         return;
       }
+    }, true); // 캡처 단계에서 실행
+
+    pmBody.addEventListener("click", (e)=>{
+      // date picker trigger나 popover 내부 클릭은 무시
+      const dpTrig = e.target.closest("[data-dp-trigger]");
+      const dpPop = e.target.closest(".dpPop");
+      if(dpTrig || dpPop) {
+        // 날짜 버튼이나 달력 팝업 클릭은 무시 (projectModalOverlay에서 처리)
+        return;
+      }
+      // click anywhere in body closes dp if open
+      if(pmDpPop.classList.contains("open")) closeDP();
+    });
+
+    // Modal interactions (delegated)
+    projectModalOverlay.addEventListener("click", (e)=>{
+      if(!openProjectId) return;
+      const pid = openProjectId;
 
       const tagDel = e.target.closest("[data-tag-del]");
       if(tagDel){
