@@ -2013,6 +2013,8 @@
        - pmBody click closes dp (unless stopped)
     */
     pmBody.addEventListener("click", (e)=>{
+      // date picker trigger나 popover 내부 클릭은 무시
+      if(e.target.closest("[data-dp-trigger]") || e.target.closest(".dpPop")) return;
       // click anywhere in body closes dp if open
       if(pmDpPop.classList.contains("open")) closeDP();
     });
