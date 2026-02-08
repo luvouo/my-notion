@@ -1,1 +1,2148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Projects — Soft Schedule</title>
+
+  <style>
+    :root{
+      --accent-1: rgba(165, 206, 240, 0.88);
+      --accent-2: rgba(140, 190, 232, 0.52);
+      --border:   rgba(140, 190, 232, 0.60);
+
+      --text: rgba(30,30,30,0.92);
+      --muted: rgba(30,30,30,0.38);
+
+      --glass: rgba(255,255,255,0.10);
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --radius: 20px;
+    }
+
+    @font-face{
+      font-family: "EnterSanChaek";
+      src: url("../fonts/엔터산책10.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      background: transparent;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: var(--text);
+    }
+
+    .wrap{
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2.6vw, 16px);
+      box-sizing: border-box;
+    }
+
+    .card{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(14px, 2.8vw, 18px);
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(120% 80% at 0% 0%, rgba(165,206,240,0.20), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(140,190,232,0.14), transparent 55%);
+      pointer-events:none;
+    }
+
+    .inner{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+    }
+
+    .top{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pearl{
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: block;
+      object-fit: cover;
+      flex: 0 0 auto;
+      box-shadow: 0 0 0 2px rgba(165,206,240,0.22);
+    }
+
+    .title h1{
+      margin:0;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: clamp(15px, 3.8vw, 18px);
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      margin-left: auto;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn{
+      flex: 0 0 auto;
+      border: 1px solid rgba(140,190,232,0.70);
+      background: rgba(165,206,240,0.18);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(30,30,30,0.85);
+      cursor: pointer;
+      transition: transform .08s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .btn:active{ transform: scale(0.98); }
+    .btn:hover{
+      background: rgba(165,206,240,0.24);
+      border-color: rgba(140,190,232,0.90);
+    }
+    .btn:focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
+    }
+    .btn.secondary{
+      border: 1px solid rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.08);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .btn.secondary:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      color: var(--accent-1);
+    }
+
+    .row{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .leftGroup{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      min-width: 0;
+      flex: 1 1 520px;
+    }
+
+    .rightGroup{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap: wrap;
+      flex: 0 0 auto;
+    }
+
+    .field{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      border: 1px solid rgba(140,190,232,0.30);
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 10px 10px;
+      min-width: 0;
+    }
+    .fieldLabel{
+      font-size: 12px;
+      color: rgba(30,30,30,0.55);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      white-space: nowrap;
+    }
+    .select, .input{
+      border: 1px solid rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.10);
+      border-radius: 12px;
+      padding: 10px 10px;
+      outline: none;
+      color: var(--text);
+      font-size: 13px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      min-width: 0;
+    }
+    .select{ padding-right: 28px; }
+    .input::placeholder{ color: rgba(30,30,30,0.45); }
+
+    .pill{
+      font-size: 12px;
+      color: rgba(30,30,30,0.70);
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(140,190,232,0.30);
+      border-radius: 999px;
+      padding: 6px 10px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      min-height: 220px;
+    }
+
+    .col{
+      border: 1px solid rgba(140,190,232,0.30);
+      background: rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 10px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 240px;
+      overflow: hidden;
+    }
+
+    .colHead{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+    .colTitle{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: 13px;
+      color: rgba(30,30,30,0.84);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .colTitle small{
+      margin-left: 8px;
+      color: rgba(30,30,30,0.42);
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+    }
+
+    .colBody{
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: auto;
+      min-height: 0;
+      padding-right: 2px;
+    }
+    .colBody::-webkit-scrollbar{ width: 8px; }
+    .colBody::-webkit-scrollbar-thumb{
+      background: rgba(140,190,232,0.22);
+      border-radius: 999px;
+    }
+
+    .task{
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 10px 10px;
+      display:grid;
+      gap: 8px;
+      cursor: grab;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .task:active{ cursor: grabbing; }
+    .task.dragging{
+      opacity: 0.70;
+      transform: scale(0.99);
+    }
+
+    .taskTop{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      justify-content: space-between;
+      min-width: 0;
+    }
+    .taskTitle{
+      font-size: 13.5px;
+      color: rgba(30,30,30,0.90);
+      line-height: 1.35;
+      min-width: 0;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .taskBadges{
+      display:flex;
+      gap: 6px;
+      align-items:center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+    }
+
+    .badge{
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(0,0,0,0.03);
+      color: rgba(30,30,30,0.58);
+      flex: 0 0 auto;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .badge.pri1{ border-color: rgba(140,190,232,0.45); background: rgba(165,206,240,0.18); color: rgba(30,30,30,0.68); }
+    .badge.pri2{ border-color: rgba(140,190,232,0.28); background: rgba(255,255,255,0.08); }
+    .badge.pri3{ border-color: rgba(0,0,0,0.08); background: rgba(0,0,0,0.02); color: rgba(30,30,30,0.52); }
+
+    .taskSub{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap: wrap;
+      color: rgba(30,30,30,0.58);
+      font-size: 12px;
+      min-width: 0;
+    }
+
+    .miniBtn{
+      border: 1px solid rgba(140,190,232,0.35);
+      background: rgba(255,255,255,0.08);
+      color: rgba(30,30,30,0.72);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      transition: box-shadow .18s ease, border-color .18s ease, color .18s ease, transform .08s ease;
+      white-space: nowrap;
+    }
+    .miniBtn:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      color: var(--accent-1);
+    }
+    .miniBtn:active{ transform: scale(0.98); }
+
+    .iconBtn{
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.70);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, transform .08s ease, box-shadow .18s ease;
+    }
+    .iconBtn:hover{
+      border-color: rgba(140,190,232,0.38);
+      background: rgba(255,255,255,0.78);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+    }
+    .iconBtn:active{ transform: scale(0.98); }
+    .iconBtn.on{
+      border-color: rgba(140,190,232,0.45);
+      background: rgba(165,206,240,0.18);
+    }
+    .iconBtn svg{
+      width: 15.5px;
+      height: 15.5px;
+      stroke: rgba(110,110,110,0.68);
+    }
+    .iconBtn.danger svg{ stroke: rgba(125,125,125,0.78); }
+
+    .footer{
+      display:flex;
+      justify-content: space-between;
+      align-items:flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .toast{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(30,30,30,0.62);
+      font-size: 12px;
+      line-height: 1;
+
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+
+      transition: opacity .14s ease, transform .14s ease;
+    }
+    .toast:not(:empty){
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast::before{
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(165,206,240,0.88);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
+      flex: 0 0 auto;
+    }
+
+    /* Modal */
+    .modalOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      z-index: 9000;
+    }
+    .modalOverlay.open{ display:flex; }
+
+    .modal{
+      width: min(900px, 100%);
+      max-height: calc(100vh - 20px);
+      display:flex;
+      flex-direction: column;
+      border-radius: 18px;
+      border: 1px solid rgba(140,190,232,0.38);
+      background: rgba(255,255,255,0.86);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .modalHeader{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      flex-wrap: wrap;
+    }
+
+    .mhLeft{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .mhLeft strong{
+      font-size: 14px;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
+    .mhRight{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap: wrap;
+      flex: 0 0 auto;
+    }
+
+    .modalBody{
+      display:grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 0;
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    .side{
+      border-right: 1px solid rgba(0,0,0,0.06);
+      padding: 12px 10px;
+      overflow: auto;
+      min-height: 0;
+    }
+
+    .projRow{
+      display:grid;
+      grid-template-columns: 18px 1fr;
+      gap: 10px;
+      align-items:start;
+      margin-bottom: 14px;
+    }
+
+    .wkChk{
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1.4px solid rgba(140,190,232,0.55);
+      background: rgba(255,255,255,0.60);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wkChk svg{
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+    }
+    .wkChk svg path{ stroke: rgba(70,70,70,0.95); }
+    .wkChk.on{
+      background: rgba(165,206,240,0.20);
+      border-color: rgba(140,190,232,0.75);
+    }
+    .wkChk.on svg{ opacity: 1; }
+
+    .projCol{
+      display:grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .projBtn{
+      width: fit-content;
+      max-width: 100%;
+      display: grid;
+      gap: 4px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.62);
+      cursor: pointer;
+      text-align: left;
+      white-space: nowrap;
+      font-size: 13px;
+      color: rgba(30,30,30,0.88);
+      transition: background .18s ease, border-color .18s ease, transform .08s ease;
+      -webkit-tap-highlight-color: transparent;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .projBtn:hover{
+      border-color: rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.72);
+    }
+    .projBtn:active{ transform: scale(0.99); }
+    .projBtn small{
+      display:block;
+      font-size: 11px;
+      color: rgba(30,30,30,0.52);
+      font-variant-numeric: tabular-nums;
+    }
+    .projBtn.active{
+      border-color: rgba(140,190,232,0.70);
+      background: rgba(165,206,240,0.14);
+      box-shadow: 0 10px 26px rgba(140,190,232,0.10);
+    }
+
+    .pinTag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size: 11px;
+      color: rgba(30,30,30,0.50);
+      margin-left: 6px;
+    }
+
+    .projActions{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap: nowrap;
+    }
+
+    .preview{
+      padding: 12px;
+      overflow: auto;
+      min-height: 0;
+      display:grid;
+      gap: 10px;
+    }
+
+    .previewBox{
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.66);
+      display:grid;
+      gap: 10px;
+    }
+
+    .mToast{
+      position: absolute;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.90);
+      border: 1px solid rgba(140,190,232,0.35);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+      border-radius: 999px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .14s ease, transform .14s ease;
+    }
+    .mToast.show{
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .mToastMsg{
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.75);
+      white-space: nowrap;
+    }
+    .mUndoBtn{
+      border: 1px solid rgba(140,190,232,0.55);
+      background: rgba(165,206,240,0.16);
+      color: rgba(30,30,30,0.82);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .mUndoBtn:hover{
+      border-color: rgba(140,190,232,0.80);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+    }
+
+    .empty{
+      color: rgba(30,30,30,0.52);
+      font-size: 12.5px;
+      padding: 8px 6px;
+    }
+
+    /* Mobile */
+    @media (max-width: 820px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    @media (max-width: 520px){
+      .modalBody{ grid-template-columns: 1fr; }
+      .side{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="Projects Widget">
+      <div class="inner">
+
+        <div class="top">
+          <div class="title">
+            <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+            <h1>Projects</h1>
+          </div>
+          <div class="meta" id="metaText">—</div>
+        </div>
+
+        <!-- Project header row -->
+        <div class="row">
+          <div class="leftGroup">
+            <div class="field" style="flex:1 1 320px;">
+              <div class="fieldLabel">Project</div>
+              <select class="select" id="projectSelect" style="flex:1 1 auto; width:100%;"></select>
+              <button class="iconBtn" id="pinProjectBtn" type="button" title="Pin">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 3h6l1 6-2 2v5l-2 2-2-2v-5l-2-2 1-6z" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M12 21v-5" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button class="iconBtn" id="renameProjectBtn" type="button" title="Rename">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 20h4l10-10-4-4L4 16v4z" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M13 7l4 4" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button class="iconBtn danger" id="deleteProjectBtn" type="button" title="Delete (Undo)">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M7 7h10l-1 14H8L7 7z" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M6 7h12" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="field" style="flex:0 0 auto;">
+              <div class="fieldLabel">Start</div>
+              <input class="input" id="startDateInput" type="date" />
+            </div>
+
+            <span class="pill" id="progressPill">0% · 0/0</span>
+          </div>
+
+          <div class="rightGroup">
+            <button class="btn secondary" id="newProjectBtn" type="button">New</button>
+            <button class="btn secondary" id="exportBtn" type="button">Export</button>
+            <button class="btn secondary" id="openManagerBtn" type="button">Manage</button>
+          </div>
+        </div>
+
+        <!-- Add task row -->
+        <div class="row">
+          <div class="leftGroup">
+            <div class="field" style="flex: 2 1 420px;">
+              <div class="fieldLabel">Todo</div>
+              <input class="input" id="taskTitleInput" type="text" maxlength="120" placeholder="프로젝트 할 일 한 줄…" style="flex:1 1 auto; width:100%;" />
+            </div>
+
+            <div class="field" style="flex: 0 0 auto;">
+              <div class="fieldLabel">Priority</div>
+              <select class="select" id="prioritySelect">
+                <option value="2">P2</option>
+                <option value="1">P1</option>
+                <option value="3">P3</option>
+              </select>
+            </div>
+
+            <div class="field" style="flex: 1 1 220px;">
+              <div class="fieldLabel">Tags</div>
+              <input class="input" id="tagsInput" type="text" maxlength="80" placeholder="ex) coding, sd, ui" style="flex:1 1 auto; width:100%;" />
+            </div>
+
+            <button class="btn secondary" id="addTaskBtn" type="button">Add</button>
+          </div>
+
+          <div class="rightGroup">
+            <input class="input" id="searchInput" type="text" maxlength="80" placeholder="Search…" style="width: 160px;" />
+            <select class="select" id="statusFilter" title="Status filter">
+              <option value="all">All</option>
+              <option value="backlog">Backlog</option>
+              <option value="progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+            <select class="select" id="priorityFilter" title="Priority filter">
+              <option value="all">All P</option>
+              <option value="1">P1</option>
+              <option value="2">P2</option>
+              <option value="3">P3</option>
+            </select>
+            <input class="input" id="tagFilter" type="text" maxlength="40" placeholder="Tag filter" style="width:120px;" />
+          </div>
+        </div>
+
+        <!-- Board -->
+        <div class="grid" aria-label="Project Board">
+          <div class="col" data-col="backlog">
+            <div class="colHead">
+              <div class="colTitle">Backlog <small id="cntBacklog">0</small></div>
+              <button class="miniBtn" type="button" data-quickadd="backlog">Quick add</button>
+            </div>
+            <div class="colBody" id="colBacklog" data-drop="backlog"></div>
+          </div>
+
+          <div class="col" data-col="progress">
+            <div class="colHead">
+              <div class="colTitle">In Progress <small id="cntProgress">0</small></div>
+              <button class="miniBtn" type="button" data-quickadd="progress">Quick add</button>
+            </div>
+            <div class="colBody" id="colProgress" data-drop="progress"></div>
+          </div>
+
+          <div class="col" data-col="done">
+            <div class="colHead">
+              <div class="colTitle">Done <small id="cntDone">0</small></div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button class="miniBtn" id="archiveDoneBtn" type="button">Archive</button>
+                <button class="miniBtn" id="clearDoneBtn" type="button">Clear</button>
+              </div>
+            </div>
+            <div class="colBody" id="colDone" data-drop="done"></div>
+          </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="field" style="align-items:flex-start;">
+          <div class="fieldLabel" style="margin-top: 3px;">Feedback</div>
+          <textarea id="feedbackInput" class="input" rows="3" maxlength="1200"
+            placeholder="개인 피드백 / 회고 / 다음 액션 / 배운 점…"
+            style="width:100%; resize: vertical; min-height: 64px;"></textarea>
+          <button class="btn secondary" id="saveFeedbackBtn" type="button">Save</button>
+        </div>
+
+        <div class="footer">
+          <div style="display:flex; flex-direction:column; gap:6px; min-width:180px;">
+            <span id="hintText">Drag & Drop으로 상태 이동 가능</span>
+            <div class="toast" id="toast"></div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap: wrap; justify-content:flex-end;">
+            <button class="btn secondary" id="copyBtn" type="button">Copy</button>
+            <button class="btn secondary" id="downloadBtn" type="button">Download</button>
+          </div>
+        </div>
+
+        <!-- Modal: Project manager -->
+        <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
+          <div class="modal" role="dialog" aria-modal="true" aria-label="Projects Manager">
+            <div class="modalHeader">
+              <div class="mhLeft">
+                <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+                <strong>Projects Manager</strong>
+                <input class="input" id="managerSearch" type="text" placeholder="프로젝트 검색…" style="max-width: 240px;" />
+              </div>
+              <div class="mhRight">
+                <button class="btn secondary" id="bulkPinBtn" type="button">Pin</button>
+                <button class="btn secondary" id="bulkUnpinBtn" type="button">Clear</button>
+                <button class="btn secondary" id="bulkDeleteBtn" type="button">Delete</button>
+                <button class="btn secondary" id="closeModalBtn" type="button">닫기</button>
+              </div>
+            </div>
+
+            <div class="modalBody">
+              <div class="side" id="projectsPanel"></div>
+
+              <div class="preview">
+                <div class="previewBox" id="previewBox">
+                  <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+                    왼쪽에서 프로젝트를 선택하면 요약을 보여줘.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mToast" id="mToast" aria-hidden="true">
+              <div class="mToastMsg" id="mToastMsg">삭제했어.</div>
+              <button class="mUndoBtn" id="mUndoBtn" type="button">Undo</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================
+       Storage (workspace scoped)
+    ========================= */
+    const WORKSPACE_ID_STORAGE_KEY = "soft_schedule_workspace_id_v1";
+    function getWorkspaceIdMaybe(){
+      const v = localStorage.getItem(WORKSPACE_ID_STORAGE_KEY);
+      return (v && String(v).trim()) ? String(v).trim() : "";
+    }
+    const workspace_id = getWorkspaceIdMaybe();
+    const KEY_PREFIX = workspace_id ? `soft_schedule_projects_${workspace_id}_` : "soft_schedule_projects_";
+
+    const PROJECTS_INDEX_KEY = KEY_PREFIX + "index_v1";  // list + meta
+    const PROJECT_KEY_PREFIX  = KEY_PREFIX + "project_";  // project state by id
+
+    /* =========================
+       Utils
+    ========================= */
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function ymd(d=new Date()){
+      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+    }
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+    }
+    function nowStamp(){
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    }
+    function uid(){
+      return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()));
+    }
+    function parseTags(s){
+      return String(s||"")
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean)
+        .slice(0, 8);
+    }
+    function showToast(msg){
+      toast.textContent = msg;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.textContent = "", 1600);
+    }
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try{
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          return ok;
+        }catch(err){
+          document.body.removeChild(ta);
+          return false;
+        }
+      }
+    }
+    function downloadText(filename, text){
+      const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    /* =========================
+       Data model
+    ========================= */
+    function defaultProject(name="New Project"){
+      const today = new Date();
+      const iso = `${today.getFullYear()}-${pad2(today.getMonth()+1)}-${pad2(today.getDate())}`;
+      return {
+        id: uid(),
+        name,
+        startDate: iso,
+        feedback: "",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        pinned: false,
+        tasks: [
+          // sample tasks (safe to remove later)
+          { id: uid(), title: "Backlog sample", status:"backlog", priority:2, tags:["sample"], note:"", checklist:[], createdAt:Date.now(), updatedAt:Date.now() },
+          { id: uid(), title: "In Progress sample", status:"progress", priority:2, tags:["sample"], note:"", checklist:[], createdAt:Date.now(), updatedAt:Date.now() },
+          { id: uid(), title: "Done sample", status:"done", priority:3, tags:["sample"], note:"", checklist:[{id:uid(), text:"subtask", done:true}], createdAt:Date.now(), updatedAt:Date.now() },
+        ],
+        archive: {
+          doneTasks: []
+        }
+      };
+    }
+
+    function normalizeProject(p){
+      const base = defaultProject("Project");
+      if(!p || typeof p !== "object") return base;
+
+      const out = {
+        ...base,
+        ...p,
+        tasks: Array.isArray(p.tasks) ? p.tasks : [],
+        archive: (p.archive && typeof p.archive === "object") ? p.archive : { doneTasks: [] }
+      };
+      out.archive.doneTasks = Array.isArray(out.archive.doneTasks) ? out.archive.doneTasks : [];
+
+      // normalize tasks
+      out.tasks = out.tasks.map(t => ({
+        id: t.id || uid(),
+        title: String(t.title || "").slice(0, 120),
+        status: (t.status === "progress" || t.status === "done") ? t.status : "backlog",
+        priority: [1,2,3].includes(+t.priority) ? +t.priority : 2,
+        tags: Array.isArray(t.tags) ? t.tags.map(x=>String(x).trim()).filter(Boolean).slice(0,8) : [],
+        note: String(t.note || "").slice(0, 600),
+        checklist: Array.isArray(t.checklist) ? t.checklist.map(c => ({
+          id: c.id || uid(),
+          text: String(c.text || "").slice(0, 120),
+          done: !!c.done
+        })) : [],
+        createdAt: Number.isFinite(t.createdAt) ? t.createdAt : Date.now(),
+        updatedAt: Number.isFinite(t.updatedAt) ? t.updatedAt : Date.now(),
+      }));
+
+      out.name = String(out.name || "Project").slice(0, 60);
+      out.startDate = String(out.startDate || "");
+      out.feedback = String(out.feedback || "").slice(0, 1200);
+      out.pinned = !!out.pinned;
+      out.createdAt = Number.isFinite(out.createdAt) ? out.createdAt : Date.now();
+      out.updatedAt = Number.isFinite(out.updatedAt) ? out.updatedAt : Date.now();
+
+      return out;
+    }
+
+    function loadIndex(){
+      try{
+        const raw = localStorage.getItem(PROJECTS_INDEX_KEY);
+        if(!raw) return { activeId: null, ids: [] };
+        const parsed = JSON.parse(raw);
+        const ids = Array.isArray(parsed.ids) ? parsed.ids : [];
+        return { activeId: parsed.activeId || null, ids };
+      }catch(e){
+        return { activeId: null, ids: [] };
+      }
+    }
+    function saveIndex(index){
+      localStorage.setItem(PROJECTS_INDEX_KEY, JSON.stringify(index));
+    }
+
+    function loadProject(id){
+      try{
+        const raw = localStorage.getItem(PROJECT_KEY_PREFIX + id);
+        if(!raw) return null;
+        return normalizeProject(JSON.parse(raw));
+      }catch(e){
+        return null;
+      }
+    }
+    function saveProject(p){
+      const proj = normalizeProject(p);
+      proj.updatedAt = Date.now();
+      localStorage.setItem(PROJECT_KEY_PREFIX + proj.id, JSON.stringify(proj));
+      return proj;
+    }
+    function removeProject(id){
+      localStorage.removeItem(PROJECT_KEY_PREFIX + id);
+    }
+
+    function ensureSeed(){
+      const idx = loadIndex();
+      if(idx.ids.length > 0) return idx;
+
+      const p1 = saveProject(defaultProject("Widget / App Dev"));
+      const p2 = saveProject(defaultProject("Stable Diffusion Practice"));
+      p2.startDate = p1.startDate;
+      saveProject(p2);
+
+      const out = { activeId: p1.id, ids: [p1.id, p2.id] };
+      saveIndex(out);
+      return out;
+    }
+
+    /* =========================
+       DOM
+    ========================= */
+    const metaText = document.getElementById("metaText");
+
+    const projectSelect = document.getElementById("projectSelect");
+    const newProjectBtn = document.getElementById("newProjectBtn");
+    const pinProjectBtn = document.getElementById("pinProjectBtn");
+    const renameProjectBtn = document.getElementById("renameProjectBtn");
+    const deleteProjectBtn = document.getElementById("deleteProjectBtn");
+
+    const startDateInput = document.getElementById("startDateInput");
+    const progressPill = document.getElementById("progressPill");
+
+    const taskTitleInput = document.getElementById("taskTitleInput");
+    const prioritySelect = document.getElementById("prioritySelect");
+    const tagsInput = document.getElementById("tagsInput");
+    const addTaskBtn = document.getElementById("addTaskBtn");
+
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const priorityFilter = document.getElementById("priorityFilter");
+    const tagFilter = document.getElementById("tagFilter");
+
+    const colBacklog = document.getElementById("colBacklog");
+    const colProgress = document.getElementById("colProgress");
+    const colDone = document.getElementById("colDone");
+    const cntBacklog = document.getElementById("cntBacklog");
+    const cntProgress = document.getElementById("cntProgress");
+    const cntDone = document.getElementById("cntDone");
+
+    const archiveDoneBtn = document.getElementById("archiveDoneBtn");
+    const clearDoneBtn = document.getElementById("clearDoneBtn");
+
+    const feedbackInput = document.getElementById("feedbackInput");
+    const saveFeedbackBtn = document.getElementById("saveFeedbackBtn");
+
+    const exportBtn = document.getElementById("exportBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    const openManagerBtn = document.getElementById("openManagerBtn");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const managerSearch = document.getElementById("managerSearch");
+    const projectsPanel = document.getElementById("projectsPanel");
+    const previewBox = document.getElementById("previewBox");
+
+    const bulkPinBtn = document.getElementById("bulkPinBtn");
+    const bulkUnpinBtn = document.getElementById("bulkUnpinBtn");
+    const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+
+    const toast = document.getElementById("toast");
+
+    // Modal Undo
+    const mToast = document.getElementById("mToast");
+    const mToastMsg = document.getElementById("mToastMsg");
+    const mUndoBtn = document.getElementById("mUndoBtn");
+
+    /* =========================
+       Runtime state
+    ========================= */
+    let index = ensureSeed();
+    let active = loadProject(index.activeId) || null;
+
+    const selectedProjects = new Set(); // for bulk ops
+    let managerPickedId = null;
+
+    // Undo payloads
+    let _undo = null;
+    let _mundo = null;
+
+    function setMeta(){
+      if(!active){
+        metaText.textContent = "—";
+        return;
+      }
+      metaText.textContent = `Last edit · ${nowStamp()}`;
+    }
+
+    function sortProjectIds(ids){
+      // pinned first, then recent updatedAt desc, then name
+      const projs = ids.map(id => loadProject(id)).filter(Boolean);
+      projs.sort((a,b) => {
+        if(!!b.pinned !== !!a.pinned) return (b.pinned?1:0) - (a.pinned?1:0);
+        if(b.updatedAt !== a.updatedAt) return b.updatedAt - a.updatedAt;
+        return a.name.localeCompare(b.name, "ko");
+      });
+      return projs.map(p => p.id);
+    }
+
+    function syncSelectOptions(){
+      index = loadIndex();
+      index.ids = sortProjectIds(index.ids);
+      saveIndex(index);
+
+      projectSelect.innerHTML = "";
+      for(const id of index.ids){
+        const p = loadProject(id);
+        if(!p) continue;
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.pinned ? `• ${p.name}` : p.name;
+        projectSelect.appendChild(opt);
+      }
+
+      if(active && index.ids.includes(active.id)){
+        projectSelect.value = active.id;
+      }else{
+        const first = index.ids[0] || null;
+        active = first ? loadProject(first) : null;
+        index.activeId = active ? active.id : null;
+        saveIndex(index);
+        if(active) projectSelect.value = active.id;
+      }
+    }
+
+    function applyProjectToUI(){
+      if(!active){
+        startDateInput.value = "";
+        feedbackInput.value = "";
+        progressPill.textContent = "0% · 0/0";
+        pinProjectBtn.classList.remove("on");
+        renderBoard();
+        setMeta();
+        return;
+      }
+
+      startDateInput.value = active.startDate || "";
+      feedbackInput.value = active.feedback || "";
+      pinProjectBtn.classList.toggle("on", !!active.pinned);
+
+      setMeta();
+      renderBoard();
+    }
+
+    function persistActive(){
+      if(!active) return;
+      active = saveProject(active);
+      // keep index active pointer
+      index = loadIndex();
+      index.activeId = active.id;
+      if(!index.ids.includes(active.id)) index.ids.unshift(active.id);
+      saveIndex(index);
+      syncSelectOptions();
+      setMeta();
+    }
+
+    function computeProgress(){
+      if(!active) return { total: 0, done: 0, pct: 0 };
+      const total = active.tasks.length;
+      const done = active.tasks.filter(t => t.status === "done").length;
+      const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+      return { total, done, pct };
+    }
+
+    function matchesFilters(t){
+      const q = String(searchInput.value||"").trim().toLowerCase();
+      const st = statusFilter.value;
+      const pf = priorityFilter.value;
+      const tf = String(tagFilter.value||"").trim().toLowerCase();
+
+      if(st !== "all" && t.status !== st) return false;
+      if(pf !== "all" && String(t.priority) !== pf) return false;
+
+      if(tf){
+        const tags = (t.tags || []).map(x => String(x).toLowerCase());
+        if(!tags.some(x => x.includes(tf))) return false;
+      }
+
+      if(q){
+        const inTitle = String(t.title||"").toLowerCase().includes(q);
+        const inNote = String(t.note||"").toLowerCase().includes(q);
+        const inTags = (t.tags||[]).some(x => String(x).toLowerCase().includes(q));
+        if(!(inTitle || inNote || inTags)) return false;
+      }
+      return true;
+    }
+
+    function renderBoard(){
+      colBacklog.innerHTML = "";
+      colProgress.innerHTML = "";
+      colDone.innerHTML = "";
+
+      if(!active){
+        colBacklog.innerHTML = `<div class="empty">(no project)</div>`;
+        colProgress.innerHTML = `<div class="empty">(no project)</div>`;
+        colDone.innerHTML = `<div class="empty">(no project)</div>`;
+        cntBacklog.textContent = "0";
+        cntProgress.textContent = "0";
+        cntDone.textContent = "0";
+        return;
+      }
+
+      const filtered = active.tasks.filter(matchesFilters);
+
+      const by = {
+        backlog: filtered.filter(t => t.status === "backlog"),
+        progress: filtered.filter(t => t.status === "progress"),
+        done: filtered.filter(t => t.status === "done"),
+      };
+
+      cntBacklog.textContent = String(by.backlog.length);
+      cntProgress.textContent = String(by.progress.length);
+      cntDone.textContent = String(by.done.length);
+
+      const { total, done, pct } = computeProgress();
+      progressPill.textContent = `${pct}% · ${done}/${total}`;
+
+      for(const t of by.backlog) colBacklog.appendChild(renderTaskCard(t));
+      for(const t of by.progress) colProgress.appendChild(renderTaskCard(t));
+      for(const t of by.done) colDone.appendChild(renderTaskCard(t));
+    }
+
+    function badgePriority(p){
+      if(p === 1) return `<span class="badge pri1">P1</span>`;
+      if(p === 3) return `<span class="badge pri3">P3</span>`;
+      return `<span class="badge pri2">P2</span>`;
+    }
+
+    function renderTaskCard(t){
+      const el = document.createElement("div");
+      el.className = "task";
+      el.draggable = true;
+      el.dataset.tid = t.id;
+
+      const tags = (t.tags||[]).slice(0, 4).map(x => `<span class="badge">${escapeHtml(x)}</span>`).join("");
+      const subTotal = (t.checklist||[]).length;
+      const subDone = (t.checklist||[]).filter(c=>c.done).length;
+      const sub = subTotal ? `<span class="badge">${subDone}/${subTotal}</span>` : "";
+
+      el.innerHTML = `
+        <div class="taskTop">
+          <div class="taskTitle" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</div>
+          <div class="taskBadges">
+            ${badgePriority(t.priority)}
+            ${sub}
+            <button class="iconBtn" data-edit="${escapeHtml(t.id)}" title="Edit" type="button">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 20h4l10-10-4-4L4 16v4z" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M13 7l4 4" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <button class="iconBtn danger" data-del="${escapeHtml(t.id)}" title="Delete (Undo)" type="button">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 7h10l-1 14H8L7 7z" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M6 7h12" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="taskSub">
+          ${tags || `<span style="color:rgba(30,30,30,0.42)">(no tags)</span>`}
+        </div>
+      `;
+
+      // Drag
+      el.addEventListener("dragstart", (e) => {
+        el.classList.add("dragging");
+        e.dataTransfer.setData("text/plain", t.id);
+        e.dataTransfer.effectAllowed = "move";
+      });
+      el.addEventListener("dragend", () => {
+        el.classList.remove("dragging");
+      });
+
+      return el;
+    }
+
+    function setActiveProject(id){
+      const p = loadProject(id);
+      if(!p) return;
+      active = p;
+      index = loadIndex();
+      index.activeId = id;
+      saveIndex(index);
+      syncSelectOptions();
+      applyProjectToUI();
+      showToast("프로젝트 전환.");
+    }
+
+    /* =========================
+       Task operations
+    ========================= */
+    function addTask(status="backlog", title=null){
+      if(!active) return;
+
+      const t = String(title ?? taskTitleInput.value ?? "").trim();
+      if(!t) return;
+
+      const pri = +prioritySelect.value || 2;
+      const tags = parseTags(tagsInput.value);
+
+      active.tasks.unshift({
+        id: uid(),
+        title: t.slice(0,120),
+        status,
+        priority: [1,2,3].includes(pri) ? pri : 2,
+        tags,
+        note: "",
+        checklist: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+
+      persistActive();
+      renderBoard();
+      showToast("추가했어.");
+    }
+
+    function updateTask(id, patch){
+      if(!active) return;
+      active.tasks = active.tasks.map(t => t.id === id ? ({ ...t, ...patch, updatedAt: Date.now() }) : t);
+      persistActive();
+      renderBoard();
+    }
+
+    function deleteTaskWithUndo(id){
+      if(!active) return;
+      const idx = active.tasks.findIndex(t => t.id === id);
+      if(idx < 0) return;
+
+      const removed = active.tasks[idx];
+      active.tasks = active.tasks.filter(t => t.id !== id);
+      persistActive();
+      renderBoard();
+
+      showModalOrInlineUndo("삭제했어.", () => {
+        if(!active) return;
+        const curIdx = Math.min(Math.max(0, idx), active.tasks.length);
+        active.tasks.splice(curIdx, 0, removed);
+        persistActive();
+        renderBoard();
+      });
+    }
+
+    function moveTask(id, toStatus, beforeId=null){
+      if(!active) return;
+      const tasks = active.tasks.slice();
+      const fromIdx = tasks.findIndex(t => t.id === id);
+      if(fromIdx < 0) return;
+      const moving = tasks[fromIdx];
+      tasks.splice(fromIdx, 1);
+
+      moving.status = toStatus;
+      moving.updatedAt = Date.now();
+
+      // insert position
+      if(beforeId){
+        const targetIdx = tasks.findIndex(t => t.id === beforeId);
+        if(targetIdx >= 0) tasks.splice(targetIdx, 0, moving);
+        else tasks.unshift(moving);
+      }else{
+        tasks.unshift(moving);
+      }
+
+      active.tasks = tasks;
+      persistActive();
+      renderBoard();
+    }
+
+    function archiveDone(){
+      if(!active) return;
+      const done = active.tasks.filter(t => t.status === "done");
+      if(done.length === 0){ showToast("Done이 없어."); return; }
+
+      active.archive.doneTasks = (active.archive.doneTasks || []).concat(done);
+      active.tasks = active.tasks.filter(t => t.status !== "done");
+      persistActive();
+      renderBoard();
+      showToast("Done을 archive로 옮겼어.");
+    }
+
+    function clearDoneWithUndo(){
+      if(!active) return;
+      const removed = active.tasks.filter(t => t.status === "done");
+      if(removed.length === 0){ showToast("Done이 없어."); return; }
+
+      active.tasks = active.tasks.filter(t => t.status !== "done");
+      persistActive();
+      renderBoard();
+
+      showModalOrInlineUndo("Done을 지웠어.", () => {
+        if(!active) return;
+        active.tasks = removed.concat(active.tasks);
+        persistActive();
+        renderBoard();
+      });
+    }
+
+    /* =========================
+       Edit modal (prompt-based, lightweight)
+    ========================= */
+    function editTaskPrompt(id){
+      if(!active) return;
+      const t = active.tasks.find(x => x.id === id);
+      if(!t) return;
+
+      const newTitle = prompt("Title", t.title);
+      if(newTitle === null) return;
+      const title = String(newTitle).trim().slice(0,120);
+
+      const newNote = prompt("Note (짧게)", t.note || "");
+      if(newNote === null) return;
+      const note = String(newNote).trim().slice(0,600);
+
+      const newTags = prompt("Tags (comma)", (t.tags||[]).join(", "));
+      if(newTags === null) return;
+      const tags = parseTags(newTags);
+
+      const newPri = prompt("Priority (1/2/3)", String(t.priority));
+      if(newPri === null) return;
+      const pri = [1,2,3].includes(+newPri) ? +newPri : t.priority;
+
+      updateTask(id, { title: title || t.title, note, tags, priority: pri });
+      showToast("수정했어.");
+    }
+
+    /* =========================
+       Export
+    ========================= */
+    function formatProjectMarkdown(p){
+      const lines = [];
+      lines.push(`# Project: ${p.name}`);
+      lines.push(`- Start: ${p.startDate || "-"}`);
+      lines.push(`- Updated: ${new Date(p.updatedAt).toLocaleString()}`);
+      lines.push("");
+
+      const groups = {
+        backlog: p.tasks.filter(t=>t.status==="backlog"),
+        progress: p.tasks.filter(t=>t.status==="progress"),
+        done: p.tasks.filter(t=>t.status==="done"),
+      };
+
+      function block(title, arr){
+        lines.push(`## ${title}`);
+        if(arr.length === 0){
+          lines.push(`- (empty)`);
+          lines.push("");
+          return;
+        }
+        for(const t of arr){
+          const tag = (t.tags||[]).length ? ` \`#${t.tags.join(" #")}\`` : "";
+          const pri = t.priority === 1 ? "P1" : (t.priority === 3 ? "P3" : "P2");
+          const doneMark = (t.status==="done") ? "x" : " ";
+          lines.push(`- [${doneMark}] (${pri}) ${t.title}${tag}`);
+          if(t.note) lines.push(`  - note: ${t.note}`);
+          if((t.checklist||[]).length){
+            for(const c of t.checklist){
+              lines.push(`  - [${c.done ? "x":" "}] ${c.text}`);
+            }
+          }
+        }
+        lines.push("");
+      }
+
+      block("Backlog", groups.backlog);
+      block("In Progress", groups.progress);
+      block("Done", groups.done);
+
+      lines.push(`## Feedback`);
+      lines.push(p.feedback ? p.feedback : "(empty)");
+      lines.push("");
+      if((p.archive && Array.isArray(p.archive.doneTasks)) && p.archive.doneTasks.length){
+        lines.push(`## Archive (Done)`);
+        lines.push(`- count: ${p.archive.doneTasks.length}`);
+      }
+      return lines.join("\n");
+    }
+
+    /* =========================
+       Undo toast (inline + modal reuse)
+    ========================= */
+    function hideInlineUndo(){
+      _undo = null;
+      toast.textContent = "";
+      clearTimeout(hideInlineUndo._t);
+    }
+    function showInlineUndo(message, undoFn){
+      _undo = { undoFn };
+      toast.innerHTML = "";
+      toast.textContent = message;
+      // emulate "Undo" via click on toast area? keep simple: keyboard Z
+      clearTimeout(hideInlineUndo._t);
+      hideInlineUndo._t = setTimeout(hideInlineUndo, 3000);
+    }
+
+    function hideModalToast(){
+      mToast.classList.remove("show");
+      mToast.setAttribute("aria-hidden","true");
+      _mundo = null;
+      clearTimeout(hideModalToast._t);
+    }
+    function showModalToast(message, undoFn){
+      _mundo = { undoFn };
+      mToastMsg.textContent = message || "삭제했어.";
+      mToast.classList.add("show");
+      mToast.setAttribute("aria-hidden","false");
+      clearTimeout(hideModalToast._t);
+      hideModalToast._t = setTimeout(hideModalToast, 3000);
+    }
+
+    function showModalOrInlineUndo(message, undoFn){
+      if(modalOverlay.classList.contains("open")){
+        showModalToast(message, undoFn);
+      }else{
+        showInlineUndo(message, undoFn);
+      }
+    }
+
+    mUndoBtn.addEventListener("click", () => {
+      if(_mundo && typeof _mundo.undoFn === "function") _mundo.undoFn();
+      hideModalToast();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      // quick undo: Ctrl/Cmd+Z within 3s window
+      const isUndo = (e.key.toLowerCase() === "z") && (e.ctrlKey || e.metaKey);
+      if(isUndo){
+        if(modalOverlay.classList.contains("open")){
+          if(_mundo && typeof _mundo.undoFn === "function"){ _mundo.undoFn(); hideModalToast(); }
+        }else{
+          if(_undo && typeof _undo.undoFn === "function"){ _undo.undoFn(); hideInlineUndo(); }
+        }
+      }
+    });
+
+    /* =========================
+       Manager modal (projects)
+    ========================= */
+    function openManager(){
+      modalOverlay.classList.add("open");
+      modalOverlay.setAttribute("aria-hidden","false");
+      selectedProjects.clear();
+      managerPickedId = null;
+      managerSearch.value = "";
+      buildProjectsPanel();
+      previewBox.innerHTML = `
+        <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+          왼쪽에서 프로젝트를 선택하면 요약을 보여줘.
+        </div>
+      `;
+    }
+    function closeManager(){
+      modalOverlay.classList.remove("open");
+      modalOverlay.setAttribute("aria-hidden","true");
+      hideModalToast();
+    }
+
+    function svgCheck(){
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 7L10 17l-5-5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `;
+    }
+
+    function buildProjectsPanel(){
+      index = loadIndex();
+      const q = String(managerSearch.value||"").trim().toLowerCase();
+      const ids = sortProjectIds(index.ids);
+
+      projectsPanel.innerHTML = "";
+      const filtered = ids.filter(id => {
+        const p = loadProject(id);
+        if(!p) return false;
+        if(!q) return true;
+        return p.name.toLowerCase().includes(q);
+      });
+
+      if(filtered.length === 0){
+        projectsPanel.innerHTML = `<div class="empty">검색 결과가 없어.</div>`;
+        return;
+      }
+
+      for(const id of filtered){
+        const p = loadProject(id);
+        if(!p) continue;
+
+        const checked = selectedProjects.has(id);
+        const row = document.createElement("div");
+        row.className = "projRow";
+
+        const chk = document.createElement("div");
+        chk.className = "wkChk" + (checked ? " on" : "");
+        chk.dataset.chk = id;
+        chk.title = "선택";
+        chk.innerHTML = svgCheck();
+
+        const col = document.createElement("div");
+        col.className = "projCol";
+
+        const btn = document.createElement("button");
+        btn.className = "projBtn" + (managerPickedId === id ? " active" : "");
+        btn.type = "button";
+        btn.dataset.pick = id;
+
+        const total = p.tasks.length;
+        const done = p.tasks.filter(t=>t.status==="done").length;
+        const pct = total ? Math.round((done/total)*100) : 0;
+        const pinTag = p.pinned ? `<span class="pinTag">• pinned</span>` : ``;
+
+        btn.innerHTML = `${escapeHtml(p.name)} ${pinTag}<small>${pct}% · ${done}/${total} · ${escapeHtml(p.startDate || "-")}</small>`;
+
+        const actions = document.createElement("div");
+        actions.className = "projActions";
+
+        const pinBtn = document.createElement("button");
+        pinBtn.type = "button";
+        pinBtn.className = "iconBtn" + (p.pinned ? " on" : "");
+        pinBtn.dataset.pin = id;
+        pinBtn.title = p.pinned ? "Unpin" : "Pin";
+        pinBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 3h6l1 6-2 2v5l-2 2-2-2v-5l-2-2 1-6z" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M12 21v-5" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        `;
+
+        const renBtn = document.createElement("button");
+        renBtn.type = "button";
+        renBtn.className = "iconBtn";
+        renBtn.dataset.ren = id;
+        renBtn.title = "Rename";
+        renBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 20h4l10-10-4-4L4 16v4z" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M13 7l4 4" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        `;
+
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "iconBtn danger";
+        delBtn.dataset.del = id;
+        delBtn.title = "Delete (Undo 3s)";
+        delBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 7h10l-1 14H8L7 7z" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M6 7h12" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        `;
+
+        actions.appendChild(pinBtn);
+        actions.appendChild(renBtn);
+        actions.appendChild(delBtn);
+
+        col.appendChild(btn);
+        col.appendChild(actions);
+
+        row.appendChild(chk);
+        row.appendChild(col);
+
+        projectsPanel.appendChild(row);
+      }
+    }
+
+    function renderProjectPreview(id){
+      const p = loadProject(id);
+      if(!p){
+        previewBox.innerHTML = `<div class="empty">(not found)</div>`;
+        return;
+      }
+      managerPickedId = id;
+      buildProjectsPanel();
+
+      const total = p.tasks.length;
+      const done = p.tasks.filter(t=>t.status==="done").length;
+      const pct = total ? Math.round((done/total)*100) : 0;
+      const backlog = p.tasks.filter(t=>t.status==="backlog").length;
+      const prog = p.tasks.filter(t=>t.status==="progress").length;
+
+      previewBox.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap: wrap;">
+          <div style="font-family: EnterSanChaek, ui-sans-serif, system-ui; color: rgba(30,30,30,0.86);">
+            ${escapeHtml(p.name)} ${p.pinned ? `<span class="pinTag">• pinned</span>` : ``}
+          </div>
+          <div class="pill">${pct}% · ${done}/${total}</div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap: wrap; margin-top:6px;">
+          <span class="badge">Start: ${escapeHtml(p.startDate || "-")}</span>
+          <span class="badge">Backlog: ${backlog}</span>
+          <span class="badge">Progress: ${prog}</span>
+          <span class="badge">Done: ${done}</span>
+        </div>
+        <div style="margin-top:10px; color: rgba(30,30,30,0.70); font-size:12.5px; font-family: EnterSanChaek, ui-sans-serif, system-ui;">
+          Feedback
+        </div>
+        <div style="color: rgba(30,30,30,0.72); font-size:12.5px; line-height:1.55; white-space: pre-wrap;">
+          ${escapeHtml(p.feedback || "(empty)")}
+        </div>
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap: wrap; justify-content:flex-end;">
+          <button class="btn secondary" data-open="${escapeHtml(p.id)}" type="button">Open</button>
+          <button class="btn secondary" data-export="${escapeHtml(p.id)}" type="button">Copy MD</button>
+        </div>
+      `;
+    }
+
+    function toggleSelectProject(id){
+      if(selectedProjects.has(id)) selectedProjects.delete(id);
+      else selectedProjects.add(id);
+    }
+
+    function setPinnedProject(id, pinned){
+      const p = loadProject(id);
+      if(!p) return;
+      p.pinned = !!pinned;
+      saveProject(p);
+      syncSelectOptions();
+      if(active && active.id === id) active = loadProject(id);
+      buildProjectsPanel();
+      if(managerPickedId) renderProjectPreview(managerPickedId);
+    }
+
+    function renameProject(id){
+      const p = loadProject(id);
+      if(!p) return;
+      const name = prompt("Project name", p.name);
+      if(name === null) return;
+      p.name = String(name).trim().slice(0,60) || p.name;
+      saveProject(p);
+      syncSelectOptions();
+      if(active && active.id === id) active = loadProject(id);
+      buildProjectsPanel();
+      if(managerPickedId) renderProjectPreview(managerPickedId);
+      showToast("이름을 바꿨어.");
+    }
+
+    function deleteProjectWithUndo(id){
+      const idx = loadIndex();
+      const ids = idx.ids.slice();
+      const pos = ids.indexOf(id);
+      if(pos < 0) return;
+
+      const savedProject = loadProject(id);
+      if(!savedProject) return;
+
+      // remove from index + storage
+      ids.splice(pos, 1);
+      idx.ids = ids;
+      if(idx.activeId === id) idx.activeId = ids[0] || null;
+      saveIndex(idx);
+      removeProject(id);
+
+      // update active
+      index = loadIndex();
+      active = index.activeId ? loadProject(index.activeId) : null;
+      syncSelectOptions();
+      applyProjectToUI();
+      buildProjectsPanel();
+      if(managerPickedId === id){
+        managerPickedId = null;
+        previewBox.innerHTML = `<div class="empty">삭제된 프로젝트야.</div>`;
+      }
+
+      showModalToast("프로젝트를 삭제했어.", () => {
+        // restore project + index position
+        saveProject(savedProject);
+        const curIdx = loadIndex();
+        const restoredIds = curIdx.ids.slice();
+        const insertAt = Math.min(Math.max(0, pos), restoredIds.length);
+        restoredIds.splice(insertAt, 0, savedProject.id);
+        curIdx.ids = restoredIds;
+        if(!curIdx.activeId) curIdx.activeId = savedProject.id;
+        saveIndex(curIdx);
+
+        index = loadIndex();
+        active = index.activeId ? loadProject(index.activeId) : null;
+        syncSelectOptions();
+        applyProjectToUI();
+        buildProjectsPanel();
+        showToast("되돌렸어.");
+      });
+    }
+
+    /* =========================
+       Board Drag & Drop
+    ========================= */
+    function setupDropZone(zoneEl, status){
+      zoneEl.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      });
+      zoneEl.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData("text/plain");
+        if(!id) return;
+
+        // find closest task as insertion anchor
+        const beforeEl = e.target.closest(".task");
+        const beforeId = beforeEl ? beforeEl.dataset.tid : null;
+
+        moveTask(id, status, beforeId);
+        showToast("이동했어.");
+      });
+    }
+
+    /* =========================
+       Init + events
+    ========================= */
+    function hardRefresh(){
+      syncSelectOptions();
+      active = index.activeId ? loadProject(index.activeId) : active;
+      applyProjectToUI();
+    }
+
+    syncSelectOptions();
+    active = index.activeId ? loadProject(index.activeId) : active;
+    applyProjectToUI();
+
+    setupDropZone(colBacklog, "backlog");
+    setupDropZone(colProgress, "progress");
+    setupDropZone(colDone, "done");
+
+    projectSelect.addEventListener("change", () => setActiveProject(projectSelect.value));
+
+    newProjectBtn.addEventListener("click", () => {
+      const name = prompt("New project name", "New Project");
+      if(name === null) return;
+      const p = saveProject(defaultProject(String(name).trim().slice(0,60) || "New Project"));
+
+      index = loadIndex();
+      index.ids = [p.id, ...index.ids.filter(x=>x!==p.id)];
+      index.activeId = p.id;
+      saveIndex(index);
+
+      active = p;
+      hardRefresh();
+      showToast("새 프로젝트를 만들었어.");
+    });
+
+    pinProjectBtn.addEventListener("click", () => {
+      if(!active) return;
+      active.pinned = !active.pinned;
+      persistActive();
+      pinProjectBtn.classList.toggle("on", !!active.pinned);
+      showToast(active.pinned ? "Pinned." : "Unpinned.");
+    });
+
+    renameProjectBtn.addEventListener("click", () => {
+      if(!active) return;
+      renameProject(active.id);
+      hardRefresh();
+    });
+
+    deleteProjectBtn.addEventListener("click", () => {
+      if(!active) return;
+      const ok = confirm(`이 프로젝트를 삭제할까? (Undo 3초)\n\n${active.name}`);
+      if(!ok) return;
+      openManager(); // ensure modal so undo UI is consistent
+      deleteProjectWithUndo(active.id);
+    });
+
+    startDateInput.addEventListener("change", () => {
+      if(!active) return;
+      active.startDate = startDateInput.value || "";
+      persistActive();
+      showToast("Start date 저장.");
+    });
+
+    function syncAddBtn(){
+      const has = String(taskTitleInput.value||"").trim().length > 0;
+      addTaskBtn.disabled = !has;
+      addTaskBtn.style.opacity = has ? "1" : "0.55";
+      addTaskBtn.style.cursor = has ? "pointer" : "not-allowed";
+    }
+    taskTitleInput.addEventListener("input", syncAddBtn);
+    syncAddBtn();
+
+    addTaskBtn.addEventListener("click", () => {
+      addTask("backlog");
+      taskTitleInput.value = "";
+      tagsInput.value = "";
+      prioritySelect.value = "2";
+      taskTitleInput.focus();
+      syncAddBtn();
+    });
+
+    taskTitleInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        if(!addTaskBtn.disabled) addTaskBtn.click();
+      }
+    });
+
+    document.querySelectorAll("[data-quickadd]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const st = btn.dataset.quickadd;
+        const t = prompt("Quick add (one line)");
+        if(t === null) return;
+        addTask(st, t);
+      });
+    });
+
+    // Board clicks (edit / delete)
+    document.addEventListener("click", (e) => {
+      const edit = e.target.closest("[data-edit]");
+      if(edit){
+        editTaskPrompt(edit.dataset.edit);
+        return;
+      }
+      const del = e.target.closest("[data-del]");
+      if(del){
+        deleteTaskWithUndo(del.dataset.del);
+        return;
+      }
+    });
+
+    // Filters re-render
+    [searchInput, statusFilter, priorityFilter, tagFilter].forEach(el => {
+      el.addEventListener("input", renderBoard);
+      el.addEventListener("change", renderBoard);
+    });
+
+    archiveDoneBtn.addEventListener("click", archiveDone);
+    clearDoneBtn.addEventListener("click", () => {
+      const ok = confirm("Done를 비울까? (Undo 3초)");
+      if(!ok) return;
+      clearDoneWithUndo();
+    });
+
+    saveFeedbackBtn.addEventListener("click", () => {
+      if(!active) return;
+      active.feedback = String(feedbackInput.value||"").slice(0,1200);
+      persistActive();
+      showToast("Feedback 저장.");
+    });
+
+    feedbackInput.addEventListener("keydown", (e) => {
+      if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s"){
+        e.preventDefault();
+        saveFeedbackBtn.click();
+      }
+    });
+
+    function exportActiveMarkdown(){
+      if(!active) return "";
+      return formatProjectMarkdown(active);
+    }
+
+    exportBtn.addEventListener("click", async () => {
+      if(!active) return;
+      const md = exportActiveMarkdown();
+      const ok = await copyToClipboard(md);
+      showToast(ok ? "Export(복사) 완료." : "복사 실패 (권한 확인)");
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      if(!active) return;
+      const md = exportActiveMarkdown();
+      const ok = await copyToClipboard(md);
+      showToast(ok ? "복사했어." : "복사 실패 (권한 확인)");
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      if(!active) return;
+      const md = exportActiveMarkdown();
+      const safe = active.name.replace(/[^\w가-힣\s-]/g,"").trim().replace(/\s+/g,"_") || "project";
+      downloadText(`Project_${safe}.md`, md);
+      showToast("다운로드를 시작했어.");
+    });
+
+    // Manager modal
+    openManagerBtn.addEventListener("click", openManager);
+    closeModalBtn.addEventListener("click", closeManager);
+    modalOverlay.addEventListener("click", (e) => { if(e.target === modalOverlay) closeManager(); });
+
+    managerSearch.addEventListener("input", buildProjectsPanel);
+
+    projectsPanel.addEventListener("click", async (e) => {
+      const chk = e.target.closest("[data-chk]");
+      if(chk){
+        toggleSelectProject(chk.dataset.chk);
+        buildProjectsPanel();
+        return;
+      }
+
+      const pin = e.target.closest("[data-pin]");
+      if(pin){
+        const id = pin.dataset.pin;
+        const p = loadProject(id);
+        if(!p) return;
+        setPinnedProject(id, !p.pinned);
+        showToast(loadProject(id)?.pinned ? "Pinned." : "Unpinned.");
+        return;
+      }
+
+      const ren = e.target.closest("[data-ren]");
+      if(ren){
+        renameProject(ren.dataset.ren);
+        return;
+      }
+
+      const del = e.target.closest("[data-del]");
+      if(del){
+        const id = del.dataset.del;
+        const p = loadProject(id);
+        const ok = confirm(`삭제할까? (Undo 3초)\n\n${p ? p.name : id}`);
+        if(!ok) return;
+        deleteProjectWithUndo(id);
+        return;
+      }
+
+      const pick = e.target.closest("[data-pick]");
+      if(pick){
+        renderProjectPreview(pick.dataset.pick);
+      }
+    });
+
+    previewBox.addEventListener("click", async (e) => {
+      const open = e.target.closest("[data-open]");
+      if(open){
+        setActiveProject(open.dataset.open);
+        closeManager();
+        return;
+      }
+      const exp = e.target.closest("[data-export]");
+      if(exp){
+        const p = loadProject(exp.dataset.export);
+        if(!p) return;
+        const md = formatProjectMarkdown(p);
+        const ok = await copyToClipboard(md);
+        showToast(ok ? "Copy MD 완료." : "복사 실패 (권한 확인)");
+      }
+    });
+
+    function getSelectedIds(){
+      return Array.from(selectedProjects);
+    }
+
+    bulkPinBtn.addEventListener("click", () => {
+      const ids = getSelectedIds();
+      if(ids.length === 0){ showToast("선택된 프로젝트가 없어."); return; }
+      for(const id of ids) setPinnedProject(id, true);
+      showToast(`${ids.length}개 pin.`);
+    });
+
+    bulkUnpinBtn.addEventListener("click", () => {
+      const ids = getSelectedIds();
+      if(ids.length === 0){ showToast("선택된 프로젝트가 없어."); return; }
+      for(const id of ids) setPinnedProject(id, false);
+      showToast(`${ids.length}개 unpin.`);
+    });
+
+    bulkDeleteBtn.addEventListener("click", () => {
+      const ids = getSelectedIds();
+      if(ids.length === 0){ showToast("선택된 프로젝트가 없어."); return; }
+      const ok = confirm(`선택한 ${ids.length}개 프로젝트를 삭제할까? (Undo는 개별 삭제만 지원)`);
+      if(!ok) return;
+
+      // bulk delete without undo (safer: no half-undone set)
+      const idx = loadIndex();
+      idx.ids = idx.ids.filter(id => !ids.includes(id));
+      if(ids.includes(idx.activeId)) idx.activeId = idx.ids[0] || null;
+      saveIndex(idx);
+
+      for(const id of ids) removeProject(id);
+      selectedProjects.clear();
+
+      index = loadIndex();
+      active = index.activeId ? loadProject(index.activeId) : null;
+      syncSelectOptions();
+      applyProjectToUI();
+      buildProjectsPanel();
+      showToast("삭제 완료.");
+    });
+
+    // ESC close modal
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape"){
+        if(modalOverlay.classList.contains("open")) closeManager();
+      }
+    });
+  </script>
+</body>
+</html>
 
