@@ -1,1 +1,2069 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Projects (Personal) — Soft Schedule</title>
+
+  <style>
+    :root{
+      /* Pastel Purple theme */
+      --accent-hex: #d5c0fb;
+      --accent-1: rgba(213, 192, 251, 0.92);
+      --accent-2: rgba(213, 192, 251, 0.48);
+      --border:   rgba(213, 192, 251, 0.62);
+
+      --text: rgba(30,30,30,0.92);
+      --muted: rgba(30,30,30,0.40);
+
+      --glass: rgba(255,255,255,0.10);
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --radius: 20px;
+
+      /* pinned pale purple */
+      --pin-bg: rgba(213, 192, 251, 0.20);
+      --pin-bd: rgba(213, 192, 251, 0.38);
+    }
+
+    @font-face{
+      font-family: "EnterSanChaek";
+      src: url("../fonts/엔터산책10.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      background: transparent;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: var(--text);
+    }
+
+    .wrap{
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2.6vw, 16px);
+      box-sizing: border-box;
+    }
+
+    .card{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(14px, 2.8vw, 18px);
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(120% 80% at 0% 0%, rgba(213,192,251,0.22), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(213,192,251,0.14), transparent 55%);
+      pointer-events:none;
+    }
+
+    .inner{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+    }
+
+    .top{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pearl{
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: block;
+      object-fit: cover;
+      flex: 0 0 auto;
+      box-shadow: 0 0 0 2px rgba(213,192,251,0.22);
+    }
+
+    .title h1{
+      margin:0;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: clamp(15px, 3.8vw, 18px);
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      margin-left: auto;
+      font-variant-numeric: tabular-nums;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
+    .controls{
+      display:flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .leftControls{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      flex: 1 1 560px;
+      min-width: 0;
+    }
+
+    .input{
+      flex: 1 1 220px;
+      min-width: 0;
+      border: 1px solid rgba(213,192,251,0.45);
+      background: rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 12px 12px;
+      outline: none;
+      color: var(--text);
+      font-size: 13.5px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .input::placeholder{ color: rgba(30,30,30,0.45); }
+
+    .btn{
+      flex: 0 0 auto;
+      border: 1px solid rgba(213,192,251,0.70);
+      background: rgba(213,192,251,0.18);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(30,30,30,0.85);
+      cursor: pointer;
+      transition: transform .08s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      white-space: nowrap;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .btn:active{ transform: scale(0.98); }
+    .btn:hover{
+      background: rgba(213,192,251,0.24);
+      border-color: rgba(213,192,251,0.92);
+      box-shadow: 0 0 0 3px rgba(213,192,251,0.16);
+    }
+    .btn:focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(213,192,251,0.26);
+    }
+
+    .btn.secondary{
+      border: 1px solid rgba(213,192,251,0.45);
+      background: rgba(255,255,255,0.08);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .dangerBtn{
+      border-color: rgba(0,0,0,0.08) !important;
+      background: rgba(0,0,0,0.03) !important;
+    }
+
+    /* ===== Segmented (Logic / Art) ===== */
+    .seg{
+      display:inline-flex;
+      border: 1px solid rgba(213,192,251,0.52);
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 4px;
+      gap: 4px;
+      align-items:center;
+      box-shadow: 0 0 0 3px rgba(213,192,251,0.00);
+    }
+    .seg button{
+      border: none;
+      background: transparent;
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      color: rgba(30,30,30,0.70);
+      transition: background .18s ease, box-shadow .18s ease, transform .08s ease, color .18s ease;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .seg button:active{ transform: scale(0.99); }
+    .seg button.active{
+      background: rgba(213,192,251,0.26);
+      color: rgba(30,30,30,0.86);
+      box-shadow: 0 0 0 3px rgba(213,192,251,0.14);
+    }
+
+    /* ===== Smooth view switch ===== */
+    .views{
+      position: relative;
+      min-height: 360px;
+    }
+    .view{
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: translateX(10px);
+      pointer-events: none;
+      transition: opacity .20s ease, transform .22s ease;
+      display: grid;
+      gap: 10px;
+    }
+    .view.active{
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    /* ===== List ===== */
+    .list{
+      border: 1px solid rgba(213,192,251,0.30);
+      background: rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 10px;
+      display:grid;
+      gap: 10px;
+      overflow:hidden;
+    }
+
+    .rowHead{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+    .rowTitle{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: 13px;
+      color: rgba(30,30,30,0.82);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .rowMeta{
+      font-size: 12px;
+      color: rgba(30,30,30,0.52);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
+    .items{
+      display:grid;
+      gap: 8px;
+      min-height: 140px;
+    }
+
+    .pItem{
+      width: 100%;
+      text-align: left;
+      border: 1px solid rgba(213,192,251,0.22);
+      background: rgba(255,255,255,0.62);
+      border-radius: 16px;
+      padding: 10px;
+      box-sizing: border-box;
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      transition: border-color .18s ease, background .18s ease, transform .08s ease, box-shadow .18s ease;
+    }
+    .pItem:hover{
+      border-color: rgba(213,192,251,0.48);
+      box-shadow: 0 0 0 3px rgba(213,192,251,0.14);
+    }
+    .pItem:active{ transform: scale(0.99); }
+
+    .pItem.pinned{
+      background: var(--pin-bg);
+      border-color: var(--pin-bd);
+    }
+
+    .pLine{
+      display:flex;
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .pinMark{
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(213,192,251,0.88);
+      box-shadow: 0 0 0 3px rgba(213,192,251,0.18);
+      flex: 0 0 auto;
+      opacity: 0.75;
+    }
+
+    .pName{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: 13.5px;
+      color: rgba(30,30,30,0.88);
+      min-width: 0;
+      flex: 1 1 auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+      padding: 0;
+    }
+    .pSub{
+      font-size: 12px;
+      color: rgba(30,30,30,0.55);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
+    .footer{
+      display:flex;
+      justify-content: space-between;
+      align-items:flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .toast{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(30,30,30,0.62);
+      font-size: 12px;
+      line-height: 1;
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+      transition: opacity .14s ease, transform .14s ease;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .toast:not(:empty){
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast::before{
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(213,192,251,0.92);
+      box-shadow: 0 0 0 3px rgba(213,192,251,0.16);
+      flex: 0 0 auto;
+    }
+
+    /* ===== Modal ===== */
+    .modalOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      z-index: 6000;
+      overflow: hidden;
+    }
+    .modalOverlay.open{ display:flex; }
+
+    .modal{
+      width: min(920px, 100%);
+      max-height: calc(100vh - 20px);
+      display: flex;
+      flex-direction: column;
+      border-radius: 18px;
+      border: 1px solid rgba(213,192,251,0.38);
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .modalHeader{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      flex-wrap: wrap;
+      box-sizing: border-box;
+    }
+
+    .mhLeft{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .mhLeft strong{
+      font-size: 14px;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .mhBadge{
+      font-size: 11px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.55);
+      color: rgba(30,30,30,0.72);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      white-space: nowrap;
+    }
+
+    .mhRight{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+
+    .modalBody{
+      padding: 12px;
+      overflow: auto;
+      min-height: 0;
+      flex: 1 1 auto;
+      display: grid;
+      gap: 12px;
+    }
+
+    .section{
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.66);
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .sectionTitle{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .sectionTitle strong{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: 13px;
+      color: rgba(30,30,30,0.82);
+      letter-spacing: -0.2px;
+    }
+
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      min-width: 0;
+    }
+    @media (max-width: 720px){
+      .row2{ grid-template-columns: 1fr; }
+      .views{ min-height: 420px; }
+    }
+
+    .fieldLabel{
+      font-size: 12px;
+      color: rgba(30,30,30,0.55);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
+    .textInput{
+      width: 100%;
+      min-width: 0;
+      border: 1px solid rgba(213,192,251,0.18);
+      background: rgba(255,255,255,0.70);
+      border-radius: 12px;
+      padding: 10px 10px;
+      outline: none;
+      font-size: 13px;
+      color: rgba(30,30,30,0.88);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      box-sizing: border-box;
+    }
+
+    .area{
+      border: 1px solid rgba(213,192,251,0.18);
+      background: rgba(255,255,255,0.70);
+      border-radius: 14px;
+      padding: 10px 10px;
+      outline: none;
+      font-size: 12.8px;
+      color: rgba(30,30,30,0.86);
+      min-height: 84px;
+      resize: vertical;
+      line-height: 1.45;
+      box-sizing: border-box;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .area::placeholder{ color: rgba(30,30,30,0.42); }
+
+    .miniBtn{
+      border: 1px solid rgba(213,192,251,0.35);
+      background: rgba(255,255,255,0.08);
+      color: rgba(30,30,30,0.72);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+    }
+    .miniBtn:hover{
+      border-color: rgba(213,192,251,0.72);
+      box-shadow: 0 0 0 3px rgba(213,192,251,0.14);
+    }
+    .miniBtn:active{ transform: scale(0.99); }
+
+    /* ===== dynamic list blocks ===== */
+    .chipRow{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      border: 1px solid rgba(213,192,251,0.22);
+      background: rgba(255,255,255,0.60);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: rgba(30,30,30,0.72);
+      max-width: 100%;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .chip span{
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 360px;
+    }
+    .chip button{
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      color: rgba(30,30,30,0.55);
+      padding: 2px 4px;
+      border-radius: 8px;
+      font-family: inherit;
+    }
+    .chip button:hover{
+      background: rgba(213,192,251,0.14);
+      box-shadow: 0 0 0 3px rgba(213,192,251,0.12);
+      color: rgba(30,30,30,0.78);
+    }
+
+    /* ===== Art: gallery thumbnails ===== */
+    .thumbs{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+    .thumb{
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.60);
+      overflow:hidden;
+      display:grid;
+      place-items:center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+      transition: transform .08s ease, box-shadow .18s ease;
+    }
+    .thumb:hover{ box-shadow: 0 0 0 3px rgba(213,192,251,0.14); }
+    .thumb:active{ transform: scale(0.99); }
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+    .thumb .ph{
+      font-size: 11px;
+      color: rgba(30,30,30,0.52);
+      font-family: "EnterSanChaek", ui-sans-serif;
+    }
+
+    /* ===== Archive modal reuse ===== */
+    .archiveGrid{
+      display:grid;
+      grid-template-columns: max-content 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 760px){
+      .archiveGrid{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="Personal Projects Widget">
+      <div class="inner">
+        <div class="top">
+          <div class="title">
+            <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+            <h1>Projects (Personal)</h1>
+          </div>
+          <div class="meta" id="metaText"></div>
+        </div>
+
+        <div class="controls">
+          <div class="leftControls">
+            <div class="seg" role="tablist" aria-label="Logic or Art">
+              <button type="button" id="tabLogic" class="active" role="tab" aria-selected="true">Logic</button>
+              <button type="button" id="tabArt" role="tab" aria-selected="false">Art</button>
+            </div>
+
+            <input id="quickName" class="input" type="text" placeholder="새 프로젝트 이름…" maxlength="60" />
+            <button class="btn secondary" id="addBtn" type="button">Add</button>
+
+            <input id="searchInput" class="input" type="text" placeholder="검색: Project name / Subtitle…" maxlength="80" />
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:nowrap;">
+            <button class="btn secondary" id="archiveBtn" type="button">History / Archive</button>
+            <button class="btn secondary" id="exportBtn" type="button">Export</button>
+          </div>
+        </div>
+
+        <div class="views" aria-live="polite">
+          <div class="view active" id="viewLogic" aria-label="Logic list view">
+            <div class="list">
+              <div class="rowHead">
+                <div class="rowTitle">Logic (System / Build)</div>
+                <div class="rowMeta" id="logicCount">0</div>
+              </div>
+              <div class="items" id="logicList"></div>
+            </div>
+          </div>
+
+          <div class="view" id="viewArt" aria-label="Art list view">
+            <div class="list">
+              <div class="rowHead">
+                <div class="rowTitle">Art (SD / Visual)</div>
+                <div class="rowMeta" id="artCount">0</div>
+              </div>
+              <div class="items" id="artList"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div style="display:flex; flex-direction:column; gap:6px; min-width:180px;">
+            <span id="countText">0 projects</span>
+            <div class="toast" id="toast"></div>
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; width:100%;">
+            <button class="btn secondary" id="clearSearchBtn" type="button">Clear Search</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modalOverlay" id="detailOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Project Details">
+      <div class="modalHeader">
+        <div class="mhLeft">
+          <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+          <strong id="dmTitle">Project</strong>
+          <span class="mhBadge" id="dmTypeBadge">Logic</span>
+        </div>
+
+        <div class="mhRight">
+          <button class="btn secondary" id="dmPinBtn" type="button">Pin</button>
+          <button class="btn secondary" id="dmArchiveBtn" type="button">Archive</button>
+          <button class="btn secondary dangerBtn" id="dmDeleteBtn" type="button">Delete</button>
+          <button class="btn secondary" id="dmCloseBtn" type="button">닫기</button>
+        </div>
+      </div>
+
+      <div class="modalBody" id="dmBody">
+        <div class="section" style="color: rgba(30,30,30,0.55); font-size:12px;">loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Archive Modal -->
+  <div class="modalOverlay" id="archiveOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Projects History / Archive">
+      <div class="modalHeader">
+        <div class="mhLeft">
+          <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+          <strong>Projects History / Archive</strong>
+          <input id="archiveSearch" class="textInput" style="max-width:420px;" type="text" placeholder="검색: name / subtitle / 내용…" />
+        </div>
+
+        <div class="mhRight">
+          <button class="btn secondary" id="bulkRestoreBtn" type="button">Restore</button>
+          <button class="btn secondary" id="bulkExportBtn" type="button">Export</button>
+          <button class="btn secondary dangerBtn" id="bulkDeleteBtn" type="button">Delete</button>
+          <button class="btn secondary" id="closeArchiveBtn" type="button">닫기</button>
+        </div>
+      </div>
+
+      <div class="modalBody archiveGrid">
+        <div class="section" id="archiveList" style="width:max-content; max-width: 360px; overflow:auto; padding:10px;"></div>
+        <div class="section" id="archivePreview" style="overflow:auto;"></div>
+      </div>
+
+      <div class="toast" id="archiveToast" style="position:absolute; left:14px; bottom:14px;"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ========= Workspace scoped keys ========= */
+    const WORKSPACE_ID_STORAGE_KEY = "soft_schedule_workspace_id_v1";
+    function getWorkspaceIdMaybe(){
+      const v = localStorage.getItem(WORKSPACE_ID_STORAGE_KEY);
+      return (v && String(v).trim()) ? String(v).trim() : "";
+    }
+    const workspace_id = getWorkspaceIdMaybe();
+
+    const KEY_LOGIC = workspace_id ? `soft_schedule_personal_projects_logic_${workspace_id}_v1` : "soft_schedule_personal_projects_logic_v1";
+    const KEY_ART   = workspace_id ? `soft_schedule_personal_projects_art_${workspace_id}_v1`   : "soft_schedule_personal_projects_art_v1";
+    const KEY_ARCH  = workspace_id ? `soft_schedule_personal_projects_archive_${workspace_id}_v1` : "soft_schedule_personal_projects_archive_v1";
+
+    /* ========= utils ========= */
+    function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())); }
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function nowIso(){
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    }
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[m]));
+    }
+    function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
+
+    function safeJsonParse(raw, fallback){
+      try{
+        const v = JSON.parse(raw);
+        return v ?? fallback;
+      }catch(_){ return fallback; }
+    }
+
+    /* ========= model =========
+      Common categories:
+      a Project Name
+      b Subtitle
+      c 개요
+      d 기능
+      e 수정사항
+      f 추가항목
+      g 진행상황
+    */
+    function emptyCommon(name){
+      return {
+        id: uid(),
+        pinned: false,
+        name: name || "New Project",
+        subtitle: "",
+        overview: "",
+        features: "",
+        revisions: "",
+        additions: "",
+        progress: "",
+        urls: [""],
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      };
+    }
+
+    // Logic (System/Build)
+    function emptyLogic(name){
+      return {
+        type: "logic",
+        ...emptyCommon(name),
+        category: "", // e.g. Embedding Widget / Desk Overlay
+        target: "",   // e.g. Scheduler / Weather / Stocks
+        logicSheet: {
+          spec: "",
+          log: "",         // keep simple as textarea; you can later extend into structured entries
+          promptBank: ""   // keep simple as textarea; later can become array
+        }
+      };
+    }
+
+    // Art (SD/Visual)
+    function emptyArt(name){
+      return {
+        type: "art",
+        ...emptyCommon(name),
+        assetGroup: "", // e.g. Background / Component Style / World Build / Art Book
+        designTokens: "",
+        promptRecipe: "",
+        generationCards: [
+          {
+            id: uid(),
+            title: "Generation Card",
+            checkpoint: "",
+            lora: "",
+            prompt: "",
+            negative: "",
+            seed: "",
+            sampler: "",
+            images: [""] // gallery urls
+          }
+        ]
+      };
+    }
+
+    /* ========= storage ========= */
+    function loadArr(key){
+      const raw = localStorage.getItem(key);
+      const arr = raw ? safeJsonParse(raw, []) : [];
+      return Array.isArray(arr) ? arr : [];
+    }
+    function saveArr(key, arr){
+      localStorage.setItem(key, JSON.stringify(Array.isArray(arr) ? arr : []));
+    }
+
+    let logicProjects = loadArr(KEY_LOGIC);
+    let artProjects   = loadArr(KEY_ART);
+    let archived      = loadArr(KEY_ARCH);
+
+    function persist(){
+      saveArr(KEY_LOGIC, logicProjects);
+      saveArr(KEY_ART, artProjects);
+      saveArr(KEY_ARCH, archived);
+    }
+
+    /* ========= state ========= */
+    let activeTab = "logic"; // logic | art
+    let searchQ = "";
+    let openId = null; // currently opened project id
+    let openType = null; // logic | art
+
+    /* ========= DOM ========= */
+    const metaText = document.getElementById("metaText");
+    const countText = document.getElementById("countText");
+    const toast = document.getElementById("toast");
+
+    const tabLogic = document.getElementById("tabLogic");
+    const tabArt = document.getElementById("tabArt");
+    const viewLogic = document.getElementById("viewLogic");
+    const viewArt = document.getElementById("viewArt");
+
+    const quickName = document.getElementById("quickName");
+    const addBtn = document.getElementById("addBtn");
+    const searchInput = document.getElementById("searchInput");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const archiveBtn = document.getElementById("archiveBtn");
+
+    const logicList = document.getElementById("logicList");
+    const artList = document.getElementById("artList");
+    const logicCount = document.getElementById("logicCount");
+    const artCount = document.getElementById("artCount");
+
+    // detail modal
+    const detailOverlay = document.getElementById("detailOverlay");
+    const dmTitle = document.getElementById("dmTitle");
+    const dmTypeBadge = document.getElementById("dmTypeBadge");
+    const dmBody = document.getElementById("dmBody");
+    const dmCloseBtn = document.getElementById("dmCloseBtn");
+    const dmPinBtn = document.getElementById("dmPinBtn");
+    const dmArchiveBtn = document.getElementById("dmArchiveBtn");
+    const dmDeleteBtn = document.getElementById("dmDeleteBtn");
+
+    // archive modal
+    const archiveOverlay = document.getElementById("archiveOverlay");
+    const closeArchiveBtn = document.getElementById("closeArchiveBtn");
+    const archiveSearch = document.getElementById("archiveSearch");
+    const archiveList = document.getElementById("archiveList");
+    const archivePreview = document.getElementById("archivePreview");
+    const archiveToast = document.getElementById("archiveToast");
+    const bulkRestoreBtn = document.getElementById("bulkRestoreBtn");
+    const bulkExportBtn = document.getElementById("bulkExportBtn");
+    const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+
+    function showToast(msg){
+      toast.textContent = msg;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.textContent = "", 1600);
+    }
+    function showArchiveToast(msg){
+      archiveToast.textContent = msg;
+      clearTimeout(showArchiveToast._t);
+      showArchiveToast._t = setTimeout(()=> archiveToast.textContent = "", 1600);
+    }
+
+    /* ========= helpers ========= */
+    function getListByType(type){
+      return type === "logic" ? logicProjects : artProjects;
+    }
+    function setListByType(type, next){
+      if(type === "logic") logicProjects = next;
+      else artProjects = next;
+    }
+
+    function findById(type, id){
+      const arr = getListByType(type);
+      return arr.find(p => p.id === id) || null;
+    }
+
+    function updateById(type, id, fn){
+      const arr = getListByType(type);
+      const idx = arr.findIndex(p => p.id === id);
+      if(idx < 0) return;
+      const next = deepClone(arr[idx]);
+      fn(next);
+      next.updatedAt = nowIso();
+      const out = arr.slice();
+      out[idx] = next;
+      setListByType(type, out);
+      persist();
+      render();
+      if(openId === id) renderDetail(type, id);
+    }
+
+    function deleteById(type, id){
+      setListByType(type, getListByType(type).filter(p => p.id !== id));
+      persist();
+      render();
+    }
+
+    function archiveById(type, id){
+      const p = findById(type, id);
+      if(!p) return;
+      const nextActive = getListByType(type).filter(x => x.id !== id);
+      setListByType(type, nextActive);
+      archived.unshift({ ...deepClone(p), archivedAt: Date.now(), archivedFrom: type });
+      persist();
+      render();
+      showToast("Archive로 보냈어.");
+    }
+
+    function matches(p, q){
+      const s = String(q||"").trim().toLowerCase();
+      if(!s) return true;
+      const parts = [
+        p.name, p.subtitle,
+        p.overview, p.features, p.revisions, p.additions, p.progress,
+        ...(p.urls||[]),
+        (p.type === "logic" ? [p.category, p.target, p.logicSheet?.spec, p.logicSheet?.log, p.logicSheet?.promptBank] : []),
+        (p.type === "art" ? [p.assetGroup, p.designTokens, p.promptRecipe,
+          ...(p.generationCards||[]).flatMap(c => [c.title,c.checkpoint,c.lora,c.prompt,c.negative,c.seed,c.sampler, ...(c.images||[])])
+        ] : [])
+      ].filter(Boolean).join(" ").toLowerCase();
+      return parts.includes(s);
+    }
+
+    function sortProjects(arr){
+      const out = arr.slice();
+      out.sort((a,b) => {
+        const ap = a.pinned ? 1 : 0;
+        const bp = b.pinned ? 1 : 0;
+        if(ap !== bp) return bp - ap;
+        // 최근 업데이트 우선
+        const au = String(a.updatedAt||"");
+        const bu = String(b.updatedAt||"");
+        if(au !== bu) return (bu > au ? 1 : -1);
+        return String(a.name||"").localeCompare(String(b.name||""), "ko");
+      });
+      return out;
+    }
+
+    /* ========= tab switching (smooth) ========= */
+    function setTab(type){
+      activeTab = type;
+
+      tabLogic.classList.toggle("active", type==="logic");
+      tabArt.classList.toggle("active", type==="art");
+      tabLogic.setAttribute("aria-selected", type==="logic" ? "true":"false");
+      tabArt.setAttribute("aria-selected", type==="art" ? "true":"false");
+
+      viewLogic.classList.toggle("active", type==="logic");
+      viewArt.classList.toggle("active", type==="art");
+
+      // quickName placeholder hint
+      quickName.placeholder = type==="logic" ? "새 Logic 프로젝트 이름…" : "새 Art 프로젝트 이름…";
+
+      render();
+    }
+
+    /* ========= render list ========= */
+    function renderList(type){
+      const arr = sortProjects(getListByType(type).filter(p => matches(p, searchQ)));
+      const el = (type==="logic") ? logicList : artList;
+
+      if(type==="logic") logicCount.textContent = String(arr.length);
+      else artCount.textContent = String(arr.length);
+
+      if(!arr.length){
+        el.innerHTML = `<div style="color:rgba(30,30,30,0.45); font-size:12px; font-family:EnterSanChaek, ui-sans-serif;">(empty)</div>`;
+        return;
+      }
+
+      el.innerHTML = arr.map(p => `
+        <button class="pItem ${p.pinned ? "pinned":""}" type="button" data-open="${p.id}" data-type="${type}">
+          <div class="pLine">
+            ${p.pinned ? `<span class="pinMark" aria-hidden="true"></span>` : ``}
+            <div class="pName" title="${escapeHtml(p.name||"")}">${escapeHtml(p.name||"Project")}</div>
+          </div>
+          ${p.subtitle ? `<div class="pSub" title="${escapeHtml(p.subtitle)}">${escapeHtml(p.subtitle)}</div>` : `<div class="pSub">(no subtitle)</div>`}
+        </button>
+      `).join("");
+    }
+
+    function formatMeta(){
+      const total = logicProjects.length + artProjects.length;
+      const pinned = logicProjects.filter(p=>p.pinned).length + artProjects.filter(p=>p.pinned).length;
+      metaText.textContent = `${total} projects · pinned ${pinned} · archive ${archived.length}`;
+      countText.textContent = `${total} projects (Logic ${logicProjects.length} · Art ${artProjects.length})`;
+    }
+
+    function render(){
+      formatMeta();
+      renderList("logic");
+      renderList("art");
+    }
+
+    /* ========= detail modal ========= */
+    function openDetail(type, id){
+      const p = findById(type, id);
+      if(!p) return;
+      openId = id;
+      openType = type;
+
+      detailOverlay.classList.add("open");
+      detailOverlay.setAttribute("aria-hidden","false");
+
+      dmTypeBadge.textContent = (type==="logic") ? "Logic" : "Art";
+      dmTitle.textContent = p.name || "Project";
+      dmPinBtn.textContent = p.pinned ? "Unpin" : "Pin";
+
+      renderDetail(type, id);
+    }
+
+    function closeDetail(){
+      detailOverlay.classList.remove("open");
+      detailOverlay.setAttribute("aria-hidden","true");
+      openId = null;
+      openType = null;
+    }
+
+    function urlRowsHtml(urls){
+      const list = (Array.isArray(urls) && urls.length) ? urls : [""];
+      return list.map((u,i)=>`
+        <div class="chipRow">
+          <input class="textInput" data-url-idx="${i}" type="text" placeholder="URL…" value="${escapeHtml(u||"")}" />
+          <button class="miniBtn dangerBtn" type="button" data-url-del="${i}">Delete</button>
+        </div>
+      `).join("");
+    }
+
+    function genCardHtml(card, idx){
+      const imgs = Array.isArray(card.images) ? card.images : [""];
+      const thumbs = imgs.slice(0,4).map((u, i) => {
+        const s = String(u||"").trim();
+        if(!s) return `<div class="thumb" title="(empty)"><div class="ph">empty</div></div>`;
+        return `<div class="thumb" title="${escapeHtml(s)}"><img src="${escapeHtml(s)}" alt="" loading="lazy" /></div>`;
+      }).join("");
+
+      return `
+        <div class="section" style="padding:10px;">
+          <div class="sectionTitle">
+            <strong>Generation Card ${idx+1}</strong>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="miniBtn" type="button" data-gc-moveup="${card.id}">Up</button>
+              <button class="miniBtn" type="button" data-gc-movedown="${card.id}">Down</button>
+              <button class="miniBtn dangerBtn" type="button" data-gc-del="${card.id}">Delete</button>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Title</div>
+              <input class="textInput" data-gc-title="${card.id}" type="text" maxlength="60" value="${escapeHtml(card.title||"")}" />
+            </div>
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Asset Group (this project)</div>
+              <div style="font-size:12px; color:rgba(30,30,30,0.48); font-family:EnterSanChaek, ui-sans-serif;">(상단의 Asset Group 필드와 함께 사용)</div>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Model Info — Checkpoint</div>
+              <input class="textInput" data-gc-checkpoint="${card.id}" type="text" maxlength="120" value="${escapeHtml(card.checkpoint||"")}" />
+            </div>
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Model Info — LoRA</div>
+              <input class="textInput" data-gc-lora="${card.id}" type="text" maxlength="120" value="${escapeHtml(card.lora||"")}" />
+            </div>
+          </div>
+
+          <div class="section" style="background:rgba(255,255,255,0.52); border-radius:14px;">
+            <div class="fieldLabel">Parameter</div>
+            <div class="row2">
+              <div style="display:grid; gap:6px;">
+                <div class="fieldLabel">Prompt</div>
+                <textarea class="area" data-gc-prompt="${card.id}" placeholder="Prompt…">${escapeHtml(card.prompt||"")}</textarea>
+              </div>
+              <div style="display:grid; gap:6px;">
+                <div class="fieldLabel">Negative</div>
+                <textarea class="area" data-gc-negative="${card.id}" placeholder="Negative…">${escapeHtml(card.negative||"")}</textarea>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div style="display:grid; gap:6px;">
+                <div class="fieldLabel">Seed</div>
+                <input class="textInput" data-gc-seed="${card.id}" type="text" maxlength="60" value="${escapeHtml(card.seed||"")}" />
+              </div>
+              <div style="display:grid; gap:6px;">
+                <div class="fieldLabel">Sampler</div>
+                <input class="textInput" data-gc-sampler="${card.id}" type="text" maxlength="60" value="${escapeHtml(card.sampler||"")}" />
+              </div>
+            </div>
+          </div>
+
+          <div class="section" style="background:rgba(255,255,255,0.52); border-radius:14px;">
+            <div class="sectionTitle">
+              <strong>Gallery</strong>
+              <button class="miniBtn" type="button" data-gc-img-add="${card.id}">＋</button>
+            </div>
+            <div class="thumbs">${thumbs}</div>
+            <div style="display:grid; gap:8px; margin-top:8px;">
+              ${imgs.map((u,i)=>`
+                <div class="chipRow">
+                  <input class="textInput" data-gc-img="${card.id}" data-gc-img-idx="${i}" type="text" placeholder="Image URL…" value="${escapeHtml(u||"")}" />
+                  <button class="miniBtn dangerBtn" type="button" data-gc-img-del="${card.id}" data-gc-img-idx="${i}">Delete</button>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDetail(type, id){
+      const p = findById(type, id);
+      if(!p) return;
+
+      dmTitle.textContent = p.name || "Project";
+      dmTypeBadge.textContent = (type==="logic") ? "Logic" : "Art";
+      dmPinBtn.textContent = p.pinned ? "Unpin" : "Pin";
+
+      const commonSection = `
+        <div class="section">
+          <div class="sectionTitle"><strong>Common</strong></div>
+
+          <div class="row2">
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">ⓐ Project Name</div>
+              <input class="textInput" data-common-name type="text" maxlength="60" value="${escapeHtml(p.name||"")}" />
+            </div>
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">ⓑ Subtitle</div>
+              <input class="textInput" data-common-subtitle type="text" maxlength="90" value="${escapeHtml(p.subtitle||"")}" />
+            </div>
+          </div>
+
+          <div class="row2">
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">ⓖ 진행상황</div>
+              <textarea class="area" data-common-progress placeholder="진행상황…">${escapeHtml(p.progress||"")}</textarea>
+            </div>
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">URLs</div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+                <button class="miniBtn" type="button" data-url-add>＋</button>
+              </div>
+              ${urlRowsHtml(p.urls)}
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sectionTitle"><strong>Details</strong></div>
+
+          <div style="display:grid; gap:6px;">
+            <div class="fieldLabel">ⓒ 개요</div>
+            <textarea class="area" data-common-overview placeholder="개요…">${escapeHtml(p.overview||"")}</textarea>
+          </div>
+
+          <div style="display:grid; gap:6px;">
+            <div class="fieldLabel">ⓓ 기능</div>
+            <textarea class="area" data-common-features placeholder="기능…">${escapeHtml(p.features||"")}</textarea>
+          </div>
+
+          <div class="row2">
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">ⓔ 수정사항</div>
+              <textarea class="area" data-common-revisions placeholder="수정사항…">${escapeHtml(p.revisions||"")}</textarea>
+            </div>
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">ⓕ 추가항목</div>
+              <textarea class="area" data-common-additions placeholder="추가항목…">${escapeHtml(p.additions||"")}</textarea>
+            </div>
+          </div>
+
+          <div style="font-size:11px; color:rgba(30,30,30,0.45); font-family:EnterSanChaek, ui-sans-serif;">
+            Created ${escapeHtml(p.createdAt||"")} · Updated ${escapeHtml(p.updatedAt||"")}
+          </div>
+        </div>
+      `;
+
+      const logicSection = `
+        <div class="section">
+          <div class="sectionTitle"><strong>Logic — System / Build</strong></div>
+
+          <div class="row2">
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Category (ex. Embedding Widget / Desk Overlay)</div>
+              <input class="textInput" data-logic-category type="text" maxlength="90" value="${escapeHtml(p.category||"")}" />
+            </div>
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Target (ex. Scheduler / Weather / Stocks)</div>
+              <input class="textInput" data-logic-target type="text" maxlength="90" value="${escapeHtml(p.target||"")}" />
+            </div>
+          </div>
+
+          <div class="section" style="background:rgba(255,255,255,0.52); border-radius:14px;">
+            <div class="sectionTitle"><strong>Logic Sheet</strong></div>
+
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Spec (개요 및 주요 기능)</div>
+              <textarea class="area" data-ls-spec placeholder="Spec…">${escapeHtml(p.logicSheet?.spec||"")}</textarea>
+            </div>
+
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Log (수정 사항 & 해결 현황 — 상태는 기호로)</div>
+              <textarea class="area" data-ls-log placeholder="예) ✅ fixed / ⏳ in progress / ❗ issue …">${escapeHtml(p.logicSheet?.log||"")}</textarea>
+            </div>
+
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Prompt Bank (핵심 Prompt)</div>
+              <textarea class="area" data-ls-prompt placeholder="Prompt Bank…">${escapeHtml(p.logicSheet?.promptBank||"")}</textarea>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const artCards = Array.isArray(p.generationCards) ? p.generationCards : [];
+      const artSection = `
+        <div class="section">
+          <div class="sectionTitle"><strong>Art — SD / Visual</strong></div>
+
+          <div class="row2">
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Asset Group (ex. Background / Component Style / World Build)</div>
+              <input class="textInput" data-art-assetgroup type="text" maxlength="120" value="${escapeHtml(p.assetGroup||"")}" />
+            </div>
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Notes</div>
+              <div style="font-size:12px; color:rgba(30,30,30,0.48); font-family:EnterSanChaek, ui-sans-serif;">
+                Generation Card는 아래에서 추가/관리
+              </div>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Design Token</div>
+              <textarea class="area" data-art-designtokens placeholder="Design tokens…">${escapeHtml(p.designTokens||"")}</textarea>
+            </div>
+            <div style="display:grid; gap:6px;">
+              <div class="fieldLabel">Prompt Recipe</div>
+              <textarea class="area" data-art-promptrecipe placeholder="Prompt recipe…">${escapeHtml(p.promptRecipe||"")}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sectionTitle">
+            <strong>Generation Cards</strong>
+            <button class="miniBtn" type="button" data-gc-add>＋ Add Card</button>
+          </div>
+
+          <div style="display:grid; gap:12px;">
+            ${artCards.map((c,i)=> genCardHtml(c,i)).join("") || `<div style="color:rgba(30,30,30,0.45); font-size:12px; font-family:EnterSanChaek, ui-sans-serif;">(empty)</div>`}
+          </div>
+        </div>
+      `;
+
+      dmBody.innerHTML = `
+        ${commonSection}
+        ${type==="logic" ? logicSection : artSection}
+      `;
+    }
+
+    /* ========= Export ========= */
+    function normalizeUrl(u){
+      const s = String(u || "").trim();
+      if(!s) return "";
+      if(/^https?:\/\//i.test(s)) return s;
+      return "https://" + s;
+    }
+
+    function mdCommon(p){
+      const lines = [];
+      lines.push(`# ${p.name || "Project"}`);
+      lines.push(`- Type: ${p.type}`);
+      lines.push(`- Subtitle: ${p.subtitle || ""}`);
+      lines.push(`- Pinned: ${p.pinned ? "yes" : "no"}`);
+      lines.push(`- Created: ${p.createdAt || ""}`);
+      lines.push(`- Updated: ${p.updatedAt || ""}`);
+      lines.push("");
+      if((p.progress||"").trim()){
+        lines.push(`## 진행상황`);
+        lines.push(p.progress.trim());
+        lines.push("");
+      }
+      if((p.overview||"").trim()){
+        lines.push(`## 개요`);
+        lines.push(p.overview.trim());
+        lines.push("");
+      }
+      if((p.features||"").trim()){
+        lines.push(`## 기능`);
+        lines.push(p.features.trim());
+        lines.push("");
+      }
+      if((p.revisions||"").trim()){
+        lines.push(`## 수정사항`);
+        lines.push(p.revisions.trim());
+        lines.push("");
+      }
+      if((p.additions||"").trim()){
+        lines.push(`## 추가항목`);
+        lines.push(p.additions.trim());
+        lines.push("");
+      }
+      const urls = (p.urls||[]).map(u => (u||"").trim()).filter(Boolean);
+      if(urls.length){
+        lines.push(`## URLs`);
+        for(const u of urls) lines.push(`- ${normalizeUrl(u)}`);
+        lines.push("");
+      }
+      return lines.join("\n");
+    }
+
+    function mdLogic(p){
+      const lines = [];
+      lines.push(mdCommon(p));
+      lines.push(`## Logic`);
+      lines.push(`- Category: ${p.category || ""}`);
+      lines.push(`- Target: ${p.target || ""}`);
+      lines.push("");
+      lines.push(`### Logic Sheet — Spec`);
+      lines.push((p.logicSheet?.spec||"").trim() || "(empty)");
+      lines.push("");
+      lines.push(`### Logic Sheet — Log`);
+      lines.push((p.logicSheet?.log||"").trim() || "(empty)");
+      lines.push("");
+      lines.push(`### Logic Sheet — Prompt Bank`);
+      lines.push((p.logicSheet?.promptBank||"").trim() || "(empty)");
+      lines.push("");
+      return lines.join("\n");
+    }
+
+    function mdArt(p){
+      const lines = [];
+      lines.push(mdCommon(p));
+      lines.push(`## Art`);
+      lines.push(`- Asset Group: ${p.assetGroup || ""}`);
+      lines.push("");
+      lines.push(`### Design Token`);
+      lines.push((p.designTokens||"").trim() || "(empty)");
+      lines.push("");
+      lines.push(`### Prompt Recipe`);
+      lines.push((p.promptRecipe||"").trim() || "(empty)");
+      lines.push("");
+      const cards = Array.isArray(p.generationCards) ? p.generationCards : [];
+      lines.push(`### Generation Cards (${cards.length})`);
+      if(!cards.length){
+        lines.push(`- (empty)`);
+        lines.push("");
+        return lines.join("\n");
+      }
+      for(const c of cards){
+        lines.push(`#### ${c.title || "Generation Card"}`);
+        lines.push(`- Checkpoint: ${c.checkpoint || ""}`);
+        lines.push(`- LoRA: ${c.lora || ""}`);
+        lines.push(`- Seed: ${c.seed || ""}`);
+        lines.push(`- Sampler: ${c.sampler || ""}`);
+        lines.push("");
+        lines.push(`Prompt:\n${(c.prompt||"").trim() || "(empty)"}`);
+        lines.push("");
+        lines.push(`Negative:\n${(c.negative||"").trim() || "(empty)"}`);
+        lines.push("");
+        const imgs = (c.images||[]).map(u => (u||"").trim()).filter(Boolean);
+        if(imgs.length){
+          lines.push(`Gallery:`);
+          for(const u of imgs) lines.push(`- ${normalizeUrl(u)}`);
+          lines.push("");
+        }
+      }
+      return lines.join("\n");
+    }
+
+    function mdForProject(p){
+      return (p.type==="logic") ? mdLogic(p) : mdArt(p);
+    }
+
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try{
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          return ok;
+        }catch(_){
+          document.body.removeChild(ta);
+          return false;
+        }
+      }
+    }
+
+    function exportAllMarkdown(){
+      const lines = [];
+      const total = logicProjects.length + artProjects.length;
+      lines.push(`# Projects Export (Personal)`);
+      lines.push(`- Exported: ${new Date().toISOString()}`);
+      lines.push(`- Active: ${total} (Logic ${logicProjects.length}, Art ${artProjects.length})`);
+      lines.push(`- Archived: ${archived.length}`);
+      lines.push("");
+
+      const l = sortProjects(logicProjects);
+      lines.push(`## Logic (${l.length})`);
+      if(!l.length) lines.push(`- (empty)\n`);
+      for(const p of l){
+        lines.push(mdForProject(p));
+        lines.push("\n---\n");
+      }
+
+      const a = sortProjects(artProjects);
+      lines.push(`## Art (${a.length})`);
+      if(!a.length) lines.push(`- (empty)\n`);
+      for(const p of a){
+        lines.push(mdForProject(p));
+        lines.push("\n---\n");
+      }
+
+      if(archived.length){
+        lines.push(`## Archived (${archived.length})`);
+        for(const p of archived){
+          lines.push(mdForProject(p));
+          lines.push("\n---\n");
+        }
+      }
+      return lines.join("\n");
+    }
+
+    /* ========= Archive modal ========= */
+    let archiveSelected = new Set();
+    let archivePickedId = null;
+
+    function matchesArchive(p, q){
+      const s = String(q||"").trim().toLowerCase();
+      if(!s) return true;
+      return mdForProject(p).toLowerCase().includes(s);
+    }
+
+    function buildArchive(){
+      const q = (archiveSearch.value||"").trim();
+      const list = archived
+        .filter(p => matchesArchive(p, q))
+        .slice()
+        .sort((a,b) => {
+          const ap = a.pinned ? 1 : 0;
+          const bp = b.pinned ? 1 : 0;
+          if(ap !== bp) return bp - ap;
+          const au = String(a.updatedAt||"");
+          const bu = String(b.updatedAt||"");
+          if(au !== bu) return (bu > au ? 1 : -1);
+          return String(a.name||"").localeCompare(String(b.name||""), "ko");
+        });
+
+      if(!list.length){
+        archiveList.innerHTML = `<div style="color:rgba(30,30,30,0.55); font-size:12px;">보관함이 비어있어.</div>`;
+        archivePreview.innerHTML = `<div style="color:rgba(30,30,30,0.55); font-size:12px;">(empty)</div>`;
+        return;
+      }
+
+      archiveList.innerHTML = list.map(p => {
+        const checked = archiveSelected.has(p.id);
+        const active = archivePickedId === p.id;
+        return `
+          <div style="display:grid; grid-template-columns: 18px 1fr; gap:10px; align-items:start; margin-bottom:10px;">
+            <div class="chip" style="padding:6px; border-radius:10px; justify-content:center; cursor:pointer; ${checked ? "box-shadow:0 0 0 3px rgba(213,192,251,0.12);" : ""}"
+                 data-arch-sel="${p.id}">
+              <span style="max-width:unset;">${checked ? "✓" : ""}</span>
+            </div>
+            <button class="miniBtn" data-arch-pick="${p.id}"
+              style="text-align:left; border-radius:14px; width:100%; justify-content:flex-start;
+              ${active ? "border-color: rgba(213,192,251,0.75); box-shadow: 0 0 0 3px rgba(213,192,251,0.14);" : ""}">
+              ${escapeHtml(p.name||"Project")} <span style="opacity:.55;">(${escapeHtml(p.type)})</span>
+            </button>
+          </div>
+        `;
+      }).join("");
+
+      const picked = archived.find(x => x.id === archivePickedId) || list[0];
+      archivePickedId = picked.id;
+      archivePreview.innerHTML = `
+        <div style="display:grid; gap:10px;">
+          <div style="font-family:EnterSanChaek, ui-sans-serif; font-size:14px; color:rgba(30,30,30,0.82);">
+            ${escapeHtml(picked.name||"Project")} <span style="opacity:.55;">(${escapeHtml(picked.type)})</span>
+          </div>
+          <pre style="margin:0; white-space:pre-wrap; font-size:12px; color:rgba(30,30,30,0.72);
+            background:rgba(255,255,255,0.55); border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:10px;">${escapeHtml(mdForProject(picked))}</pre>
+        </div>
+      `;
+    }
+
+    function openArchive(){
+      archiveSelected.clear();
+      archivePickedId = null;
+      archiveOverlay.classList.add("open");
+      archiveOverlay.setAttribute("aria-hidden","false");
+      buildArchive();
+    }
+    function closeArchive(){
+      archiveOverlay.classList.remove("open");
+      archiveOverlay.setAttribute("aria-hidden","true");
+      archiveToast.textContent = "";
+    }
+
+    function getArchiveSelectedIds(){ return Array.from(archiveSelected); }
+
+    function restoreArchived(id){
+      const idx = archived.findIndex(p => p.id === id);
+      if(idx < 0) return;
+      const p = archived[idx];
+      archived.splice(idx, 1);
+      const restored = deepClone(p);
+      restored.updatedAt = nowIso();
+      // restore to original type
+      if(restored.type === "logic") logicProjects.unshift(restored);
+      else artProjects.unshift(restored);
+      persist();
+      render();
+    }
+
+    /* ========= event wiring ========= */
+    tabLogic.addEventListener("click", ()=> setTab("logic"));
+    tabArt.addEventListener("click", ()=> setTab("art"));
+
+    addBtn.addEventListener("click", ()=>{
+      const nm = String(quickName.value||"").trim() || "New Project";
+      if(activeTab === "logic") logicProjects.unshift(emptyLogic(nm));
+      else artProjects.unshift(emptyArt(nm));
+      persist();
+      quickName.value = "";
+      quickName.focus();
+      render();
+      showToast("프로젝트를 추가했어.");
+    });
+
+    quickName.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter"){ e.preventDefault(); addBtn.click(); }
+    });
+
+    searchInput.addEventListener("input", ()=>{
+      searchQ = (searchInput.value||"").trim();
+      render();
+    });
+
+    clearSearchBtn.addEventListener("click", ()=>{
+      searchInput.value = "";
+      searchQ = "";
+      render();
+      showToast("검색을 지웠어.");
+    });
+
+    exportBtn.addEventListener("click", async ()=>{
+      const md = exportAllMarkdown();
+      const ok = await copyToClipboard(md);
+      showToast(ok ? "Export(복사) 완료." : "복사 실패 (권한 확인)");
+    });
+
+    archiveBtn.addEventListener("click", openArchive);
+
+    // list click -> open detail
+    document.addEventListener("click", (e)=>{
+      const btn = e.target.closest("[data-open]");
+      if(btn){
+        openDetail(btn.dataset.type, btn.dataset.open);
+        return;
+      }
+    });
+
+    // detail modal close
+    dmCloseBtn.addEventListener("click", closeDetail);
+    detailOverlay.addEventListener("click", (e)=>{ if(e.target === detailOverlay) closeDetail(); });
+
+    // detail header actions
+    dmPinBtn.addEventListener("click", ()=>{
+      if(!openId || !openType) return;
+      updateById(openType, openId, p => p.pinned = !p.pinned);
+      const p = findById(openType, openId);
+      dmPinBtn.textContent = p && p.pinned ? "Unpin" : "Pin";
+      showToast(p && p.pinned ? "Pinned." : "Unpinned.");
+    });
+
+    dmArchiveBtn.addEventListener("click", ()=>{
+      if(!openId || !openType) return;
+      const id = openId, tp = openType;
+      closeDetail();
+      archiveById(tp, id);
+    });
+
+    dmDeleteBtn.addEventListener("click", ()=>{
+      if(!openId || !openType) return;
+      const ok = confirm("이 프로젝트를 삭제할까? (되돌리기 불가)");
+      if(!ok) return;
+      const id = openId, tp = openType;
+      closeDetail();
+      deleteById(tp, id);
+      showToast("삭제했어.");
+    });
+
+    // detail modal input delegation
+    detailOverlay.addEventListener("input", (e)=>{
+      if(!openId || !openType) return;
+      const id = openId, tp = openType;
+
+      // common
+      if(e.target.matches("[data-common-name]")){
+        const v = (e.target.value||"").slice(0,60);
+        updateById(tp, id, p => p.name = v);
+        dmTitle.textContent = v || "Project";
+        return;
+      }
+      if(e.target.matches("[data-common-subtitle]")){
+        updateById(tp, id, p => p.subtitle = e.target.value || "");
+        return;
+      }
+      if(e.target.matches("[data-common-progress]")){
+        updateById(tp, id, p => p.progress = e.target.value || "");
+        return;
+      }
+      if(e.target.matches("[data-common-overview]")){
+        updateById(tp, id, p => p.overview = e.target.value || "");
+        return;
+      }
+      if(e.target.matches("[data-common-features]")){
+        updateById(tp, id, p => p.features = e.target.value || "");
+        return;
+      }
+      if(e.target.matches("[data-common-revisions]")){
+        updateById(tp, id, p => p.revisions = e.target.value || "");
+        return;
+      }
+      if(e.target.matches("[data-common-additions]")){
+        updateById(tp, id, p => p.additions = e.target.value || "");
+        return;
+      }
+
+      // urls
+      if(e.target.matches("[data-url-idx]")){
+        const idx = Number(e.target.dataset.urlIdx);
+        updateById(tp, id, p => {
+          p.urls = Array.isArray(p.urls) ? p.urls : [];
+          while(p.urls.length <= idx) p.urls.push("");
+          p.urls[idx] = e.target.value || "";
+        });
+        return;
+      }
+
+      // logic fields
+      if(tp==="logic"){
+        if(e.target.matches("[data-logic-category]")){
+          updateById(tp, id, p => p.category = e.target.value || "");
+          return;
+        }
+        if(e.target.matches("[data-logic-target]")){
+          updateById(tp, id, p => p.target = e.target.value || "");
+          return;
+        }
+        if(e.target.matches("[data-ls-spec]")){
+          updateById(tp, id, p => { p.logicSheet = p.logicSheet || {}; p.logicSheet.spec = e.target.value || ""; });
+          return;
+        }
+        if(e.target.matches("[data-ls-log]")){
+          updateById(tp, id, p => { p.logicSheet = p.logicSheet || {}; p.logicSheet.log = e.target.value || ""; });
+          return;
+        }
+        if(e.target.matches("[data-ls-prompt]")){
+          updateById(tp, id, p => { p.logicSheet = p.logicSheet || {}; p.logicSheet.promptBank = e.target.value || ""; });
+          return;
+        }
+      }
+
+      // art fields
+      if(tp==="art"){
+        if(e.target.matches("[data-art-assetgroup]")){
+          updateById(tp, id, p => p.assetGroup = e.target.value || "");
+          return;
+        }
+        if(e.target.matches("[data-art-designtokens]")){
+          updateById(tp, id, p => p.designTokens = e.target.value || "");
+          return;
+        }
+        if(e.target.matches("[data-art-promptrecipe]")){
+          updateById(tp, id, p => p.promptRecipe = e.target.value || "");
+          return;
+        }
+
+        // generation card fields
+        const gcTitle = e.target.closest("[data-gc-title]");
+        if(gcTitle){
+          const cid = e.target.dataset.gcTitle;
+          updateById(tp, id, p => {
+            p.generationCards = Array.isArray(p.generationCards) ? p.generationCards : [];
+            p.generationCards = p.generationCards.map(c => c.id===cid ? ({...c, title: e.target.value || ""}) : c);
+          });
+          return;
+        }
+        if(e.target.dataset.gcCheckpoint){
+          const cid = e.target.dataset.gcCheckpoint;
+          updateById(tp, id, p => {
+            p.generationCards = (p.generationCards||[]).map(c => c.id===cid ? ({...c, checkpoint: e.target.value||""}) : c);
+          });
+          return;
+        }
+        if(e.target.dataset.gcLora){
+          const cid = e.target.dataset.gcLora;
+          updateById(tp, id, p => {
+            p.generationCards = (p.generationCards||[]).map(c => c.id===cid ? ({...c, lora: e.target.value||""}) : c);
+          });
+          return;
+        }
+        if(e.target.dataset.gcPrompt){
+          const cid = e.target.dataset.gcPrompt;
+          updateById(tp, id, p => {
+            p.generationCards = (p.generationCards||[]).map(c => c.id===cid ? ({...c, prompt: e.target.value||""}) : c);
+          });
+          return;
+        }
+        if(e.target.dataset.gcNegative){
+          const cid = e.target.dataset.gcNegative;
+          updateById(tp, id, p => {
+            p.generationCards = (p.generationCards||[]).map(c => c.id===cid ? ({...c, negative: e.target.value||""}) : c);
+          });
+          return;
+        }
+        if(e.target.dataset.gcSeed){
+          const cid = e.target.dataset.gcSeed;
+          updateById(tp, id, p => {
+            p.generationCards = (p.generationCards||[]).map(c => c.id===cid ? ({...c, seed: e.target.value||""}) : c);
+          });
+          return;
+        }
+        if(e.target.dataset.gcSampler){
+          const cid = e.target.dataset.gcSampler;
+          updateById(tp, id, p => {
+            p.generationCards = (p.generationCards||[]).map(c => c.id===cid ? ({...c, sampler: e.target.value||""}) : c);
+          });
+          return;
+        }
+        if(e.target.dataset.gcImg){
+          const cid = e.target.dataset.gcImg;
+          const idx = Number(e.target.dataset.gcImgIdx);
+          updateById(tp, id, p => {
+            p.generationCards = Array.isArray(p.generationCards) ? p.generationCards : [];
+            p.generationCards = p.generationCards.map(c => {
+              if(c.id !== cid) return c;
+              const imgs = Array.isArray(c.images) ? c.images.slice() : [""];
+              while(imgs.length <= idx) imgs.push("");
+              imgs[idx] = e.target.value || "";
+              return { ...c, images: imgs };
+            });
+          });
+          return;
+        }
+      }
+    });
+
+    // detail modal click delegation
+    detailOverlay.addEventListener("click", (e)=>{
+      if(!openId || !openType) return;
+      const id = openId, tp = openType;
+
+      // url add/del
+      const urlAdd = e.target.closest("[data-url-add]");
+      if(urlAdd){
+        updateById(tp, id, p => {
+          p.urls = Array.isArray(p.urls) ? p.urls : [];
+          p.urls.push("");
+        });
+        return;
+      }
+      const urlDel = e.target.closest("[data-url-del]");
+      if(urlDel){
+        const idx = Number(urlDel.dataset.urlDel);
+        updateById(tp, id, p => {
+          p.urls = Array.isArray(p.urls) ? p.urls : [];
+          if(Number.isFinite(idx) && idx >= 0) p.urls.splice(idx, 1);
+          if(!p.urls.length) p.urls = [""];
+        });
+        return;
+      }
+
+      // art: generation cards actions
+      if(tp==="art"){
+        const gcAdd = e.target.closest("[data-gc-add]");
+        if(gcAdd){
+          updateById(tp, id, p => {
+            p.generationCards = Array.isArray(p.generationCards) ? p.generationCards : [];
+            p.generationCards.push({
+              id: uid(),
+              title: "Generation Card",
+              checkpoint: "",
+              lora: "",
+              prompt: "",
+              negative: "",
+              seed: "",
+              sampler: "",
+              images: [""]
+            });
+          });
+          return;
+        }
+
+        const del = e.target.closest("[data-gc-del]");
+        if(del){
+          const cid = del.dataset.gcDel;
+          updateById(tp, id, p => {
+            p.generationCards = Array.isArray(p.generationCards) ? p.generationCards : [];
+            p.generationCards = p.generationCards.filter(c => c.id !== cid);
+            if(!p.generationCards.length){
+              p.generationCards = [{
+                id: uid(), title:"Generation Card", checkpoint:"", lora:"", prompt:"", negative:"", seed:"", sampler:"", images:[""]
+              }];
+            }
+          });
+          return;
+        }
+
+        const up = e.target.closest("[data-gc-moveup]");
+        if(up){
+          const cid = up.dataset.gcMoveup;
+          updateById(tp, id, p => {
+            const cards = Array.isArray(p.generationCards) ? p.generationCards.slice() : [];
+            const i = cards.findIndex(c => c.id===cid);
+            if(i>0){
+              const t = cards[i-1];
+              cards[i-1] = cards[i];
+              cards[i] = t;
+              p.generationCards = cards;
+            }
+          });
+          return;
+        }
+
+        const down = e.target.closest("[data-gc-movedown]");
+        if(down){
+          const cid = down.dataset.gcMovedown;
+          updateById(tp, id, p => {
+            const cards = Array.isArray(p.generationCards) ? p.generationCards.slice() : [];
+            const i = cards.findIndex(c => c.id===cid);
+            if(i>=0 && i<cards.length-1){
+              const t = cards[i+1];
+              cards[i+1] = cards[i];
+              cards[i] = t;
+              p.generationCards = cards;
+            }
+          });
+          return;
+        }
+
+        const imgAdd = e.target.closest("[data-gc-img-add]");
+        if(imgAdd){
+          const cid = imgAdd.dataset.gcImgAdd;
+          updateById(tp, id, p => {
+            p.generationCards = (p.generationCards||[]).map(c => {
+              if(c.id !== cid) return c;
+              const imgs = Array.isArray(c.images) ? c.images.slice() : [""];
+              imgs.push("");
+              return { ...c, images: imgs };
+            });
+          });
+          return;
+        }
+
+        const imgDel = e.target.closest("[data-gc-img-del]");
+        if(imgDel){
+          const cid = imgDel.dataset.gcImgDel;
+          const idx = Number(imgDel.dataset.gcImgIdx);
+          updateById(tp, id, p => {
+            p.generationCards = (p.generationCards||[]).map(c => {
+              if(c.id !== cid) return c;
+              const imgs = Array.isArray(c.images) ? c.images.slice() : [""];
+              if(Number.isFinite(idx) && idx>=0) imgs.splice(idx, 1);
+              if(!imgs.length) imgs.push("");
+              return { ...c, images: imgs };
+            });
+          });
+          return;
+        }
+      }
+    });
+
+    /* ========= Archive modal events ========= */
+    closeArchiveBtn.addEventListener("click", closeArchive);
+    archiveOverlay.addEventListener("click", (e)=>{ if(e.target === archiveOverlay) closeArchive(); });
+    archiveSearch.addEventListener("input", buildArchive);
+
+    archiveList.addEventListener("click", (e)=>{
+      const sel = e.target.closest("[data-arch-sel]");
+      if(sel){
+        const id = sel.dataset.archSel;
+        if(archiveSelected.has(id)) archiveSelected.delete(id);
+        else archiveSelected.add(id);
+        buildArchive();
+        return;
+      }
+      const pick = e.target.closest("[data-arch-pick]");
+      if(pick){
+        archivePickedId = pick.dataset.archPick;
+        buildArchive();
+        return;
+      }
+    });
+
+    bulkRestoreBtn.addEventListener("click", ()=>{
+      const ids = getArchiveSelectedIds();
+      if(!ids.length){ showArchiveToast("선택된 항목이 없어."); return; }
+      for(const id of ids) restoreArchived(id);
+      archiveSelected.clear();
+      buildArchive();
+      showArchiveToast(`${ids.length}개 복원.`);
+    });
+
+    bulkExportBtn.addEventListener("click", async ()=>{
+      const ids = getArchiveSelectedIds();
+      if(!ids.length){ showArchiveToast("선택된 항목이 없어."); return; }
+      const parts = [];
+      for(const id of ids){
+        const p = archived.find(x => x.id === id);
+        if(p) parts.push(mdForProject(p));
+      }
+      const md = parts.join("\n\n---\n\n");
+      const ok = await copyToClipboard(md);
+      showArchiveToast(ok ? "Export(복사) 완료." : "복사 실패");
+    });
+
+    bulkDeleteBtn.addEventListener("click", ()=>{
+      const ids = getArchiveSelectedIds();
+      if(!ids.length){ showArchiveToast("선택된 항목이 없어."); return; }
+      const ok = confirm(`선택한 ${ids.length}개를 삭제할까? (되돌리기 불가)`);
+      if(!ok) return;
+      archived = archived.filter(p => !ids.includes(p.id));
+      archiveSelected.clear();
+      persist();
+      buildArchive();
+      showArchiveToast("삭제 완료.");
+    });
+
+    /* ========= Esc ========= */
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape"){
+        if(detailOverlay.classList.contains("open")){ closeDetail(); return; }
+        if(archiveOverlay.classList.contains("open")){ closeArchive(); return; }
+      }
+    });
+
+    /* ========= init ========= */
+    setTab("logic"); // sets + render
+  </script>
+</body>
+</html>
 
