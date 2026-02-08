@@ -7,7 +7,6 @@
 
   <style>
     :root{
-      /* Pastel Skyblue (slightly desaturated) */
       --accent-1: rgba(165, 206, 240, 0.88);
       --accent-2: rgba(140, 190, 232, 0.52);
       --border:   rgba(140, 190, 232, 0.60);
@@ -16,8 +15,6 @@
       --muted: rgba(30,30,30,0.38);
 
       --glass: rgba(255,255,255,0.10);
-      --glass-2: rgba(255,255,255,0.06);
-
       --shadow: 0 10px 30px rgba(0,0,0,0.06);
       --radius: 20px;
     }
@@ -119,7 +116,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ===== controls row ===== */
     .controls{
       display:flex;
       align-items: center;
@@ -191,7 +187,6 @@
       color: var(--accent-1);
     }
 
-    /* + add button */
     #addBtn{
       height: clamp(28px, 3.2vw, 32px);
       min-width: clamp(28px, 3.2vw, 32px);
@@ -225,7 +220,6 @@
       box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
     }
 
-    /* weekday pills */
     .weekbar{
       display:flex;
       align-items: center;
@@ -302,7 +296,6 @@
       color: rgba(30,30,30,0.88);
     }
 
-    /* ===== Next Week Inbox (one-line) ===== */
     .nextInboxRow{
       display:flex;
       align-items:center;
@@ -352,7 +345,6 @@
       flex: 0 0 auto;
     }
 
-    /* ===== Next Week popover (mini) ===== */
     .popover{
       position: fixed;
       left: 0;
@@ -467,7 +459,6 @@
       flex-wrap: nowrap;
     }
 
-    /* ===== week list sections ===== */
     .weekList{
       display:grid;
       gap: 10px;
@@ -624,7 +615,6 @@
     }
     .item.done .check svg{ opacity: 1; transform: scale(1); }
 
-    /* ===== footer ===== */
     .footer{
       display:flex;
       justify-content: space-between;
@@ -643,7 +633,6 @@
       min-width: 160px;
     }
 
-    /* Toast overlay */
     .toast{
       display: inline-flex;
       align-items: center;
@@ -689,13 +678,11 @@
     .footer-actions::-webkit-scrollbar{ display:none; }
     .footer-actions > .btn{ flex: 0 0 auto; }
 
-    /* Keep History / Archive + Copy + Clear done */
     #historyBtn, #copyBtn, #clearDoneBtn{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
 
-    /* responsive */
     @media (max-width: 420px){
       .weekbar{ width: 100%; justify-content: space-between; }
     }
@@ -731,9 +718,9 @@
       -webkit-backdrop-filter: blur(10px);
       box-shadow: 0 18px 50px rgba(0,0,0,0.18);
       overflow: hidden;
+      position: relative;
     }
 
-    /* ✅ header: title + search same row */
     .modalHeader{
       display:flex;
       align-items:center;
@@ -804,13 +791,12 @@
       min-height: 0;
     }
 
-    /* ✅ week row: checkbox + content (weekBtn + actions under it) */
     .weekRow{
       display:grid;
       grid-template-columns: 18px 1fr;
       gap: 10px;
       align-items:start;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     .wkChk{
@@ -830,7 +816,6 @@
       height: 12px;
       opacity: 0;
     }
-    /* ✅ 체크 표시 색: 진한 회색 */
     .wkChk svg path{
       stroke: rgba(70,70,70,0.95);
     }
@@ -842,7 +827,7 @@
 
     .weekCol{
       display:grid;
-      gap: 6px;
+      gap: 7px;
       min-width: 0;
     }
 
@@ -894,17 +879,17 @@
       margin-left: 6px;
     }
 
-    /* ✅ action icons moved UNDER weekBtn, smaller + lighter */
+    /* ✅ 아이콘 1.5배 */
     .weekActions{
       display:flex;
-      gap: 6px;
+      gap: 8px;
       align-items:center;
       flex-wrap: nowrap;
     }
 
     .iconBtn{
-      width: 16px;
-      height: 16px;
+      width: 24px;   /* was 16 */
+      height: 24px;  /* was 16 */
       border-radius: 999px;
       border: 1px solid rgba(140,190,232,0.18);
       background: rgba(255,255,255,0.70);
@@ -921,10 +906,9 @@
     }
     .iconBtn:active{ transform: scale(0.98); }
 
-    /* ✅ 아이콘 색: 연한색 (휴지통보다 약간 진한 톤) */
     .iconBtn svg{
-      width: 10.5px;
-      height: 10.5px;
+      width: 15.5px;   /* was 10.5 */
+      height: 15.5px;  /* was 10.5 */
       stroke: rgba(110,110,110,0.68);
     }
     .iconBtn.danger svg{
@@ -1014,7 +998,39 @@
       padding: 0 3px;
     }
 
-    /* ✅ preview item delete button (trash icon) */
+    /* ✅ preview toggle done + delete */
+    .pTog{
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1px solid rgba(140,190,232,0.35);
+      background: rgba(255,255,255,0.70);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      flex: 0 0 auto;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, transform .08s ease;
+    }
+    .pTog:hover{
+      border-color: rgba(140,190,232,0.55);
+      background: rgba(255,255,255,0.82);
+    }
+    .pTog:active{ transform: scale(0.98); }
+    .pTog svg{
+      width: 12px;
+      height: 12px;
+      stroke: rgba(120,120,120,0.90);
+      opacity: 0.0;
+      transition: opacity .18s ease;
+    }
+    .pTog.on{
+      border-color: rgba(140,190,232,0.55);
+      background: rgba(165,206,240,0.14);
+    }
+    .pTog.on svg{ opacity: 1; }
+
     .pDel{
       width: 18px;
       height: 18px;
@@ -1034,7 +1050,6 @@
       background: rgba(255,255,255,0.82);
     }
     .pDel:active{ transform: scale(0.98); }
-    /* ✅ 연한 그레이 휴지통 */
     .pDel svg{
       width: 12px;
       height: 12px;
@@ -1052,6 +1067,52 @@
       font-size: 12px;
       color: rgba(30,30,30,0.55);
       font-variant-numeric: tabular-nums;
+    }
+
+    /* ✅ Modal Undo toast */
+    .mToast{
+      position: absolute;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.90);
+      border: 1px solid rgba(140,190,232,0.35);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+      border-radius: 999px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .14s ease, transform .14s ease;
+      transform-origin: center;
+    }
+    .mToast.show{
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .mToastMsg{
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.75);
+      white-space: nowrap;
+    }
+    .mUndoBtn{
+      border: 1px solid rgba(140,190,232,0.55);
+      background: rgba(165,206,240,0.16);
+      color: rgba(30,30,30,0.82);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .mUndoBtn:hover{
+      border-color: rgba(140,190,232,0.80);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
     }
 
     @media (max-width: 420px){
@@ -1163,7 +1224,6 @@
           </div>
         </div>
 
-        <!-- ✅ Next Week Inbox (one-line) -->
         <div class="nextInboxRow" id="nextInboxRow" aria-label="Next Week Inbox">
           <div class="nextInboxLeft">
             <span class="nextInboxTitle">Next Week Inbox</span>
@@ -1193,7 +1253,6 @@
     </div>
   </div>
 
-  <!-- ✅ Next Week Inbox Popover -->
   <div class="popover" id="nextPopover" aria-hidden="true">
     <div class="popHead">
       <div class="popTitle" id="nextPopTitle">Next Week Inbox</div>
@@ -1219,7 +1278,6 @@
         </div>
 
         <div class="mhRight">
-          <!-- ✅ Bulk actions (텍스트 수정) -->
           <button class="btn secondary" id="bulkPinBtn" type="button" title="선택한 주차 Pin">Pin</button>
           <button class="btn secondary" id="bulkCopyMdBtn" type="button" title="선택한 주차 Markdown 내보내기">Export</button>
           <button class="btn secondary" id="bulkDeleteBtn" type="button" title="선택한 주차 삭제">Delete</button>
@@ -1252,12 +1310,17 @@
 
       <div class="modalFooter">
         <span id="archiveMeta">자동 아카이브: ON</span>
-        <span id="archiveCount">0 weeks archived</span>
+        <span id="archiveCount">0 / 0 weeks</span>
+      </div>
+
+      <!-- ✅ Undo Toast -->
+      <div class="mToast" id="mToast" aria-hidden="true">
+        <div class="mToastMsg" id="mToastMsg">삭제했어.</div>
+        <button class="mUndoBtn" id="mUndoBtn" type="button">Undo</button>
       </div>
     </div>
   </div>
 
-  <!-- ✅ Custom mini modal for Next Week Add -->
   <div class="miniOverlay" id="miniOverlay" aria-hidden="true">
     <div class="miniModal" role="dialog" aria-modal="true" aria-label="Next Week Add">
       <div class="miniHead">
@@ -1277,17 +1340,16 @@
   <script>
     /* ========= storage keys ========= */
     const WEEK_PREFIX = "soft_schedule_week_";
-    const WEEK_ARCHIVE_KEY = "soft_schedule_week_archive_v2"; // ✅ v2: meta(pinned) 포함
+    const WEEK_ARCHIVE_KEY = "soft_schedule_week_archive_v2";
 
-    // ✅ Today widget keys (workspace-aware)
-    const WORKSPACE_ID_STORAGE_KEY = "soft_schedule_workspace_id_v1"; // <-- 필요시 수정
+    const WORKSPACE_ID_STORAGE_KEY = "soft_schedule_workspace_id_v1";
     function getWorkspaceIdMaybe(){
       const v = localStorage.getItem(WORKSPACE_ID_STORAGE_KEY);
       return (v && String(v).trim()) ? String(v).trim() : "";
     }
     const workspace_id = getWorkspaceIdMaybe();
     const TODAY_PREFIX_SCOPED = workspace_id ? `soft_schedule_today_${workspace_id}_` : "soft_schedule_today_";
-    const TODAY_PREFIX_FALLBACK = "soft_schedule_today_"; // 이전 키 호환
+    const TODAY_PREFIX_FALLBACK = "soft_schedule_today_";
 
     /* ========= utils ========= */
     function pad2(n){ return String(n).padStart(2,"0"); }
@@ -1356,8 +1418,8 @@
 
     function mondayOfWeek(d){
       const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const day = x.getDay(); // 0 Sun .. 6 Sat
-      const diff = (day === 0) ? -6 : (1 - day); // to Monday
+      const day = x.getDay();
+      const diff = (day === 0) ? -6 : (1 - day);
       x.setDate(x.getDate() + diff);
       x.setHours(0,0,0,0);
       return x;
@@ -1398,7 +1460,7 @@
       return `${before}<span class="mark">${mid}</span>${after}`;
     }
 
-    /* ========= archive helpers (v2) ========= */
+    /* ========= archive (meta only, state may be local week) ========= */
     function loadWeekArchiveV2(){
       try{
         const raw = localStorage.getItem(WEEK_ARCHIVE_KEY);
@@ -1407,7 +1469,7 @@
         if(parsed && parsed.weeks && typeof parsed.weeks === "object"){
           return { weeks: parsed.weeks };
         }
-        // v1 -> v2 migrate
+        // migrate v1
         if(parsed && typeof parsed === "object"){
           const weeks = {};
           for(const [id, val] of Object.entries(parsed)){
@@ -1458,7 +1520,7 @@
       localStorage.setItem(key, JSON.stringify(normalizeWeekState(data)));
     }
 
-    // ✅ 주 이동 시 “사라짐” 방지: past week를 archive에 복사만 하고, 원본 localStorage는 유지
+    // keep older weeks saved to archive store when they pass
     function autoArchivePastWeeks(){
       const archive = loadWeekArchiveV2();
       const thisWeekMon = mondayOfWeek(new Date());
@@ -1480,17 +1542,13 @@
               const raw = localStorage.getItem(k);
               const data = raw ? JSON.parse(raw) : null;
               if(data && typeof data === "object"){
-                archive.weeks[weekId] = {
-                  state: normalizeWeekState(data),
-                  meta: { pinned: false }
-                };
+                archive.weeks[weekId] = { state: normalizeWeekState(data), meta: { pinned: false } };
                 changed = true;
               }
             }catch(e){}
           }
         }
       }
-
       if(changed) saveWeekArchiveV2(archive);
       return archive;
     }
@@ -1517,12 +1575,10 @@
 
     const toast = document.getElementById("toast");
 
-    // Next week inbox row
     const nextInboxCount = document.getElementById("nextInboxCount");
     const nextAddBtn = document.getElementById("nextAddBtn");
     const nextShowBtn = document.getElementById("nextShowBtn");
 
-    // Next popover
     const nextPopover = document.getElementById("nextPopover");
     const nextPopCloseBtn = document.getElementById("nextPopCloseBtn");
     const nextPopList = document.getElementById("nextPopList");
@@ -1530,7 +1586,6 @@
     const nextClearDoneBtn = document.getElementById("nextClearDoneBtn");
     const cardEl = document.querySelector(".card");
 
-    // modal
     const modalOverlay = document.getElementById("modalOverlay");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const weeksPanel = document.getElementById("weeksPanel");
@@ -1541,24 +1596,26 @@
     const archiveCount = document.getElementById("archiveCount");
     const searchInput = document.getElementById("searchInput");
 
-    // bulk buttons (텍스트만 바뀜 / 역할 재배치)
-    const bulkPinBtn = document.getElementById("bulkPinBtn");       // Pin
-    const bulkCopyMdBtn = document.getElementById("bulkCopyMdBtn"); // Export
-    const bulkDeleteBtn = document.getElementById("bulkDeleteBtn"); // Delete
-    const bulkUnpinBtn = document.getElementById("bulkUnpinBtn");   // Clear(=Unpin)
+    const bulkPinBtn = document.getElementById("bulkPinBtn");
+    const bulkCopyMdBtn = document.getElementById("bulkCopyMdBtn");
+    const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+    const bulkUnpinBtn = document.getElementById("bulkUnpinBtn");
 
-    // single week export buttons
     const copyWeekMdBtn = document.getElementById("copyWeekMdBtn");
     const downloadWeekMdBtn = document.getElementById("downloadWeekMdBtn");
 
-    // mini modal
     const miniOverlay = document.getElementById("miniOverlay");
     const miniCloseBtn = document.getElementById("miniCloseBtn");
     const miniCancelBtn = document.getElementById("miniCancelBtn");
     const miniOkBtn = document.getElementById("miniOkBtn");
     const miniInput = document.getElementById("miniInput");
 
-    /* ========= add icon for + ========= */
+    // modal toast (Undo)
+    const mToast = document.getElementById("mToast");
+    const mToastMsg = document.getElementById("mToastMsg");
+    const mUndoBtn = document.getElementById("mUndoBtn");
+
+    /* ========= add icon ========= */
     addBtn.innerHTML = `
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
         <path d="M12 5v14M5 12h14"
@@ -1580,12 +1637,11 @@
       return Math.min(6, Math.max(0, diff));
     })();
 
-    const expanded = new Map(); // key: dayIndex -> bool
+    const expanded = new Map();
 
     function getWeekId(){ return weekIdFromMonday(viewMonday); }
     function getWeekKey(){ return WEEK_PREFIX + getWeekId(); }
 
-    // init
     let weekArchive = autoArchivePastWeeks();
     let weekState = loadWeek(getWeekKey());
 
@@ -1593,7 +1649,6 @@
       saveWeek(getWeekKey(), weekState);
     }
 
-    /* ========= buttons enable/disable ========= */
     function syncAddButtonState(){
       const hasText = (taskInput.value || "").trim().length > 0;
       addBtn.disabled = !hasText;
@@ -1601,7 +1656,6 @@
     taskInput.addEventListener("input", syncAddButtonState);
     syncAddButtonState();
 
-    /* ========= build weekday pills ========= */
     function buildWeekdayPills(){
       weekdayPills.innerHTML = "";
       for(let i=0;i<7;i++){
@@ -1627,7 +1681,6 @@
       if(Number.isFinite(i)) setSelectedDay(i);
     });
 
-    /* ========= render ========= */
     function dayDateStr(i){
       const d = addDays(viewMonday, i);
       return dateToYmd(d);
@@ -1756,7 +1809,6 @@
     buildWeekdayPills();
     renderWeekList();
 
-    /* ========= mutations ========= */
     function addItemToDay(dayIndex, text){
       const t = (text || "").trim();
       if(!t) return;
@@ -1798,7 +1850,6 @@
       showToast("완료를 지웠어.");
     }
 
-    /* ========= Next Week Inbox mutations ========= */
     function addNextInbox(text){
       const t = (text || "").trim();
       if(!t) return;
@@ -1852,7 +1903,6 @@
       showToast(ok ? "Next Week Inbox를 복사했어." : "복사 실패 (권한 확인)");
     }
 
-    /* ========= section toggle (2+ only) ========= */
     weekList.addEventListener("click", (e) => {
       const tbtn = e.target.closest("[data-toggle]");
       if(tbtn){
@@ -1876,7 +1926,6 @@
       }
     });
 
-    /* ========= Add events ========= */
     addBtn.addEventListener("click", () => {
       addItemToDay(selectedDayIndex, taskInput.value);
       taskInput.value = "";
@@ -1892,7 +1941,6 @@
       }
     });
 
-    /* ========= From Today / Pull / Push ========= */
     fromTodayBtn.addEventListener("click", () => {
       const today = new Date();
       const mon = mondayOfWeek(today);
@@ -2008,7 +2056,6 @@
       showToast(`Today로 ${added}개 보냈어.`);
     });
 
-    /* ========= Next Week Inbox UI / Popover ========= */
     function placeNextPopover(anchorEl){
       if(!anchorEl || !cardEl) return;
 
@@ -2126,7 +2173,6 @@
       if(nextPopover.classList.contains("open")) placeNextPopover(nextShowBtn);
     }, { passive: true });
 
-    /* ========= Copy ========= */
     function formatWeekForCopy(weekId, data){
       const lines = [];
       lines.push(`[This Week | ${weekId}]`);
@@ -2198,7 +2244,6 @@
 
     clearDoneBtn.addEventListener("click", clearDone);
 
-    /* ========= Week navigation ========= */
     function loadCurrentViewWeek(){
       weekArchive = autoArchivePastWeeks();
       weekState = loadWeek(getWeekKey());
@@ -2226,9 +2271,32 @@
     let searchQuery = "";
     const selectedWeeks = new Set();
 
+    // ✅ 5주(과거2/현재/미래2)만 목록으로 사용
+    function getFiveWeekWindowIds(){
+      const base = mondayOfWeek(new Date());
+      const mons = [
+        addDays(base, -14),
+        addDays(base, -7),
+        addDays(base, 0),
+        addDays(base, 7),
+        addDays(base, 14),
+      ];
+      return mons.map(m => weekIdFromMonday(m));
+    }
+
+    // ✅ 이 모달은 "현재 로컬 week 데이터"를 직접 읽어 보여줌 (그래서 기본화면 추가가 바로 보임)
+    function loadWeekStateById(weekId){
+      const key = WEEK_PREFIX + weekId;
+      return loadWeek(key);
+    }
+    function saveWeekStateById(weekId, data){
+      const key = WEEK_PREFIX + weekId;
+      saveWeek(key, data);
+    }
+
     function openModal(){
-      selectedWeeks.clear(); // ✅ 모달 열 때 선택 초기화
-      weekArchive = loadWeekArchiveV2();
+      selectedWeeks.clear();
+      weekArchive = loadWeekArchiveV2(); // meta(pinned) 용
       searchQuery = (searchInput.value || "").trim();
       buildWeeks();
 
@@ -2252,14 +2320,14 @@
     function closeModal(){
       modalOverlay.classList.remove("open");
       modalOverlay.setAttribute("aria-hidden", "true");
+      hideModalToast();
     }
 
-    function weekMatchesQuery(weekId, entry, q){
+    function weekMatchesQuery(weekId, data, q){
       if(!q) return true;
       const lowerQ = q.toLowerCase();
       if(String(weekId).toLowerCase().includes(lowerQ)) return true;
 
-      const data = entry && entry.state ? entry.state : normalizeWeekState(entry);
       const days = (data && data.days) ? data.days : {};
       for(let i=0;i<7;i++){
         const arr = days[String(i)] || [];
@@ -2287,15 +2355,20 @@
       return { total, done };
     }
 
+    function ensureMetaEntry(weekId){
+      if(!weekArchive.weeks[weekId]){
+        weekArchive.weeks[weekId] = { state: null, meta: { pinned: false } };
+      } else {
+        weekArchive.weeks[weekId].meta = weekArchive.weeks[weekId].meta || { pinned: false };
+      }
+    }
     function isPinned(id){
       const entry = weekArchive.weeks[id];
       return !!(entry && entry.meta && entry.meta.pinned);
     }
     function setPinned(id, pinned){
-      const entry = weekArchive.weeks[id];
-      if(!entry) return;
-      entry.meta = entry.meta || {};
-      entry.meta.pinned = !!pinned;
+      ensureMetaEntry(id);
+      weekArchive.weeks[id].meta.pinned = !!pinned;
     }
 
     function toggleSelectWeek(id){
@@ -2303,7 +2376,6 @@
       else selectedWeeks.add(id);
     }
 
-    /* ✅ 작은 아이콘 SVG들 (톤 맞춤, 일자 버튼 없음) */
     function svgPin(){
       return `
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -2341,22 +2413,16 @@
 
     function buildWeeks(){
       const q = (searchQuery || "").trim();
-      const ids = Object.keys((weekArchive && weekArchive.weeks) ? weekArchive.weeks : {});
+      const ids = getFiveWeekWindowIds(); // ✅ 5개 고정
 
-      // ✅ 정렬: 오래된 주가 위, 최근이 아래 (오름차순)
-      ids.sort((a,b) => {
-        const as = a.split("~")[0].trim();
-        const bs = b.split("~")[0].trim();
-        const ad = ymdToDate(as);
-        const bd = ymdToDate(bs);
-        const at = ad ? ad.getTime() : 0;
-        const bt = bd ? bd.getTime() : 0;
-        return at - bt;
+      // 필터는 유지
+      const filtered = ids.filter(id => {
+        const st = loadWeekStateById(id);
+        return weekMatchesQuery(id, st, q);
       });
 
-      const filtered = ids.filter(id => weekMatchesQuery(id, weekArchive.weeks[id], q));
-
       weeksPanel.innerHTML = "";
+
       if(filtered.length === 0){
         weeksPanel.innerHTML = `
           <div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">
@@ -2365,10 +2431,11 @@
         `;
       }else{
         for(const id of filtered){
-          const entry = weekArchive.weeks[id];
-          const data = entry.state;
+          ensureMetaEntry(id);
+
+          const data = loadWeekStateById(id);
           const { total, done } = getCountsForWeek(data);
-          const pinned = !!(entry.meta && entry.meta.pinned);
+          const pinned = isPinned(id);
           const checked = selectedWeeks.has(id);
 
           const row = document.createElement("div");
@@ -2399,7 +2466,6 @@
           const actions = document.createElement("div");
           actions.className = "weekActions";
 
-          // Pin (toggle)
           const pinBtn = document.createElement("button");
           pinBtn.type = "button";
           pinBtn.className = "iconBtn" + (pinned ? " on" : "");
@@ -2407,7 +2473,6 @@
           pinBtn.title = pinned ? "Unpin" : "Pin";
           pinBtn.innerHTML = svgPin();
 
-          // Export(=Copy MD for single week)
           const expBtn = document.createElement("button");
           expBtn.type = "button";
           expBtn.className = "iconBtn";
@@ -2415,7 +2480,6 @@
           expBtn.title = "Export (Copy MD)";
           expBtn.innerHTML = svgCopy();
 
-          // Download MD
           const dlBtn = document.createElement("button");
           dlBtn.type = "button";
           dlBtn.className = "iconBtn";
@@ -2423,12 +2487,11 @@
           dlBtn.title = "Download MD";
           dlBtn.innerHTML = svgDownload();
 
-          // Delete week
           const delBtn = document.createElement("button");
           delBtn.type = "button";
           delBtn.className = "iconBtn danger";
           delBtn.dataset.wdel = id;
-          delBtn.title = "Delete week";
+          delBtn.title = "Delete week (local week data)";
           delBtn.innerHTML = svgTrash();
 
           actions.appendChild(pinBtn);
@@ -2470,32 +2533,95 @@
       btns.forEach(b => b.classList.toggle("active", b.dataset.week === id));
     }
 
-    /* ✅ 프리뷰에서 아이템 삭제(주차 데이터에서 바로 삭제) */
-    function deletePreviewItem(weekId, section, itemId){
-      const entry = weekArchive.weeks[weekId];
-      if(!entry || !entry.state) return;
+    /* ========= Modal Undo Toast ========= */
+    let _undoPayload = null;
+    function hideModalToast(){
+      mToast.classList.remove("show");
+      mToast.setAttribute("aria-hidden","true");
+      _undoPayload = null;
+      clearTimeout(hideModalToast._t);
+    }
+    function showModalToast(message, undoFn){
+      _undoPayload = { undoFn };
+      mToastMsg.textContent = message || "삭제했어.";
+      mToast.classList.add("show");
+      mToast.setAttribute("aria-hidden","false");
+      clearTimeout(hideModalToast._t);
+      hideModalToast._t = setTimeout(hideModalToast, 3000);
+    }
+    mUndoBtn.addEventListener("click", () => {
+      if(_undoPayload && typeof _undoPayload.undoFn === "function"){
+        _undoPayload.undoFn();
+      }
+      hideModalToast();
+    });
 
-      if(section === "nx"){
-        entry.state.nextInbox = (entry.state.nextInbox || []).filter(it => it.id !== itemId);
+    /* ✅ 프리뷰: done 토글 + delete(Undo 3s) */
+    function togglePreviewDone(weekId, sec, itemId){
+      const data = loadWeekStateById(weekId);
+      if(sec === "nx"){
+        data.nextInbox = (data.nextInbox || []).map(it => it.id === itemId ? ({...it, done: !it.done}) : it);
       }else{
-        const day = String(section);
-        const arr = (entry.state.days && entry.state.days[day]) ? entry.state.days[day] : [];
-        entry.state.days[day] = arr.filter(it => it.id !== itemId);
+        const day = String(sec);
+        const arr = (data.days && data.days[day]) ? data.days[day] : [];
+        data.days[day] = arr.map(it => it.id === itemId ? ({...it, done: !it.done}) : it);
+      }
+      saveWeekStateById(weekId, data);
+      buildWeeks();
+      renderWeekPreview(weekId);
+    }
+
+    function deletePreviewItemWithUndo(weekId, sec, itemId){
+      const data = loadWeekStateById(weekId);
+
+      let removed = null;
+      let removedIndex = -1;
+
+      if(sec === "nx"){
+        const arr = data.nextInbox || [];
+        removedIndex = arr.findIndex(it => it.id === itemId);
+        if(removedIndex >= 0){
+          removed = arr[removedIndex];
+          data.nextInbox = arr.filter(it => it.id !== itemId);
+        }
+      }else{
+        const day = String(sec);
+        const arr = (data.days && data.days[day]) ? data.days[day] : [];
+        removedIndex = arr.findIndex(it => it.id === itemId);
+        if(removedIndex >= 0){
+          removed = arr[removedIndex];
+          data.days[day] = arr.filter(it => it.id !== itemId);
+        }
       }
 
-      saveWeekArchiveV2(weekArchive);
-      buildWeeks();                 // 카운트 갱신
-      renderWeekPreview(weekId);    // 프리뷰 갱신
-      showToast("삭제했어.");
+      if(!removed) return;
+
+      saveWeekStateById(weekId, data);
+      buildWeeks();
+      renderWeekPreview(weekId);
+
+      showModalToast("삭제했어.", () => {
+        const cur = loadWeekStateById(weekId);
+        if(sec === "nx"){
+          const arr = cur.nextInbox || [];
+          const idx = Math.min(Math.max(0, removedIndex), arr.length);
+          arr.splice(idx, 0, removed);
+          cur.nextInbox = arr;
+        }else{
+          const day = String(sec);
+          const arr = (cur.days && cur.days[day]) ? cur.days[day] : (cur.days[day] = []);
+          const idx = Math.min(Math.max(0, removedIndex), arr.length);
+          arr.splice(idx, 0, removed);
+          cur.days[day] = arr;
+        }
+        saveWeekStateById(weekId, cur);
+        buildWeeks();
+        renderWeekPreview(weekId);
+      });
     }
 
     function renderWeekPreview(id){
-      const entry = weekArchive.weeks[id];
-      const data = entry ? entry.state : null;
-      if(!data){
-        previewBox.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">표시할 내용이 없어.</div>`;
-        return;
-      }
+      const data = loadWeekStateById(id);
 
       pickedWeekId = id;
       setActiveWeekButton(id);
@@ -2510,8 +2636,18 @@
       const days = data.days || {};
       const rows = [];
 
+      const togBtnHtml = (weekId, sec, itemId, on) => `
+        <button class="pTog ${on ? "on" : ""}" type="button" title="done 토글"
+          data-ptog-week="${escapeHtml(weekId)}" data-ptog-sec="${escapeHtml(sec)}" data-ptog-id="${escapeHtml(itemId)}">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 7L10 17l-5-5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      `;
+
       const trashBtnHtml = (weekId, sec, itemId) => `
-        <button class="pDel" type="button" title="삭제" data-pdel-week="${escapeHtml(weekId)}" data-pdel-sec="${escapeHtml(sec)}" data-pdel-id="${escapeHtml(itemId)}">
+        <button class="pDel" type="button" title="삭제"
+          data-pdel-week="${escapeHtml(weekId)}" data-pdel-sec="${escapeHtml(sec)}" data-pdel-id="${escapeHtml(itemId)}">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M7 7h10l-1 14H8L7 7z" stroke-width="1.6" stroke-linejoin="round"/>
             <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-width="1.6" stroke-linejoin="round"/>
@@ -2548,6 +2684,7 @@
               <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}
               </span>
+              ${togBtnHtml(id, String(i), it.id, it.done)}
               ${trashBtnHtml(id, String(i), it.id)}
             </div>
           `);
@@ -2570,6 +2707,7 @@
               <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}
               </span>
+              ${togBtnHtml(id, "nx", it.id, it.done)}
               ${trashBtnHtml(id, "nx", it.id)}
             </div>
           `);
@@ -2585,7 +2723,6 @@
       if(e.target === modalOverlay) closeModal();
     });
 
-    /* ✅ weeks panel click handling */
     weeksPanel.addEventListener("click", async (e) => {
       const chk = e.target.closest("[data-chk]");
       if(chk){
@@ -2608,9 +2745,8 @@
       const exp = e.target.closest("[data-exp]");
       if(exp){
         const id = exp.dataset.exp;
-        const entry = weekArchive.weeks[id];
-        if(!entry || !entry.state) return;
-        const md = formatWeekAsMarkdown(id, entry.state);
+        const data = loadWeekStateById(id);
+        const md = formatWeekAsMarkdown(id, data);
         const ok = await copyToClipboard(md);
         showToast(ok ? "Export(복사) 완료." : "복사 실패 (권한 확인)");
         return;
@@ -2619,9 +2755,8 @@
       const dl = e.target.closest("[data-dl]");
       if(dl){
         const id = dl.dataset.dl;
-        const entry = weekArchive.weeks[id];
-        if(!entry || !entry.state) return;
-        const md = formatWeekAsMarkdown(id, entry.state);
+        const data = loadWeekStateById(id);
+        const md = formatWeekAsMarkdown(id, data);
         const safe = id.replace(/[^\d.\s~]/g,"").replace(/\s+/g," ").trim().replace(/ /g,"_");
         downloadText(`ThisWeek_${safe}.md`, md);
         showToast("다운로드를 시작했어.");
@@ -2631,12 +2766,13 @@
       const wdel = e.target.closest("[data-wdel]");
       if(wdel){
         const id = wdel.dataset.wdel;
-        const ok = confirm(`이 주차를 삭제할까? (되돌리기 불가)\n\n${id}`);
+        const ok = confirm(`이 주차(로컬 데이터)를 삭제할까? (되돌리기 불가)\n\n${id}`);
         if(!ok) return;
-        delete weekArchive.weeks[id];
+
+        localStorage.removeItem(WEEK_PREFIX + id);
         selectedWeeks.delete(id);
         if(pickedWeekId === id) pickedWeekId = null;
-        saveWeekArchiveV2(weekArchive);
+
         buildWeeks();
 
         if(!pickedWeekId){
@@ -2660,21 +2796,24 @@
       renderWeekPreview(btn.dataset.week);
     });
 
-    /* ✅ preview delete (trash icon) */
+    // ✅ preview interactions: done toggle + delete(with undo)
     previewBox.addEventListener("click", (e) => {
-      const t = e.target.closest("[data-pdel-week]");
-      if(!t) return;
-      const weekId = t.dataset.pdelWeek;
-      const sec = t.dataset.pdelSec;
-      const itemId = t.dataset.pdelId;
-      deletePreviewItem(weekId, sec, itemId);
+      const tog = e.target.closest("[data-ptog-week]");
+      if(tog){
+        togglePreviewDone(tog.dataset.ptogWeek, tog.dataset.ptogSec, tog.dataset.ptogId);
+        return;
+      }
+
+      const del = e.target.closest("[data-pdel-week]");
+      if(del){
+        deletePreviewItemWithUndo(del.dataset.pdelWeek, del.dataset.pdelSec, del.dataset.pdelId);
+        return;
+      }
     });
 
     restoreWeekBtn.addEventListener("click", () => {
       if(!pickedWeekId) return;
-      const entry = weekArchive.weeks[pickedWeekId];
-      const data = entry ? entry.state : null;
-      if(!data) return;
+      const data = loadWeekStateById(pickedWeekId);
 
       weekState = normalizeWeekState(JSON.parse(JSON.stringify(data)));
       persistCurrentWeek();
@@ -2684,10 +2823,7 @@
 
     copyWeekBtn.addEventListener("click", async () => {
       if(!pickedWeekId) return;
-      const entry = weekArchive.weeks[pickedWeekId];
-      const data = entry ? entry.state : null;
-      if(!data) return;
-
+      const data = loadWeekStateById(pickedWeekId);
       const text = formatWeekForCopy(pickedWeekId, data);
       const ok = await copyToClipboard(text);
       showToast(ok ? "선택 주차를 복사했어." : "복사 실패 (권한 확인)");
@@ -2695,10 +2831,7 @@
 
     copyWeekMdBtn.addEventListener("click", async () => {
       if(!pickedWeekId) return;
-      const entry = weekArchive.weeks[pickedWeekId];
-      const data = entry ? entry.state : null;
-      if(!data) return;
-
+      const data = loadWeekStateById(pickedWeekId);
       const md = formatWeekAsMarkdown(pickedWeekId, data);
       const ok = await copyToClipboard(md);
       showToast(ok ? "Markdown 복사 완료." : "복사 실패 (권한 확인)");
@@ -2706,29 +2839,23 @@
 
     downloadWeekMdBtn.addEventListener("click", () => {
       if(!pickedWeekId) return;
-      const entry = weekArchive.weeks[pickedWeekId];
-      const data = entry ? entry.state : null;
-      if(!data) return;
-
+      const data = loadWeekStateById(pickedWeekId);
       const md = formatWeekAsMarkdown(pickedWeekId, data);
       const safe = pickedWeekId.replace(/[^\d.\s~]/g,"").replace(/\s+/g," ").trim().replace(/ /g,"_");
       downloadText(`ThisWeek_${safe}.md`, md);
       showToast("다운로드를 시작했어.");
     });
 
-    /* ✅ search only (검색 초기화 버튼/기능 삭제) */
     searchInput.addEventListener("input", () => {
       searchQuery = (searchInput.value || "").trim();
       buildWeeks();
       if(pickedWeekId) renderWeekPreview(pickedWeekId);
     });
 
-    /* ========= Bulk actions ========= */
     function getSelectedIds(){
-      return Array.from(selectedWeeks).filter(id => weekArchive.weeks[id]);
+      return Array.from(selectedWeeks);
     }
 
-    // Pin (bulk)
     bulkPinBtn.addEventListener("click", () => {
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
@@ -2738,7 +2865,6 @@
       showToast(`${ids.length}개 pin.`);
     });
 
-    // Clear (= Unpin bulk)
     bulkUnpinBtn.addEventListener("click", () => {
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
@@ -2748,14 +2874,13 @@
       showToast(`${ids.length}개 unpin.`);
     });
 
-    // Export (bulk) = Copy MD joined
     bulkCopyMdBtn.addEventListener("click", async () => {
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
 
       const mdParts = [];
       for(const id of ids){
-        const data = weekArchive.weeks[id].state;
+        const data = loadWeekStateById(id);
         mdParts.push(formatWeekAsMarkdown(id, data));
       }
       const md = mdParts.join("\n\n---\n\n");
@@ -2763,19 +2888,18 @@
       showToast(ok ? "Export(복사) 완료." : "복사 실패 (권한 확인)");
     });
 
-    // Delete (bulk)
     bulkDeleteBtn.addEventListener("click", () => {
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
-      const ok = confirm(`선택한 ${ids.length}개 주차를 삭제할까? (되돌리기 불가)`);
+      const ok = confirm(`선택한 ${ids.length}개 주차(로컬 데이터)를 삭제할까? (되돌리기 불가)`);
       if(!ok) return;
 
       for(const id of ids){
-        delete weekArchive.weeks[id];
+        localStorage.removeItem(WEEK_PREFIX + id);
         selectedWeeks.delete(id);
         if(pickedWeekId === id) pickedWeekId = null;
       }
-      saveWeekArchiveV2(weekArchive);
+
       buildWeeks();
 
       if(!pickedWeekId){
@@ -2794,7 +2918,6 @@
       showToast("삭제 완료.");
     });
 
-    /* ========= Esc closes modal ========= */
     document.addEventListener("keydown", (e) => {
       if(e.key === "Escape"){
         if(modalOverlay.classList.contains("open")) closeModal();
