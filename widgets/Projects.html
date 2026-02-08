@@ -17,6 +17,10 @@
       --glass: rgba(255,255,255,0.10);
       --shadow: 0 10px 30px rgba(0,0,0,0.06);
       --radius: 20px;
+
+      /* ✅ pinned pale skyblue */
+      --pin-bg: rgba(165, 206, 240, 0.20);
+      --pin-bd: rgba(140, 190, 232, 0.38);
     }
 
     @font-face{
@@ -238,6 +242,9 @@
 
     /* ===== Compact project card (board view) ===== */
     .pCompact{
+      width: 100%;
+      text-align: left;
+
       border: 1px solid rgba(140,190,232,0.22);
       background: rgba(255,255,255,0.62);
       border-radius: 16px;
@@ -246,6 +253,7 @@
       display: grid;
       gap: 8px;
       min-width: 0;
+
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
@@ -257,19 +265,31 @@
     }
     .pCompact:active{ transform: scale(0.99); }
 
+    /* ✅ pinned style */
+    .pCompact.pinned{
+      background: var(--pin-bg);
+      border-color: var(--pin-bd);
+    }
+
     .pTitleRow{
       display:flex;
       gap: 8px;
       align-items: center;
       min-width: 0;
     }
-    .pNameBtn{
-      border: none;
-      background: transparent;
-      padding: 0;
-      margin: 0;
-      cursor: pointer;
-      text-align: left;
+
+    /* ✅ tiny pin marker */
+    .pinMark{
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(140,190,232,0.85);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+      flex: 0 0 auto;
+      opacity: 0.75;
+    }
+
+    .pName{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
       font-size: 13.5px;
@@ -279,6 +299,23 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ✅ todo stats badge */
+    .statBadge{
+      flex: 0 0 auto;
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.55);
+      color: rgba(30,30,30,0.72);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
     }
 
     .tags{
@@ -373,9 +410,7 @@
     .footer-actions > .btn{ flex: 0 0 auto; }
 
     /* ===== Drag styles ===== */
-    .pCompact.dragging{
-      opacity: 0.55;
-    }
+    .pCompact.dragging{ opacity: 0.55; }
     .col.dropOver{
       border-color: rgba(140,190,232,0.70);
       box-shadow: 0 0 0 3px rgba(165,206,240,0.18) inset;
@@ -542,33 +577,6 @@
       background: rgba(0,0,0,0.03);
     }
 
-    /* ===== Links (3 slots) ===== */
-    .links{
-      display: grid;
-      gap: 8px;
-    }
-    .linkRow{
-      display:grid;
-      grid-template-columns: 92px 1fr;
-      gap: 8px;
-      align-items:center;
-      min-width: 0;
-    }
-    .linkRow select, .linkRow input{
-      border: 1px solid rgba(140,190,232,0.18);
-      background: rgba(255,255,255,0.70);
-      border-radius: 12px;
-      padding: 9px 10px;
-      outline: none;
-      font-size: 12.5px;
-      color: rgba(30,30,30,0.85);
-      min-width: 0;
-      box-sizing: border-box;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-    .linkRow input::placeholder{ color: rgba(30,30,30,0.42); }
-
     /* ===== Tags editor (modal) ===== */
     .tagAddRow{
       display:flex;
@@ -643,7 +651,6 @@
       min-width: 0;
     }
 
-    /* ✅ overlap fix: button column gets min/max width */
     .tRow{
       display:grid;
       grid-template-columns: 20px minmax(0,1fr) minmax(120px, 180px);
@@ -775,8 +782,6 @@
       flex-wrap: wrap;
       min-width: 0;
     }
-
-    /* ✅ Substeps button / prio / delete width constraints */
     .tTools > *{ flex: 0 0 auto; }
 
     .prioBtn{
@@ -816,6 +821,34 @@
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
+
+    /* ===== URLs (dynamic) ===== */
+    .urlList{
+      display:grid;
+      gap: 8px;
+      min-width: 0;
+    }
+    .urlRow{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      min-width: 0;
+    }
+    .urlText{
+      flex: 1 1 auto;
+      min-width: 0;
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.70);
+      border-radius: 12px;
+      padding: 9px 10px;
+      outline: none;
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.85);
+      box-sizing: border-box;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .urlText::placeholder{ color: rgba(30,30,30,0.42); }
 
     /* ===== Upcoming-style Date Picker (inside modal body) ===== */
     .dpTrigger{
@@ -930,11 +963,6 @@
       box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
     }
     .dpNav:active{ transform: scale(0.98); }
-    .dpNav:focus-visible{
-      outline: none;
-      border-color: rgba(140,190,232,0.85);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
-    }
 
     .dpDow{
       display: grid;
@@ -1018,12 +1046,9 @@
       border-color: rgba(140,190,232,0.70);
     }
 
-    /* responsive */
     @media (max-width: 880px){
       .board{ grid-template-columns: 1fr; }
     }
-
-    /* ✅ overlap hardening on narrow cards: stack tools vertically */
     @media (max-width: 520px){
       .tRow{
         grid-template-columns: 20px minmax(0,1fr);
@@ -1097,7 +1122,6 @@
       </div>
 
       <div class="modalBody" id="pmBody">
-        <!-- filled by JS -->
         <div class="section" style="color: rgba(30,30,30,0.55); font-size:12px;">loading…</div>
 
         <!-- Date picker popover (inside modal) -->
@@ -1123,7 +1147,7 @@
     </div>
   </div>
 
-  <!-- Projects Archive Modal (same as previous; kept) -->
+  <!-- Projects Archive Modal -->
   <div class="modalOverlay" id="archiveOverlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Projects History / Archive">
       <div class="modalHeader">
@@ -1210,11 +1234,7 @@
         stage: "backlog",
         pinned: false,
         tags: [],
-        links: [
-          { label: "GitHub", url: "" },
-          { label: "Notion", url: "" },
-          { label: "Ref", url: "" },
-        ],
+        urls: [""],      // ✅ URL list (dynamic)
         feedback: "",
         todos: [],
       };
@@ -1310,11 +1330,18 @@
         p.startDate,
         p.feedback,
         ...(p.tags||[]),
-        ...((p.links||[]).map(x => `${x.label||""} ${x.url||""}`)),
+        ...((p.urls||[]).map(u => u || "")),
         ...((p.todos||[]).map(t => t.text)),
         ...((p.todos||[]).flatMap(t => (t.subs||[]).map(su => su.text)))
       ].join(" ").toLowerCase();
       return parts.includes(s);
+    }
+
+    function computeTodoStats(p){
+      const todos = Array.isArray(p.todos) ? p.todos : [];
+      const total = todos.length;
+      const done = todos.filter(t => !!t.done).length;
+      return { done, total };
     }
 
     function stageProjects(stage){
@@ -1322,7 +1349,6 @@
         .filter(p => p.stage === stage)
         .filter(p => matchesProject(p, searchQ));
 
-      // pinned first, then startDate desc
       filtered.sort((a,b) => {
         const ap = a.pinned ? 1 : 0;
         const bp = b.pinned ? 1 : 0;
@@ -1343,22 +1369,37 @@
       countText.textContent = `${total} projects`;
     }
 
-    function compactCardHtml(p){
+    function compactCardHtml(p, {summaryMode=false} = {}){
       const tags = (p.tags||[]).slice(0, 6).map(t => `
         <div class="tagChip" title="${escapeHtml(t)}"><span>${escapeHtml(t)}</span></div>
       `).join("");
 
+      const st = computeTodoStats(p);
+
+      // ✅ Done column default summary = tags + stats only (name still shown)
+      const showTags = true;
+      const showStats = true;
+
       return `
-        <div class="pCompact" data-pid="${p.id}" draggable="true" aria-label="Project card">
+        <button class="pCompact ${p.pinned ? "pinned" : ""}"
+          data-open-project="${p.id}"
+          data-pid="${p.id}"
+          draggable="true"
+          type="button"
+          aria-label="Project card">
+
           <div class="pTitleRow">
-            <button class="pNameBtn" type="button" data-open-project="${p.id}" title="${escapeHtml(p.name||"")}">
-              ${escapeHtml(p.name || "Project")}
-            </button>
+            ${p.pinned ? `<span class="pinMark" aria-hidden="true"></span>` : ``}
+            <div class="pName" title="${escapeHtml(p.name||"")}">${escapeHtml(p.name || "Project")}</div>
+            ${showStats ? `<div class="statBadge" title="todos done/total">${st.done}/${st.total}</div>` : ``}
           </div>
-          <div class="tags">
-            ${tags || `<span style="font-size:12px; color:rgba(30,30,30,0.45); font-family:EnterSanChaek, ui-sans-serif;">(no tags)</span>`}
-          </div>
-        </div>
+
+          ${showTags ? `
+            <div class="tags">
+              ${tags || `<span style="font-size:12px; color:rgba(30,30,30,0.45); font-family:EnterSanChaek, ui-sans-serif;">(no tags)</span>`}
+            </div>
+          ` : ``}
+        </button>
       `;
     }
 
@@ -1368,7 +1409,9 @@
       const cols = STAGES.map(stage => {
         const list = stageProjects(stage);
         const count = list.length;
-        const body = list.map(p => compactCardHtml(p)).join("");
+
+        // ✅ Done column: summary mode ON (still clickable)
+        const body = list.map(p => compactCardHtml(p, {summaryMode: stage==="done"})).join("");
 
         return `
           <div class="col" data-col="${stage}">
@@ -1402,11 +1445,11 @@
       if((p.tags||[]).length) lines.push(`- Tags: ${p.tags.join(", ")}`);
       lines.push("");
 
-      const links = (p.links||[]).slice(0,3).filter(x => (x.url||"").trim());
-      if(links.length){
-        lines.push(`## Links`);
-        for(const lk of links){
-          lines.push(`- ${lk.label || "Link"}: ${normalizeUrl(lk.url)}`);
+      const urls = (p.urls||[]).map(u => (u||"").trim()).filter(Boolean);
+      if(urls.length){
+        lines.push(`## URLs`);
+        for(const u of urls){
+          lines.push(`- ${normalizeUrl(u)}`);
         }
         lines.push("");
       }
@@ -1518,11 +1561,9 @@
       showToast("Archive로 보냈어.");
     }
 
-    /* ========= Drag & Drop (restore) ========= */
+    /* ========= Drag & Drop ========= */
     let dragPid = null;
-
     function attachDnDHandlers(){
-      // delegated events
       board.addEventListener("dragstart", (e) => {
         const card = e.target.closest(".pCompact");
         if(!card) return;
@@ -1592,7 +1633,7 @@
       `;
     }
 
-    // ===== Upcoming date helper set (reused) =====
+    // ===== date helpers (Upcoming) =====
     function ymdDotFromDash(s){
       const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s||""));
       if(!m) return null;
@@ -1618,7 +1659,7 @@
     const pmDpToday = document.getElementById("pmDpToday");
     const DP_SCALE = 0.67;
 
-    let dpSelectedDate = null; // "YYYY-MM-DD" or null
+    let dpSelectedDate = null;
     let dpView = new Date(); dpView.setDate(1);
     let dpTriggerEl = null;
     let dpTextEl = null;
@@ -1630,9 +1671,7 @@
       dpSelectedDate = currentDash || null;
       if(dpSelectedDate){
         const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dpSelectedDate);
-        if(m){
-          dpView = new Date(Number(m[1]), Number(m[2])-1, 1);
-        }
+        if(m) dpView = new Date(Number(m[1]), Number(m[2])-1, 1);
       }else{
         const t = new Date();
         dpView = new Date(t.getFullYear(), t.getMonth(), 1);
@@ -1661,8 +1700,8 @@
         dpSelectedDate = null;
         if(dpTextEl) dpTextEl.textContent = "날짜 선택";
         if(dpTriggerEl) dpTriggerEl.classList.remove("filled");
+        // 여기서는 startDate를 today로 유지
         updateProject(openProjectId, p => { p.startDate = todayYmd(); });
-        // startDate는 null 대신 today로 유지하고 싶으면 이렇게. (원하면 null 허용도 가능)
       }else{
         dpSelectedDate = dashFromDate(dateObjOrNull);
         if(dpTextEl) dpTextEl.textContent = ymdDotFromDash(dpSelectedDate);
@@ -1670,9 +1709,7 @@
         updateProject(openProjectId, p => { p.startDate = dpSelectedDate; });
       }
 
-      // modal content rerender
       renderProjectModal(openProjectId);
-
       if(close) closeDP();
     }
 
@@ -1774,17 +1811,6 @@
         </div>
       `).join("");
 
-      const linkRows = (p.links||[]).slice(0,3).map((lk, i) => `
-        <div class="linkRow">
-          <select data-link-label="${i}">
-            ${["GitHub","Notion","Ref","File","Doc","Other"].map(opt => `
-              <option value="${opt}" ${opt === (lk.label||"") ? "selected" : ""}>${opt}</option>
-            `).join("")}
-          </select>
-          <input data-link-url="${i}" type="text" placeholder="url…" value="${escapeHtml(lk.url||"")}" />
-        </div>
-      `).join("");
-
       const startDash = p.startDate || todayYmd();
       const startDot = ymdDotFromDash(startDash) || startDash;
 
@@ -1845,6 +1871,15 @@
         `;
       }).join("");
 
+      // ✅ URLs dynamic list (position at bottom)
+      const urls = Array.isArray(p.urls) && p.urls.length ? p.urls : [""];
+      const urlRows = urls.map((u, i) => `
+        <div class="urlRow">
+          <input class="urlText" type="text" placeholder="URL…" value="${escapeHtml(u||"")}" data-url-idx="${i}" />
+          <button class="miniBtn dangerBtn" type="button" data-url-del="${i}">Delete</button>
+        </div>
+      `).join("");
+
       pmBody.innerHTML = `
         <div class="section">
           <div class="row2">
@@ -1856,8 +1891,12 @@
             <div style="display:grid; gap:6px; min-width:0; position:relative;">
               <div class="fieldLabel">Start Date</div>
 
-              <button type="button" class="dpTrigger ${startDash ? "filled" : ""}" id="pmDpTrigger" aria-haspopup="dialog" aria-expanded="false">
-                <span class="dpText" id="pmDpText">${escapeHtml(startDot)}</span>
+              <button type="button"
+                class="dpTrigger ${startDash ? "filled" : ""}"
+                data-dp-trigger
+                aria-haspopup="dialog"
+                aria-expanded="false">
+                <span class="dpText" data-dp-text>${escapeHtml(startDot)}</span>
                 <span class="dpIcon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="16" height="16">
                     <path d="M7 3v2M17 3v2M4 8h16M6 5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
@@ -1883,11 +1922,6 @@
         </div>
 
         <div class="section">
-          <div class="fieldLabel">Links (3 slots)</div>
-          <div class="links">${linkRows}</div>
-        </div>
-
-        <div class="section">
           <div class="fieldLabel">Feedback</div>
           <textarea class="feedback" data-feedback placeholder="개인 feedback / 메모…">${escapeHtml(p.feedback||"")}</textarea>
         </div>
@@ -1910,25 +1944,24 @@
             </div>
           </div>
         </div>
+
+        <!-- ✅ URL section moved to bottom + dynamic add -->
+        <div class="section">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div class="fieldLabel">URL</div>
+            <button class="miniBtn" type="button" data-url-add>＋</button>
+          </div>
+
+          <div class="urlList">
+            ${urlRows}
+          </div>
+        </div>
       `;
-
-      // re-attach dp trigger
-      const trig = document.getElementById("pmDpTrigger");
-      const txt = document.getElementById("pmDpText");
-      trig.addEventListener("click", (e)=>{
-        e.stopPropagation();
-        if(pmDpPop.classList.contains("open")) closeDP();
-        else openDP(trig, txt, p.startDate || todayYmd());
-      });
-
-      // clicking outside dp closes
-      pmBody.addEventListener("click", ()=> { if(pmDpPop.classList.contains("open")) closeDP(); }, { once:true });
     }
 
     function openProjectModal(pid){
       const p = findProject(pid);
       if(!p) return;
-
       openProjectId = pid;
       renderProjectModal(pid);
 
@@ -1975,10 +2008,32 @@
       showToast("삭제했어.");
     });
 
-    // Modal interactions (delegated)
+    /* ✅ dp open/close is now stable:
+       - dpTrigger click handled via delegation
+       - pmBody click closes dp (unless stopped)
+    */
     pmBody.addEventListener("click", (e)=>{
+      // click anywhere in body closes dp if open
+      if(pmDpPop.classList.contains("open")) closeDP();
+    });
+
+    // Modal interactions (delegated)
+    projectModalOverlay.addEventListener("click", (e)=>{
       if(!openProjectId) return;
       const pid = openProjectId;
+
+      // ✅ date picker trigger
+      const dpTrig = e.target.closest("[data-dp-trigger]");
+      if(dpTrig){
+        e.stopPropagation();
+        e.preventDefault();
+        const txt = dpTrig.querySelector("[data-dp-text]");
+        const p = findProject(pid);
+        if(!p) return;
+        if(pmDpPop.classList.contains("open")) closeDP();
+        else openDP(dpTrig, txt, p.startDate || todayYmd());
+        return;
+      }
 
       const tagDel = e.target.closest("[data-tag-del]");
       if(tagDel){
@@ -1993,7 +2048,7 @@
 
       const tagAdd = e.target.closest("[data-tag-add]");
       if(tagAdd){
-        const inp = pmBody.querySelector("[data-tag-input]");
+        const inp = projectModalOverlay.querySelector("[data-tag-input]");
         const val = inp ? (inp.value||"").trim() : "";
         if(!val) return;
         updateProject(pid, p => {
@@ -2006,7 +2061,7 @@
 
       const todoAdd = e.target.closest("[data-todo-add]");
       if(todoAdd){
-        const inp = pmBody.querySelector("[data-todo-input]");
+        const inp = projectModalOverlay.querySelector("[data-todo-input]");
         const text = inp ? (inp.value||"").trim() : "";
         if(!text) return;
         updateProject(pid, p => {
@@ -2064,7 +2119,7 @@
       const subAdd = e.target.closest("[data-sub-add]");
       if(subAdd){
         const tid = subAdd.dataset.subAdd;
-        const inp = pmBody.querySelector(`[data-sub-input="${CSS.escape(tid)}"]`);
+        const inp = projectModalOverlay.querySelector(`[data-sub-input="${CSS.escape(tid)}"]`);
         const text = inp ? (inp.value||"").trim() : "";
         if(!text) return;
         updateProject(pid, p => {
@@ -2117,9 +2172,32 @@
         renderProjectModal(pid);
         return;
       }
+
+      // ✅ URL add/remove
+      const urlAdd = e.target.closest("[data-url-add]");
+      if(urlAdd){
+        updateProject(pid, p => {
+          p.urls = Array.isArray(p.urls) ? p.urls : [];
+          p.urls.push("");
+        });
+        renderProjectModal(pid);
+        return;
+      }
+
+      const urlDel = e.target.closest("[data-url-del]");
+      if(urlDel){
+        const idx = Number(urlDel.dataset.urlDel);
+        updateProject(pid, p => {
+          p.urls = Array.isArray(p.urls) ? p.urls : [];
+          if(Number.isFinite(idx) && idx >= 0) p.urls.splice(idx, 1);
+          if(!p.urls.length) p.urls = [""];
+        });
+        renderProjectModal(pid);
+        return;
+      }
     });
 
-    pmBody.addEventListener("input", (e)=>{
+    projectModalOverlay.addEventListener("input", (e)=>{
       if(!openProjectId) return;
       const pid = openProjectId;
 
@@ -2137,30 +2215,19 @@
         return;
       }
 
-      const lbl = e.target.closest("[data-link-label]");
-      if(lbl){
-        const i = Number(lbl.dataset.linkLabel);
-        updateProject(pid, p => {
-          p.links = Array.isArray(p.links) ? p.links : [];
-          while(p.links.length < 3) p.links.push({label:"Other", url:""});
-          p.links[i] = { ...(p.links[i]||{label:"Other",url:""}), label: lbl.value };
-        });
-        return;
-      }
-
-      const url = e.target.closest("[data-link-url]");
+      const url = e.target.closest("[data-url-idx]");
       if(url){
-        const i = Number(url.dataset.linkUrl);
+        const idx = Number(url.dataset.urlIdx);
         updateProject(pid, p => {
-          p.links = Array.isArray(p.links) ? p.links : [];
-          while(p.links.length < 3) p.links.push({label:"Other", url:""});
-          p.links[i] = { ...(p.links[i]||{label:"Other",url:""}), url: url.value || "" };
+          p.urls = Array.isArray(p.urls) ? p.urls : [];
+          while(p.urls.length <= idx) p.urls.push("");
+          p.urls[idx] = url.value || "";
         });
         return;
       }
     });
 
-    pmBody.addEventListener("keydown", (e)=>{
+    projectModalOverlay.addEventListener("keydown", (e)=>{
       if(!openProjectId) return;
 
       const tagInp = e.target.closest("[data-tag-input]");
@@ -2208,7 +2275,7 @@
       }
     });
 
-    /* ========= Archive modal (kept + simplified) ========= */
+    /* ========= Archive modal (same logic + URL support) ========= */
     let archiveSelected = new Set();
     let archivePickedId = null;
 
@@ -2218,7 +2285,7 @@
       const parts = [
         p.name, p.startDate, p.feedback,
         ...(p.tags||[]),
-        ...((p.links||[]).map(x => `${x.label||""} ${x.url||""}`)),
+        ...((p.urls||[]).map(u => u || "")),
         ...((p.todos||[]).map(t => t.text)),
         ...((p.todos||[]).flatMap(t => (t.subs||[]).map(su => su.text)))
       ].join(" ").toLowerCase();
@@ -2303,9 +2370,7 @@
       }
     });
 
-    function getArchiveSelectedIds(){
-      return Array.from(archiveSelected);
-    }
+    function getArchiveSelectedIds(){ return Array.from(archiveSelected); }
     function restoreArchivedProject(id){
       const idx = archived.findIndex(p => p.id === id);
       if(idx < 0) return;
@@ -2322,16 +2387,14 @@
       const ids = getArchiveSelectedIds();
       if(!ids.length){ showArchiveToast("선택된 항목이 없어."); return; }
       archived = archived.map(p => ids.includes(p.id) ? ({...p, pinned:true}) : p);
-      persist();
-      buildArchive();
+      persist(); buildArchive();
       showArchiveToast(`${ids.length}개 pin.`);
     });
     bulkUnpinBtn.addEventListener("click", ()=>{
       const ids = getArchiveSelectedIds();
       if(!ids.length){ showArchiveToast("선택된 항목이 없어."); return; }
       archived = archived.map(p => ids.includes(p.id) ? ({...p, pinned:false}) : p);
-      persist();
-      buildArchive();
+      persist(); buildArchive();
       showArchiveToast(`${ids.length}개 unpin.`);
     });
     bulkExportBtn.addEventListener("click", async ()=>{
@@ -2396,11 +2459,11 @@
       showToast(ok ? "Export(복사) 완료." : "복사 실패 (권한 확인)");
     });
 
-    /* ========= open project modal from board ========= */
+    /* ✅ board card click: open modal (now whole card) */
     board.addEventListener("click", (e) => {
-      const open = e.target.closest("[data-open-project]");
-      if(open){
-        openProjectModal(open.dataset.openProject);
+      const btn = e.target.closest("[data-open-project]");
+      if(btn){
+        openProjectModal(btn.dataset.openProject);
         return;
       }
     });
@@ -2418,7 +2481,6 @@
     renderBoard();
     attachDnDHandlers();
 
-    // FYI: if star fails, fallback dots.
     setTimeout(() => {
       if(!STAR_OK){
         showToast("SBstar 이미지 로드 실패 → ●●●로 대체 중");
