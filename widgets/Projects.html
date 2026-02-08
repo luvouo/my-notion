@@ -114,8 +114,6 @@
       white-space: nowrap;
       margin-left: auto;
       font-variant-numeric: tabular-nums;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
 
     .controls{
@@ -163,14 +161,11 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       white-space: nowrap;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
     .btn:active{ transform: scale(0.98); }
     .btn:hover{
       background: rgba(165,206,240,0.24);
       border-color: rgba(140,190,232,0.90);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
     }
     .btn:focus-visible{
       outline: none;
@@ -183,6 +178,13 @@
       padding: 10px 12px;
       border-radius: 12px;
       font-size: 12px;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .btn.secondary:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      color: var(--accent-1);
     }
 
     .board{
@@ -197,7 +199,7 @@
       background: rgba(255,255,255,0.06);
       border-radius: 16px;
       padding: 10px;
-      min-height: 240px;
+      min-height: 220px;
       display: grid;
       gap: 10px;
       overflow: hidden;
@@ -233,57 +235,59 @@
       gap: 10px;
     }
 
-    /* ===== compact project card (board view) ===== */
-    .pMini{
+    .pCard{
       border: 1px solid rgba(140,190,232,0.22);
       background: rgba(255,255,255,0.62);
       border-radius: 16px;
       padding: 10px;
       box-sizing: border-box;
       display: grid;
-      gap: 8px;
+      gap: 10px;
       min-width: 0;
       position: relative;
-      cursor: grab;
     }
-    .pMini:active{ cursor: grabbing; }
-    .pMini.pinned{
+
+    .pCard.pinned{
       border-color: rgba(140,190,232,0.60);
       background: rgba(165,206,240,0.14);
       box-shadow: 0 12px 26px rgba(140,190,232,0.10);
     }
 
-    .pMiniTop{
+    .pTop{
       display:flex;
-      gap: 10px;
-      align-items:flex-start;
+      align-items: center;
       justify-content: space-between;
+      gap: 10px;
       min-width: 0;
     }
 
-    .pMiniName{
+    .pName{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
       font-size: 13.5px;
-      color: rgba(30,30,30,0.90);
+      color: rgba(30,30,30,0.88);
       min-width: 0;
       flex: 1 1 auto;
-      border: none;
-      background: transparent;
-      padding: 0;
-      text-align: left;
-      cursor: pointer;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-    }
-    .pMiniName:hover{
-      text-decoration: underline;
-      text-decoration-thickness: 1px;
-      text-underline-offset: 3px;
+      display:flex;
+      gap: 8px;
+      align-items: baseline;
     }
 
-    .miniActions{
+    .pName input{
+      width: 100%;
+      min-width: 0;
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.60);
+      border-radius: 12px;
+      padding: 9px 10px;
+      outline: none;
+      font-size: 13px;
+      color: rgba(30,30,30,0.90);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
+    .pActions{
       display:flex;
       gap: 8px;
       flex: 0 0 auto;
@@ -313,11 +317,50 @@
       border-color: rgba(140,190,232,0.55);
       background: rgba(165,206,240,0.16);
     }
+
     .iconBtn svg{
       width: 15px;
       height: 15px;
       stroke: rgba(110,110,110,0.70);
     }
+
+    .pMetaRow{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .dateInput{
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.60);
+      border-radius: 12px;
+      padding: 8px 10px;
+      outline: none;
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.85);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .statusPill{
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.50);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: rgba(30,30,30,0.70);
+      cursor: pointer;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      transition: box-shadow .18s ease, border-color .18s ease, background .18s ease, transform .08s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .statusPill:hover{
+      border-color: rgba(140,190,232,0.55);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+    }
+    .statusPill:active{ transform: scale(0.99); }
 
     .tags{
       display:flex;
@@ -343,13 +386,289 @@
       text-overflow: ellipsis;
       max-width: 160px;
     }
+    .tagChip button{
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: rgba(30,30,30,0.55);
+      padding: 2px 4px;
+      border-radius: 8px;
+    }
+    .tagChip button:hover{
+      background: rgba(165,206,240,0.14);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.14);
+      color: rgba(30,30,30,0.78);
+    }
 
-    .subtle{
+    .tagAddRow{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .tagInput{
+      flex: 1 1 140px;
+      min-width: 0;
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.60);
+      border-radius: 12px;
+      padding: 9px 10px;
+      outline: none;
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.85);
+    }
+
+    .links{
+      display: grid;
+      gap: 8px;
+    }
+
+    .linkRow{
+      display:grid;
+      grid-template-columns: 92px 1fr;
+      gap: 8px;
+      align-items:center;
+      min-width: 0;
+    }
+    .linkRow select, .linkRow input{
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.60);
+      border-radius: 12px;
+      padding: 9px 10px;
+      outline: none;
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.85);
+      min-width: 0;
+    }
+    .linkRow input::placeholder{ color: rgba(30,30,30,0.42); }
+
+    .feedback{
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.60);
+      border-radius: 14px;
+      padding: 10px 10px;
+      outline: none;
+      font-size: 12.8px;
+      color: rgba(30,30,30,0.86);
+      min-height: 52px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+    .feedback::placeholder{ color: rgba(30,30,30,0.42); }
+
+    .todoBox{
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.50);
+      border-radius: 14px;
+      padding: 10px;
+      display:grid;
+      gap: 8px;
+    }
+
+    .todoAdd{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    .todoInput{
+      flex: 1 1 220px;
+      min-width: 0;
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.70);
+      border-radius: 12px;
+      padding: 9px 10px;
+      outline: none;
+      font-size: 12.8px;
+      color: rgba(30,30,30,0.88);
+    }
+
+    .todoList{
+      display:grid;
+      gap: 8px;
+    }
+
+    .tRow{
+      display:grid;
+      grid-template-columns: 20px 1fr auto;
+      gap: 10px;
+      align-items:start;
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.66);
+      border-radius: 14px;
+      padding: 8px 10px;
+      min-width: 0;
+    }
+
+    .tChk{
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1.4px solid rgba(140,190,232,0.55);
+      background: rgba(255,255,255,0.70);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, transform .08s ease, box-shadow .18s ease;
+    }
+    .tChk:hover{
+      border-color: rgba(140,190,232,0.75);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
+    }
+    .tChk:active{ transform: scale(0.98); }
+    .tChk svg{ width: 12px; height: 12px; opacity: 0; }
+    .tChk.on{
+      background: rgba(165,206,240,0.16);
+      border-color: rgba(140,190,232,0.80);
+    }
+    .tChk.on svg{ opacity: 1; }
+
+    .tMain{
+      min-width: 0;
+      display: grid;
+      gap: 6px;
+    }
+
+    .tText{
+      font-size: 13px;
+      color: rgba(30,30,30,0.86);
+      line-height: 1.35;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .tText.done{
+      text-decoration: line-through;
+      color: rgba(30,30,30,0.55);
+    }
+
+    .tSub{
+      display:none;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      padding-top: 2px;
+    }
+    .tSub.open{ display:grid; }
+
+    .subAdd{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+    .subInput{
+      flex: 1 1 200px;
+      min-width: 0;
+      border: 1px solid rgba(140,190,232,0.18);
+      background: rgba(255,255,255,0.70);
+      border-radius: 12px;
+      padding: 8px 10px;
+      outline: none;
+      font-size: 12.2px;
+      color: rgba(30,30,30,0.88);
+    }
+
+    .subList{
+      display:grid;
+      gap: 6px;
+    }
+    .sRow{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      border: 1px solid rgba(140,190,232,0.16);
+      background: rgba(255,255,255,0.62);
+      border-radius: 12px;
+      padding: 7px 9px;
+      min-width: 0;
+    }
+    .sRow .sText{
+      flex:1 1 auto;
+      min-width: 0;
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.80);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .sRow .sText.done{
+      text-decoration: line-through;
+      color: rgba(30,30,30,0.55);
+    }
+
+    .miniBtn{
+      border: 1px solid rgba(140,190,232,0.35);
+      background: rgba(255,255,255,0.08);
+      color: rgba(30,30,30,0.72);
+      border-radius: 999px;
+      padding: 7px 10px;
       font-size: 12px;
-      color: rgba(30,30,30,0.52);
+      cursor: pointer;
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      font-variant-numeric: tabular-nums;
+      transition: box-shadow .18s ease, border-color .18s ease, color .18s ease, transform .08s ease;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .miniBtn:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
+      color: var(--accent-1);
+    }
+    .miniBtn:active{ transform: scale(0.99); }
+
+    .tTools{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      justify-content:flex-end;
+      flex-wrap: wrap;
+    }
+
+    .prioBtn{
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.66);
+      border-radius: 999px;
+      padding: 6px 9px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap: 4px;
+      -webkit-tap-highlight-color: transparent;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
+    }
+    .prioBtn:hover{
+      border-color: rgba(140,190,232,0.55);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.14);
+    }
+    .prioBtn:active{ transform: scale(0.99); }
+
+    .stars{
+      display:inline-flex;
+      gap: 3px;
+      align-items:center;
+    }
+    .starImg{
+      width: 12px;
+      height: 12px;
+      display:block;
+      object-fit: contain;
+      opacity: 0.92;
+    }
+    .dotFallback{
+      font-size: 12px;
+      letter-spacing: 1px;
+      color: rgba(30,30,30,0.65);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
+    .danger{
+      border-color: rgba(0,0,0,0.10) !important;
     }
 
     .footer{
@@ -361,6 +680,13 @@
       font-size: 12px;
       color: var(--muted);
       margin-top: 2px;
+    }
+
+    .footerLeft{
+      display:flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 160px;
     }
 
     .toast{
@@ -376,7 +702,6 @@
       pointer-events: none;
 
       transition: opacity .14s ease, transform .14s ease;
-      min-height: 16px;
     }
     .toast:not(:empty){
       opacity: 1;
@@ -409,16 +734,7 @@
     .footer-actions::-webkit-scrollbar{ display:none; }
     .footer-actions > .btn{ flex: 0 0 auto; }
 
-    /* ===== Drag feedback ===== */
-    .col.dragOver{
-      outline: 2px solid rgba(140,190,232,0.35);
-      outline-offset: 2px;
-    }
-    .pMini.dragging{
-      opacity: 0.55;
-    }
-
-    /* ===== Modal base ===== */
+    /* ===== Modal (Projects History / Archive) ===== */
     .modalOverlay{
       position: fixed;
       inset: 0;
@@ -595,7 +911,6 @@
       min-height: 0;
       display: grid;
       gap: 10px;
-      position: relative;
     }
 
     .previewTop{
@@ -624,10 +939,8 @@
       padding: 12px;
       background: rgba(255,255,255,0.66);
       display: grid;
-      gap: 12px;
+      gap: 10px;
       min-width: 0;
-      position: relative;
-      overflow: hidden; /* ✅ date picker popover를 박스 안에 가둠 */
     }
 
     .badge{
@@ -651,503 +964,7 @@
       padding: 0 3px;
     }
 
-    /* ===== Detail form pieces (modal) ===== */
-    .field{
-      display:grid;
-      gap: 8px;
-    }
-    .label{
-      font-size: 12.5px;
-      color: rgba(30,30,30,0.72);
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-
-    .txt{
-      border: 1px solid rgba(140,190,232,0.18);
-      background: rgba(255,255,255,0.70);
-      border-radius: 12px;
-      padding: 10px 12px;
-      outline: none;
-      font-size: 13px;
-      color: rgba(30,30,30,0.88);
-      min-width: 0;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-
-    .textarea{
-      border: 1px solid rgba(140,190,232,0.18);
-      background: rgba(255,255,255,0.70);
-      border-radius: 14px;
-      padding: 10px 12px;
-      outline: none;
-      font-size: 12.8px;
-      color: rgba(30,30,30,0.86);
-      min-height: 70px;
-      resize: vertical;
-      line-height: 1.45;
-    }
-
-    .tagAddRow{
-      display:flex;
-      gap: 8px;
-      align-items:center;
-      flex-wrap: wrap;
-      min-width: 0;
-    }
-    .tagInput{
-      flex: 1 1 160px;
-      min-width: 0;
-      border: 1px solid rgba(140,190,232,0.18);
-      background: rgba(255,255,255,0.70);
-      border-radius: 12px;
-      padding: 9px 10px;
-      outline: none;
-      font-size: 12.5px;
-      color: rgba(30,30,30,0.85);
-    }
-
-    .tagChip button{
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      color: rgba(30,30,30,0.55);
-      padding: 2px 4px;
-      border-radius: 8px;
-    }
-    .tagChip button:hover{
-      background: rgba(165,206,240,0.14);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.14);
-      color: rgba(30,30,30,0.78);
-    }
-
-    .links{
-      display: grid;
-      gap: 8px;
-    }
-    .linkRow{
-      display:grid;
-      grid-template-columns: 92px 1fr;
-      gap: 8px;
-      align-items:center;
-      min-width: 0;
-    }
-    .linkRow select, .linkRow input{
-      border: 1px solid rgba(140,190,232,0.18);
-      background: rgba(255,255,255,0.70);
-      border-radius: 12px;
-      padding: 9px 10px;
-      outline: none;
-      font-size: 12.5px;
-      color: rgba(30,30,30,0.85);
-      min-width: 0;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-
-    /* ===== todos in detail ===== */
-    .todoBox{
-      border: 1px solid rgba(140,190,232,0.22);
-      background: rgba(255,255,255,0.52);
-      border-radius: 14px;
-      padding: 10px;
-      display:grid;
-      gap: 10px;
-    }
-    .todoAdd{
-      display:flex;
-      gap: 8px;
-      align-items:center;
-      flex-wrap: wrap;
-    }
-    .todoInput{
-      flex: 1 1 240px;
-      min-width: 0;
-      border: 1px solid rgba(140,190,232,0.18);
-      background: rgba(255,255,255,0.78);
-      border-radius: 12px;
-      padding: 9px 10px;
-      outline: none;
-      font-size: 12.8px;
-      color: rgba(30,30,30,0.88);
-    }
-
-    .miniBtn{
-      border: 1px solid rgba(140,190,232,0.35);
-      background: rgba(255,255,255,0.08);
-      color: rgba(30,30,30,0.72);
-      border-radius: 999px;
-      padding: 7px 10px;
-      font-size: 12px;
-      cursor: pointer;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      transition: box-shadow .18s ease, border-color .18s ease, color .18s ease, transform .08s ease;
-      white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .miniBtn:hover{
-      border-color: rgba(140,190,232,0.70);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
-      color: var(--accent-1);
-    }
-    .miniBtn:active{ transform: scale(0.99); }
-
-    .todoList{
-      display:grid;
-      gap: 8px;
-    }
-
-    /* ✅ 중첩 버그 해결: tools를 아래줄로 분리 */
-    .tRow{
-      display:grid;
-      grid-template-columns: 20px minmax(0, 1fr);
-      grid-template-areas:
-        "chk main"
-        "chk tools";
-      gap: 8px 10px;
-      align-items:start;
-      border: 1px solid rgba(140,190,232,0.18);
-      background: rgba(255,255,255,0.70);
-      border-radius: 14px;
-      padding: 8px 10px;
-      min-width: 0;
-    }
-    .tChk{ grid-area: chk; }
-
-    .tChk{
-      width: 18px;
-      height: 18px;
-      border-radius: 6px;
-      border: 1.4px solid rgba(140,190,232,0.55);
-      background: rgba(255,255,255,0.70);
-      cursor:pointer;
-      display:grid;
-      place-items:center;
-      -webkit-tap-highlight-color: transparent;
-      transition: background .18s ease, border-color .18s ease, transform .08s ease, box-shadow .18s ease;
-    }
-    .tChk:hover{
-      border-color: rgba(140,190,232,0.75);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
-    }
-    .tChk:active{ transform: scale(0.98); }
-    .tChk svg{ width: 12px; height: 12px; opacity: 0; }
-    .tChk.on{
-      background: rgba(165,206,240,0.16);
-      border-color: rgba(140,190,232,0.80);
-    }
-    .tChk.on svg{ opacity: 1; }
-
-    .tMain{
-      grid-area: main;
-      min-width: 0;
-      display: grid;
-      gap: 6px;
-    }
-    .tText{
-      font-size: 13px;
-      color: rgba(30,30,30,0.86);
-      line-height: 1.35;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      min-width: 0;
-    }
-    .tText.done{
-      text-decoration: line-through;
-      color: rgba(30,30,30,0.55);
-    }
-
-    .tTools{
-      grid-area: tools;
-      display:flex;
-      gap: 8px;
-      align-items:center;
-      justify-content:flex-start;
-      flex-wrap: wrap;
-      min-width: 0;
-      padding-top: 2px;
-    }
-
-    .prioBtn{
-      border: 1px solid rgba(140,190,232,0.22);
-      background: rgba(255,255,255,0.66);
-      border-radius: 999px;
-      padding: 6px 9px;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      gap: 4px;
-      -webkit-tap-highlight-color: transparent;
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
-      flex: 0 0 auto;
-    }
-    .prioBtn:hover{
-      border-color: rgba(140,190,232,0.55);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.14);
-    }
-    .prioBtn:active{ transform: scale(0.99); }
-
-    .stars{ display:inline-flex; gap: 3px; align-items:center; }
-    .starImg{
-      width: 12px;
-      height: 12px;
-      display:block;
-      object-fit: contain;
-      opacity: 0.92;
-    }
-    .dotFallback{
-      font-size: 12px;
-      letter-spacing: 1px;
-      color: rgba(30,30,30,0.65);
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-
-    .tSub{
-      display:none;
-      grid-template-columns: 1fr;
-      gap: 8px;
-      padding-top: 2px;
-    }
-    .tSub.open{ display:grid; }
-
-    .subAdd{
-      display:flex;
-      gap: 8px;
-      align-items:center;
-      flex-wrap: wrap;
-    }
-    .subInput{
-      flex: 1 1 220px;
-      min-width: 0;
-      border: 1px solid rgba(140,190,232,0.18);
-      background: rgba(255,255,255,0.78);
-      border-radius: 12px;
-      padding: 8px 10px;
-      outline: none;
-      font-size: 12.2px;
-      color: rgba(30,30,30,0.88);
-    }
-    .subList{
-      display:grid;
-      gap: 6px;
-    }
-    .sRow{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      border: 1px solid rgba(140,190,232,0.16);
-      background: rgba(255,255,255,0.62);
-      border-radius: 12px;
-      padding: 7px 9px;
-      min-width: 0;
-    }
-    .sRow .sText{
-      flex:1 1 auto;
-      min-width: 0;
-      font-size: 12.5px;
-      color: rgba(30,30,30,0.80);
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-    }
-    .sRow .sText.done{
-      text-decoration: line-through;
-      color: rgba(30,30,30,0.55);
-    }
-
-    /* ===== DatePicker (Upcoming style) inside detail modal ===== */
-    .dpTrigger{
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-
-      height: 38px;
-      padding: 0 12px;
-
-      border: 1px solid rgba(140,190,232,0.45);
-      background: rgba(255,255,255,0.10);
-      border-radius: 14px;
-
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-
-      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
-    }
-    .dpText{
-      font-size: 13px;
-      color: rgba(30,30,30,0.45);
-      white-space: nowrap;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-    .dpIcon{
-      color: rgba(30,30,30,0.45);
-      display: inline-flex;
-      align-items: center;
-    }
-    .dpTrigger:hover{
-      border-color: rgba(140,190,232,0.75);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
-    }
-    .dpTrigger:focus-visible{
-      outline: none;
-      border-color: rgba(140,190,232,0.85);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
-    }
-    .dpTrigger.filled .dpText,
-    .dpTrigger.filled .dpIcon{
-      color: rgba(30,30,30,0.78);
-    }
-
-    .dpPop{
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 320px;
-      z-index: 9999;
-
-      border-radius: 16px;
-      border: 1px solid rgba(140,190,232,0.45);
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.12);
-      padding: 10px;
-
-      transform-origin: top left;
-      transform: translateY(6px) scale(0.67);
-
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .14s ease, transform .14s ease;
-    }
-    .dpPop.open{
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateY(0) scale(0.67);
-    }
-
-    .dpHeader{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 4px 2px 8px;
-    }
-    .dpTitle{
-      font-size: 13px;
-      color: rgba(30,30,30,0.78);
-      letter-spacing: -0.2px;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-    .dpNav{
-      width: 34px;
-      height: 30px;
-      border-radius: 10px;
-      border: 1px solid rgba(0,0,0,0.06);
-      background: rgba(255,255,255,0.60);
-      color: rgba(30,30,30,0.70);
-      cursor: pointer;
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
-      font-family: "EnterSanChaek", ui-sans-serif;
-    }
-    .dpNav:hover{
-      border-color: rgba(140,190,232,0.65);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
-    }
-    .dpNav:active{ transform: scale(0.98); }
-    .dpNav:focus-visible{
-      outline: none;
-      border-color: rgba(140,190,232,0.85);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
-    }
-
-    .dpDow{
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      padding: 2px 2px 6px;
-      font-size: 11px;
-      letter-spacing: 0.2px;
-      color: rgba(30,30,30,0.72);
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    }
-    .dpGrid{
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      padding: 2px;
-    }
-    .dpDay{
-      height: 34px;
-      border-radius: 10px;
-      border: 1px solid transparent;
-      background: rgba(255,255,255,0.55);
-      color: rgba(30,30,30,0.78);
-      font-size: 12px;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      transition: box-shadow .18s ease, border-color .18s ease, background .18s ease, transform .08s ease;
-      font-family: "EnterSanChaek", ui-sans-serif;
-    }
-    .dpDay[disabled]{ opacity: 0.35; cursor: default; }
-    .dpDay:hover:not([disabled]){
-      border-color: rgba(140,190,232,0.65);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
-    }
-    .dpDay:active:not([disabled]){ transform: scale(0.98); }
-    .dpDay.today::after{
-      content:"";
-      width: 5px;
-      height: 5px;
-      border-radius: 999px;
-      background: rgba(30,30,30,0.58);
-      margin-top: 2px;
-    }
-    .dpDay.selected{
-      background: rgba(165,206,240,0.24);
-      border-color: rgba(140,190,232,0.85);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
-    }
-    .dpFooter{
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      padding-top: 10px;
-    }
-    .dpAction{
-      flex: 1 1 auto;
-      height: 34px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.06);
-      background: rgba(255,255,255,0.60);
-      color: rgba(30,30,30,0.78);
-      font-size: 12px;
-      cursor: pointer;
-      transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
-      font-family: "EnterSanChaek", ui-sans-serif;
-    }
-    .dpAction:hover{
-      border-color: rgba(140,190,232,0.65);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
-    }
-    .dpAction:active{ transform: scale(0.98); }
-    .dpAction.primary{
-      background: rgba(165,206,240,0.18);
-      border-color: rgba(140,190,232,0.70);
-    }
-
-    /* ===== Modal Undo toast ===== */
+    /* ✅ Modal Undo toast */
     .mToast{
       position: absolute;
       left: 50%;
@@ -1176,7 +993,6 @@
       font-size: 12.5px;
       color: rgba(30,30,30,0.75);
       white-space: nowrap;
-      font-family: "EnterSanChaek", ui-sans-serif;
     }
     .mUndoBtn{
       border: 1px solid rgba(140,190,232,0.55);
@@ -1186,7 +1002,8 @@
       padding: 7px 10px;
       font-size: 12px;
       cursor: pointer;
-      font-family: "EnterSanChaek", ui-sans-serif;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
     .mUndoBtn:hover{
       border-color: rgba(140,190,232,0.80);
@@ -1234,12 +1051,13 @@
         <div class="board" id="board"></div>
 
         <div class="footer">
-          <div style="display:flex; flex-direction:column; gap:6px; min-width:160px;">
+          <div class="footerLeft">
             <span id="countText">0 projects</span>
             <div class="toast" id="toast"></div>
           </div>
 
           <div class="footer-actions">
+            <button class="btn secondary" id="collapseDoneBtn" type="button">Done: Summary ON</button>
             <button class="btn secondary" id="clearSearchBtn" type="button">Clear Search</button>
           </div>
         </div>
@@ -1247,7 +1065,7 @@
     </div>
   </div>
 
-  <!-- ✅ Projects Archive Modal -->
+  <!-- Projects Archive Modal -->
   <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Projects History / Archive">
       <div class="modalHeader">
@@ -1288,6 +1106,7 @@
         </div>
       </div>
 
+      <!-- ✅ Undo Toast -->
       <div class="mToast" id="mToast" aria-hidden="true">
         <div class="mToastMsg" id="mToastMsg">삭제했어.</div>
         <button class="mUndoBtn" id="mUndoBtn" type="button">Undo</button>
@@ -1295,25 +1114,1442 @@
     </div>
   </div>
 
-  <!-- ✅ Project Detail Modal (board → click project name) -->
-  <div class="modalOverlay" id="detailOverlay" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Project Detail">
-      <div class="modalHeader">
-        <div class="mhLeft">
-          <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
-          <strong id="detailTitle">Project</strong>
-          <span class="badge" id="detailStage">Stage</span>
-        </div>
-        <div class="mhRight">
-          <button class="btn secondary" id="detailPinBtn" type="button">Pin</button>
-          <button class="btn secondary" id="detailArchiveBtn" type="button">Archive</button>
-          <button class="btn secondary" id="detailCloseBtn" type="button">닫기</button>
-        </div>
-      </div>
+  <script>
+    /* =========================================================
+       Notes about STAR image URL
+       - The user-provided URL is a GitHub "blob" HTML page, not a raw PNG.
+       - For <img>, use raw.githubusercontent.com or a GitHub Pages hosted image.
+       - We'll try a raw URL by default; if it fails, fall back to dots.
+    ========================================================= */
 
-      <div class="preview">
-        <div class="previewBox" id="detailBox">
-          <!-- injected -->
+    /* ========= storage keys (scoped like your other widgets) ========= */
+    const WORKSPACE_ID_STORAGE_KEY = "soft_schedule_workspace_id_v1";
+    function getWorkspaceIdMaybe(){
+      const v = localStorage.getItem(WORKSPACE_ID_STORAGE_KEY);
+      return (v && String(v).trim()) ? String(v).trim() : "";
+    }
+    const workspace_id = getWorkspaceIdMaybe();
+
+    const PROJECTS_KEY = workspace_id
+      ? `soft_schedule_projects_${workspace_id}_v1`
+      : "soft_schedule_projects_v1";
+
+    const PROJECTS_ARCHIVE_KEY = workspace_id
+      ? `soft_schedule_projects_archive_${workspace_id}_v1`
+      : "soft_schedule_projects_archive_v1";
+
+    const UI_PREF_KEY = workspace_id
+      ? `soft_schedule_projects_ui_${workspace_id}_v1`
+      : "soft_schedule_projects_ui_v1";
+
+    /* ========= STAR image ========= */
+    const STAR_BLOB_URL = "https://github.com/luvouo/my-notion/blob/main/widgets/icon/SBstar.png";
+    const STAR_RAW_URL  = "https://raw.githubusercontent.com/luvouo/my-notion/main/widgets/icon/SBstar.png";
+    let STAR_IMG_URL = STAR_RAW_URL;
+    let STAR_OK = true;
+
+    /* ========= utils ========= */
+    const STAGES = ["backlog","progress","done"];
+    const STAGE_LABEL = {
+      backlog: "Backlog",
+      progress: "In Progress",
+      done: "Done",
+    };
+
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function todayYmd(){
+      const d = new Date();
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+    }
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+    }
+    function showToast(msg){
+      toast.textContent = msg;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.textContent = "", 1600);
+    }
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try{
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          return ok;
+        }catch(err){
+          document.body.removeChild(ta);
+          return false;
+        }
+      }
+    }
+    function downloadText(filename, text){
+      const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    function uid(){
+      return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()));
+    }
+    function normalizeUrl(u){
+      const s = String(u || "").trim();
+      if(!s) return "";
+      if(/^https?:\/\//i.test(s)) return s;
+      return "https://" + s;
+    }
+
+    function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
+
+    function highlight(text, query){
+      const t = String(text);
+      const q = String(query || "").trim();
+      if(!q) return escapeHtml(t);
+      const idx = t.toLowerCase().indexOf(q.toLowerCase());
+      if(idx === -1) return escapeHtml(t);
+      const before = escapeHtml(t.slice(0, idx));
+      const mid = escapeHtml(t.slice(idx, idx + q.length));
+      const after = escapeHtml(t.slice(idx + q.length));
+      return `${before}<span class="mark">${mid}</span>${after}`;
+    }
+
+    /* ========= data model =========
+      project = {
+        id, name, startDate, stage, pinned,
+        tags: [string],
+        links: [{ label, url }, { label, url }, { label, url }], // fixed slots
+        feedback: string,
+        todos: [
+          {
+            id, text, done, prio: 1..3,
+            subOpen: bool,
+            subs: [{id,text,done}]
+          }
+        ],
+        doneSummaryOpen: bool // for Done column auto summary/expand
+      }
+    ================================= */
+
+    function emptyProject(name="New Project"){
+      return {
+        id: uid(),
+        name: name,
+        startDate: todayYmd(),
+        stage: "backlog",
+        pinned: false,
+        tags: [],
+        links: [
+          { label: "GitHub", url: "" },
+          { label: "Notion", url: "" },
+          { label: "Ref", url: "" },
+        ],
+        feedback: "",
+        todos: [],
+        doneSummaryOpen: false,
+      };
+    }
+
+    function loadProjects(){
+      try{
+        const raw = localStorage.getItem(PROJECTS_KEY);
+        if(!raw) return [];
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      }catch(e){ return []; }
+    }
+    function saveProjects(arr){
+      localStorage.setItem(PROJECTS_KEY, JSON.stringify(Array.isArray(arr) ? arr : []));
+    }
+
+    function loadArchive(){
+      try{
+        const raw = localStorage.getItem(PROJECTS_ARCHIVE_KEY);
+        if(!raw) return [];
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      }catch(e){ return []; }
+    }
+    function saveArchive(arr){
+      localStorage.setItem(PROJECTS_ARCHIVE_KEY, JSON.stringify(Array.isArray(arr) ? arr : []));
+    }
+
+    function loadUiPrefs(){
+      try{
+        const raw = localStorage.getItem(UI_PREF_KEY);
+        if(!raw) return { doneSummary: true };
+        const p = JSON.parse(raw);
+        return {
+          doneSummary: (p && typeof p.doneSummary === "boolean") ? p.doneSummary : true
+        };
+      }catch(e){ return { doneSummary: true }; }
+    }
+    function saveUiPrefs(p){
+      localStorage.setItem(UI_PREF_KEY, JSON.stringify(p));
+    }
+
+    /* ========= DOM ========= */
+    const metaText = document.getElementById("metaText");
+    const board = document.getElementById("board");
+    const quickProjectName = document.getElementById("quickProjectName");
+    const addProjectBtn = document.getElementById("addProjectBtn");
+    const boardSearch = document.getElementById("boardSearch");
+    const archiveBtn = document.getElementById("archiveBtn");
+    const exportAllBtn = document.getElementById("exportAllBtn");
+
+    const countText = document.getElementById("countText");
+    const toast = document.getElementById("toast");
+
+    const collapseDoneBtn = document.getElementById("collapseDoneBtn");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+    // modal
+    const modalOverlay = document.getElementById("modalOverlay");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const searchInput = document.getElementById("searchInput");
+    const listPanel = document.getElementById("listPanel");
+    const pickedText = document.getElementById("pickedText");
+    const previewBox = document.getElementById("previewBox");
+    const copyMdBtn = document.getElementById("copyMdBtn");
+    const downloadMdBtn = document.getElementById("downloadMdBtn");
+    const restoreOneBtn = document.getElementById("restoreOneBtn");
+
+    const bulkPinBtn = document.getElementById("bulkPinBtn");
+    const bulkUnpinBtn = document.getElementById("bulkUnpinBtn");
+    const bulkExportBtn = document.getElementById("bulkExportBtn");
+    const bulkRestoreBtn = document.getElementById("bulkRestoreBtn");
+    const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+
+    // modal undo
+    const mToast = document.getElementById("mToast");
+    const mToastMsg = document.getElementById("mToastMsg");
+    const mUndoBtn = document.getElementById("mUndoBtn");
+
+    /* ========= state ========= */
+    let projects = loadProjects();
+    let archived = loadArchive();
+    let uiPrefs = loadUiPrefs();
+
+    let searchQ = "";
+    let pickedId = null;
+    let selectedIds = new Set(); // modal selection
+    let modalQ = "";
+
+    function persist(){
+      saveProjects(projects);
+      saveArchive(archived);
+    }
+
+    /* ========= star image preflight ========= */
+    (function testStar(){
+      const img = new Image();
+      img.onload = () => { STAR_OK = true; };
+      img.onerror = () => { STAR_OK = false; };
+      img.src = STAR_IMG_URL;
+      // If raw fails, STAR_OK becomes false and UI will fall back.
+    })();
+
+    /* ========= rendering helpers ========= */
+    function formatMeta(){
+      const total = projects.length;
+      const done = projects.filter(p => p.stage === "done").length;
+      metaText.textContent = `${total} projects · ${done} done · archive ${archived.length}`;
+      countText.textContent = `${total} projects`;
+      collapseDoneBtn.textContent = uiPrefs.doneSummary ? "Done: Summary ON" : "Done: Summary OFF";
+    }
+
+    function matchesProject(p, q){
+      const s = String(q||"").trim().toLowerCase();
+      if(!s) return true;
+      const parts = [
+        p.name,
+        p.startDate,
+        p.feedback,
+        ...(p.tags||[]),
+        ...((p.links||[]).map(x => `${x.label||""} ${x.url||""}`)),
+        ...((p.todos||[]).map(t => t.text)),
+        ...((p.todos||[]).flatMap(t => (t.subs||[]).map(su => su.text)))
+      ].join(" ").toLowerCase();
+      return parts.includes(s);
+    }
+
+    function stageProjects(stage){
+      const filtered = projects
+        .filter(p => p.stage === stage)
+        .filter(p => matchesProject(p, searchQ));
+
+      // pinned first, then by startDate desc, then name
+      filtered.sort((a,b) => {
+        const ap = a.pinned ? 1 : 0;
+        const bp = b.pinned ? 1 : 0;
+        if(ap !== bp) return bp - ap;
+        const ad = String(a.startDate||"");
+        const bd = String(b.startDate||"");
+        if(ad !== bd) return (bd > ad ? 1 : -1);
+        return String(a.name||"").localeCompare(String(b.name||""), "ko");
+      });
+
+      return filtered;
+    }
+
+    function svgPin(){
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M9 3h6l1 6-2 2v5l-2 2-2-2v-5l-2-2 1-6z" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M12 21v-5" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      `;
+    }
+    function svgArchive(){
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16v14H4V7z" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M3 7l2-3h14l2 3" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M9 12h6" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      `;
+    }
+    function svgTrash(){
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 7h10l-1 14H8L7 7z" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M6 7h12" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      `;
+    }
+    function svgCheck(){
+      return `
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `;
+    }
+
+    function starsHtml(level){
+      const n = Math.max(1, Math.min(3, Number(level)||1));
+      if(STAR_OK){
+        let out = `<span class="stars" aria-label="priority ${n}">`;
+        for(let i=0;i<n;i++){
+          out += `<img class="starImg" src="${STAR_IMG_URL}" alt="" aria-hidden="true" />`;
+        }
+        out += `</span>`;
+        return out;
+      }
+      // fallback dots (only if image fails)
+      return `<span class="dotFallback" aria-label="priority ${n}">${"●".repeat(n)}</span>`;
+    }
+
+    function projectCardHtml(p, stage){
+      const isDone = stage === "done";
+      const summaryMode = isDone && uiPrefs.doneSummary && !p.doneSummaryOpen;
+      const todoTotal = (p.todos||[]).length;
+      const todoDone = (p.todos||[]).filter(t => !!t.done).length;
+
+      const tags = (p.tags||[]).map((t, idx) => `
+        <div class="tagChip" title="${escapeHtml(t)}">
+          <span>${escapeHtml(t)}</span>
+          <button type="button" aria-label="태그 삭제" data-tag-del="${p.id}" data-tag-idx="${idx}">✕</button>
+        </div>
+      `).join("");
+
+      const linkRows = (p.links||[]).slice(0,3).map((lk, i) => `
+        <div class="linkRow">
+          <select data-link-label="${p.id}" data-link-i="${i}">
+            ${["GitHub","Notion","Ref","File","Doc","Other"].map(opt => `
+              <option value="${opt}" ${opt === (lk.label||"") ? "selected" : ""}>${opt}</option>
+            `).join("")}
+          </select>
+          <input data-link-url="${p.id}" data-link-i="${i}" type="text"
+            placeholder="url…" value="${escapeHtml(lk.url||"")}" />
+        </div>
+      `).join("");
+
+      const todoList = (p.todos||[]).map(t => {
+        const subCount = (t.subs||[]).length;
+        const subDone = (t.subs||[]).filter(s => !!s.done).length;
+        const tDoneCls = t.done ? "done" : "";
+        const subOpen = !!t.subOpen;
+
+        const subsHtml = (t.subs||[]).map(su => `
+          <div class="sRow">
+            <div class="tChk ${su.done ? "on" : ""}" role="checkbox" aria-checked="${su.done}"
+              data-sub-tog="${p.id}" data-sub-tid="${t.id}" data-sub-id="${su.id}">${svgCheck()}</div>
+            <div class="sText ${su.done ? "done" : ""}" title="${escapeHtml(su.text)}">${escapeHtml(su.text)}</div>
+            <button class="iconBtn danger" style="width:26px;height:26px;" type="button" title="서브스텝 삭제"
+              data-sub-del="${p.id}" data-sub-tid="${t.id}" data-sub-id="${su.id}">
+              ${svgTrash()}
+            </button>
+          </div>
+        `).join("");
+
+        return `
+          <div class="tRow" data-todo-row="${t.id}">
+            <div class="tChk ${t.done ? "on" : ""}" role="checkbox" aria-checked="${t.done}"
+              data-todo-tog="${p.id}" data-todo-id="${t.id}">${svgCheck()}</div>
+
+            <div class="tMain">
+              <div class="tText ${tDoneCls}" title="${escapeHtml(t.text)}">${escapeHtml(t.text)}</div>
+
+              <div class="tSub ${subOpen ? "open" : ""}">
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                  <span style="font-size:12px; color:rgba(30,30,30,0.55);">
+                    Substeps ${subDone}/${subCount}
+                  </span>
+                </div>
+
+                <div class="subAdd">
+                  <input class="subInput" type="text" maxlength="80"
+                    placeholder="서브스텝 추가…"
+                    data-sub-input="${p.id}" data-sub-tid="${t.id}" />
+                  <button class="miniBtn" type="button" data-sub-add="${p.id}" data-sub-tid="${t.id}">Add</button>
+                </div>
+
+                <div class="subList">${subsHtml || `<div style="color:rgba(30,30,30,0.45); font-size:12px;">(empty)</div>`}</div>
+              </div>
+            </div>
+
+            <div class="tTools">
+              <button class="prioBtn" type="button" title="우선순위 변경 (1→2→3→1)"
+                data-prio="${p.id}" data-todo-id="${t.id}">
+                ${starsHtml(t.prio || 1)}
+              </button>
+
+              <button class="miniBtn" type="button"
+                data-sub-toggle="${p.id}" data-todo-id="${t.id}">
+                ${subOpen ? "Substeps Hide" : (subCount ? `Substeps (${subDone}/${subCount})` : "Substeps")}
+              </button>
+
+              <button class="miniBtn" type="button"
+                data-todo-del="${p.id}" data-todo-id="${t.id}">
+                Delete
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const doneSummaryRow = isDone ? `
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <span style="font-size:12px; color:rgba(30,30,30,0.55); font-variant-numeric:tabular-nums;">
+            Todos ${todoDone}/${todoTotal}
+          </span>
+          <button class="miniBtn" type="button" data-toggle-summary="${p.id}">
+            ${summaryMode ? "Expand" : "Summary"}
+          </button>
+          <button class="miniBtn" type="button" data-archive-project="${p.id}">
+            Archive
+          </button>
+        </div>
+      ` : `
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <span style="font-size:12px; color:rgba(30,30,30,0.55); font-variant-numeric:tabular-nums;">
+            Todos ${todoDone}/${todoTotal}
+          </span>
+        </div>
+      `;
+
+      return `
+        <div class="pCard ${p.pinned ? "pinned" : ""}" data-pid="${p.id}">
+          <div class="pTop">
+            <div class="pName">
+              <input data-p-name="${p.id}" type="text" maxlength="60" value="${escapeHtml(p.name||"")}" />
+            </div>
+            <div class="pActions">
+              <button class="iconBtn ${p.pinned ? "on" : ""}" type="button" title="${p.pinned ? "Unpin" : "Pin"}"
+                data-pin="${p.id}">
+                ${svgPin()}
+              </button>
+              <button class="iconBtn" type="button" title="Archive(숨김)"
+                data-archive="${p.id}">
+                ${svgArchive()}
+              </button>
+              <button class="iconBtn danger" type="button" title="Delete"
+                data-del-project="${p.id}">
+                ${svgTrash()}
+              </button>
+            </div>
+          </div>
+
+          <div class="pMetaRow">
+            <input class="dateInput" data-p-date="${p.id}" type="date" value="${escapeHtml(p.startDate||todayYmd())}" />
+            <button class="statusPill" type="button" data-stage-prev="${p.id}">←</button>
+            <button class="statusPill" type="button" data-stage-next="${p.id}">→</button>
+            <span style="font-size:12px; color:rgba(30,30,30,0.55); font-family:EnterSanChaek, ui-sans-serif;">
+              ${escapeHtml(STAGE_LABEL[p.stage] || "Backlog")}
+            </span>
+          </div>
+
+          <div class="tags">${tags || `<span style="font-size:12px; color:rgba(30,30,30,0.45);">(no tags)</span>`}</div>
+
+          <div class="tagAddRow">
+            <input class="tagInput" data-tag-input="${p.id}" type="text" maxlength="30" placeholder="태그 입력 후 Enter…" />
+            <button class="miniBtn" type="button" data-tag-add="${p.id}">Add Tag</button>
+          </div>
+
+          <div class="links">
+            ${linkRows}
+          </div>
+
+          <textarea class="feedback" data-feedback="${p.id}" placeholder="개인 feedback / 메모…">${escapeHtml(p.feedback||"")}</textarea>
+
+          ${doneSummaryRow}
+
+          ${summaryMode ? "" : `
+            <div class="todoBox">
+              <div class="todoAdd">
+                <input class="todoInput" data-todo-input="${p.id}" type="text" maxlength="90" placeholder="todo 추가…" />
+                <button class="miniBtn" type="button" data-todo-add="${p.id}">Add</button>
+                <button class="miniBtn" type="button" data-clear-done="${p.id}">Clear done</button>
+              </div>
+              <div class="todoList">
+                ${todoList || `<div style="color:rgba(30,30,30,0.45); font-size:12px;">(empty)</div>`}
+              </div>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function renderBoard(){
+      formatMeta();
+
+      const cols = STAGES.map(stage => {
+        const list = stageProjects(stage);
+        const count = list.length;
+
+        const doneCollapsedInfo = (stage === "done" && uiPrefs.doneSummary)
+          ? `<span style="color:rgba(30,30,30,0.55);">· summary</span>`
+          : "";
+
+        const body = list.map(p => projectCardHtml(p, stage)).join("");
+
+        return `
+          <div class="col" data-col="${stage}">
+            <div class="colHead">
+              <div class="colTitle">${escapeHtml(STAGE_LABEL[stage])} ${doneCollapsedInfo}</div>
+              <div class="colMeta">${count}</div>
+            </div>
+            <div class="colBody">${body || `<div style="color:rgba(30,30,30,0.45); font-size:12px;">(empty)</div>`}</div>
+          </div>
+        `;
+      }).join("");
+
+      board.innerHTML = cols;
+    }
+
+    renderBoard();
+
+    /* ========= mutations ========= */
+    function findProject(id){
+      return projects.find(p => p.id === id) || null;
+    }
+    function updateProject(id, fn){
+      const idx = projects.findIndex(p => p.id === id);
+      if(idx < 0) return;
+      const next = deepClone(projects[idx]);
+      fn(next);
+      projects[idx] = next;
+      persist();
+      renderBoard();
+    }
+    function addProject(name){
+      const nm = String(name||"").trim() || "New Project";
+      projects.unshift(emptyProject(nm));
+      persist();
+      renderBoard();
+      showToast("프로젝트를 추가했어.");
+    }
+    function deleteProject(id){
+      projects = projects.filter(p => p.id !== id);
+      persist();
+      renderBoard();
+    }
+    function archiveProject(id){
+      const p = findProject(id);
+      if(!p) return;
+      projects = projects.filter(x => x.id !== id);
+      archived.unshift({ ...deepClone(p), archivedAt: Date.now() });
+      persist();
+      renderBoard();
+      showToast("Archive로 보냈어.");
+    }
+
+    function cycleStage(p, dir){
+      const i = STAGES.indexOf(p.stage);
+      const ni = Math.max(0, Math.min(STAGES.length-1, i + dir));
+      p.stage = STAGES[ni];
+      if(p.stage !== "done") p.doneSummaryOpen = false;
+      return p;
+    }
+
+    /* ========= top controls ========= */
+    addProjectBtn.addEventListener("click", () => {
+      addProject(quickProjectName.value);
+      quickProjectName.value = "";
+      quickProjectName.focus();
+    });
+    quickProjectName.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){ e.preventDefault(); addProjectBtn.click(); }
+    });
+
+    boardSearch.addEventListener("input", () => {
+      searchQ = (boardSearch.value||"").trim();
+      renderBoard();
+    });
+
+    clearSearchBtn.addEventListener("click", () => {
+      boardSearch.value = "";
+      searchQ = "";
+      renderBoard();
+      showToast("검색을 지웠어.");
+    });
+
+    collapseDoneBtn.addEventListener("click", () => {
+      uiPrefs.doneSummary = !uiPrefs.doneSummary;
+      saveUiPrefs(uiPrefs);
+      // when turning summary ON, default close all done cards
+      if(uiPrefs.doneSummary){
+        projects = projects.map(p => p.stage === "done" ? ({...p, doneSummaryOpen:false}) : p);
+        persist();
+      }
+      renderBoard();
+    });
+
+    exportAllBtn.addEventListener("click", async () => {
+      const md = formatAllAsMarkdown();
+      const ok = await copyToClipboard(md);
+      showToast(ok ? "Export(복사) 완료." : "복사 실패 (권한 확인)");
+    });
+
+    /* ========= board events ========= */
+    board.addEventListener("click", (e) => {
+      const pin = e.target.closest("[data-pin]");
+      if(pin){
+        const id = pin.dataset.pin;
+        updateProject(id, p => p.pinned = !p.pinned);
+        showToast(findProject(id)?.pinned ? "Pinned." : "Unpinned.");
+        return;
+      }
+
+      const arc = e.target.closest("[data-archive]");
+      if(arc){
+        const id = arc.dataset.archive;
+        archiveProject(id);
+        return;
+      }
+
+      const delP = e.target.closest("[data-del-project]");
+      if(delP){
+        const id = delP.dataset.delProject;
+        const ok = confirm("이 프로젝트를 삭제할까? (되돌리기 불가)");
+        if(!ok) return;
+        deleteProject(id);
+        showToast("삭제했어.");
+        return;
+      }
+
+      const prev = e.target.closest("[data-stage-prev]");
+      if(prev){
+        const id = prev.dataset.stagePrev;
+        updateProject(id, p => cycleStage(p, -1));
+        return;
+      }
+      const next = e.target.closest("[data-stage-next]");
+      if(next){
+        const id = next.dataset.stageNext;
+        updateProject(id, p => cycleStage(p, +1));
+        return;
+      }
+
+      const sum = e.target.closest("[data-toggle-summary]");
+      if(sum){
+        const id = sum.dataset.toggleSummary;
+        updateProject(id, p => p.doneSummaryOpen = !p.doneSummaryOpen);
+        return;
+      }
+
+      const arcFromDone = e.target.closest("[data-archive-project]");
+      if(arcFromDone){
+        const id = arcFromDone.dataset.archiveProject;
+        archiveProject(id);
+        return;
+      }
+
+      const tagDel = e.target.closest("[data-tag-del]");
+      if(tagDel){
+        const id = tagDel.dataset.tagDel;
+        const idx = Number(tagDel.dataset.tagIdx);
+        updateProject(id, p => {
+          p.tags = Array.isArray(p.tags) ? p.tags : [];
+          if(Number.isFinite(idx) && idx >= 0) p.tags.splice(idx, 1);
+        });
+        return;
+      }
+
+      const tagAdd = e.target.closest("[data-tag-add]");
+      if(tagAdd){
+        const id = tagAdd.dataset.tagAdd;
+        const inp = board.querySelector(`[data-tag-input="${CSS.escape(id)}"]`);
+        const val = inp ? (inp.value||"").trim() : "";
+        if(!val) return;
+        updateProject(id, p => {
+          p.tags = Array.isArray(p.tags) ? p.tags : [];
+          if(!p.tags.includes(val)) p.tags.unshift(val);
+        });
+        if(inp) inp.value = "";
+        showToast("태그를 추가했어.");
+        return;
+      }
+
+      const todoAdd = e.target.closest("[data-todo-add]");
+      if(todoAdd){
+        const id = todoAdd.dataset.todoAdd;
+        const inp = board.querySelector(`[data-todo-input="${CSS.escape(id)}"]`);
+        const text = inp ? (inp.value||"").trim() : "";
+        if(!text) return;
+        updateProject(id, p => {
+          p.todos = Array.isArray(p.todos) ? p.todos : [];
+          p.todos.unshift({ id: uid(), text, done:false, prio:1, subOpen:false, subs:[] });
+        });
+        if(inp) inp.value = "";
+        showToast("todo를 추가했어.");
+        return;
+      }
+
+      const todoTog = e.target.closest("[data-todo-tog]");
+      if(todoTog){
+        const pid = todoTog.dataset.todoTog;
+        const tid = todoTog.dataset.todoId;
+        updateProject(pid, p => {
+          p.todos = (p.todos||[]).map(t => t.id === tid ? ({...t, done: !t.done}) : t);
+        });
+        return;
+      }
+
+      const prio = e.target.closest("[data-prio]");
+      if(prio){
+        const pid = prio.dataset.prio;
+        const tid = prio.dataset.todoId;
+        updateProject(pid, p => {
+          p.todos = (p.todos||[]).map(t => {
+            if(t.id !== tid) return t;
+            const next = ((t.prio||1) % 3) + 1;
+            return { ...t, prio: next };
+          });
+        });
+        return;
+      }
+
+      const todoDel = e.target.closest("[data-todo-del]");
+      if(todoDel){
+        const pid = todoDel.dataset.todoDel;
+        const tid = todoDel.dataset.todoId;
+        updateProject(pid, p => {
+          p.todos = (p.todos||[]).filter(t => t.id !== tid);
+        });
+        showToast("todo를 삭제했어.");
+        return;
+      }
+
+      const subToggle = e.target.closest("[data-sub-toggle]");
+      if(subToggle){
+        const pid = subToggle.dataset.subToggle;
+        const tid = subToggle.dataset.todoId;
+        updateProject(pid, p => {
+          p.todos = (p.todos||[]).map(t => t.id === tid ? ({...t, subOpen: !t.subOpen}) : t);
+        });
+        return;
+      }
+
+      const subAdd = e.target.closest("[data-sub-add]");
+      if(subAdd){
+        const pid = subAdd.dataset.subAdd;
+        const tid = subAdd.dataset.subTid;
+        const inp = board.querySelector(`[data-sub-input="${CSS.escape(pid)}"][data-sub-tid="${CSS.escape(tid)}"]`);
+        const text = inp ? (inp.value||"").trim() : "";
+        if(!text) return;
+
+        updateProject(pid, p => {
+          p.todos = (p.todos||[]).map(t => {
+            if(t.id !== tid) return t;
+            const subs = Array.isArray(t.subs) ? t.subs : [];
+            subs.unshift({ id: uid(), text, done:false });
+            return { ...t, subs, subOpen: true };
+          });
+        });
+
+        if(inp) inp.value = "";
+        showToast("서브스텝을 추가했어.");
+        return;
+      }
+
+      const subTog = e.target.closest("[data-sub-tog]");
+      if(subTog){
+        const pid = subTog.dataset.subTog;
+        const tid = subTog.dataset.subTid;
+        const sid = subTog.dataset.subId;
+        updateProject(pid, p => {
+          p.todos = (p.todos||[]).map(t => {
+            if(t.id !== tid) return t;
+            const subs = (t.subs||[]).map(s => s.id === sid ? ({...s, done: !s.done}) : s);
+            return { ...t, subs };
+          });
+        });
+        return;
+      }
+
+      const subDel = e.target.closest("[data-sub-del]");
+      if(subDel){
+        const pid = subDel.dataset.subDel;
+        const tid = subDel.dataset.subTid;
+        const sid = subDel.dataset.subId;
+        updateProject(pid, p => {
+          p.todos = (p.todos||[]).map(t => {
+            if(t.id !== tid) return t;
+            const subs = (t.subs||[]).filter(s => s.id !== sid);
+            return { ...t, subs };
+          });
+        });
+        showToast("서브스텝을 삭제했어.");
+        return;
+      }
+
+      const clearDone = e.target.closest("[data-clear-done]");
+      if(clearDone){
+        const pid = clearDone.dataset.clearDone;
+        updateProject(pid, p => {
+          p.todos = (p.todos||[]).filter(t => !t.done);
+        });
+        showToast("완료 todo를 지웠어.");
+        return;
+      }
+    });
+
+    // inputs (change/blur)
+    board.addEventListener("input", (e) => {
+      const name = e.target.closest("[data-p-name]");
+      if(name){
+        const id = name.dataset.pName;
+        const v = (name.value||"").slice(0,60);
+        updateProject(id, p => p.name = v);
+        return;
+      }
+
+      const dt = e.target.closest("[data-p-date]");
+      if(dt){
+        const id = dt.dataset.pDate;
+        updateProject(id, p => p.startDate = dt.value || todayYmd());
+        return;
+      }
+
+      const fb = e.target.closest("[data-feedback]");
+      if(fb){
+        const id = fb.dataset.feedback;
+        updateProject(id, p => p.feedback = fb.value || "");
+        return;
+      }
+
+      const lbl = e.target.closest("[data-link-label]");
+      if(lbl){
+        const pid = lbl.dataset.linkLabel;
+        const i = Number(lbl.dataset.linkI);
+        updateProject(pid, p => {
+          p.links = Array.isArray(p.links) ? p.links : [];
+          while(p.links.length < 3) p.links.push({label:"Other", url:""});
+          p.links[i] = { ...(p.links[i]||{label:"Other",url:""}), label: lbl.value };
+        });
+        return;
+      }
+
+      const url = e.target.closest("[data-link-url]");
+      if(url){
+        const pid = url.dataset.linkUrl;
+        const i = Number(url.dataset.linkI);
+        updateProject(pid, p => {
+          p.links = Array.isArray(p.links) ? p.links : [];
+          while(p.links.length < 3) p.links.push({label:"Other", url:""});
+          p.links[i] = { ...(p.links[i]||{label:"Other",url:""}), url: url.value || "" };
+        });
+        return;
+      }
+    });
+
+    // tag input: Enter adds
+    board.addEventListener("keydown", (e) => {
+      const tagInp = e.target.closest("[data-tag-input]");
+      if(tagInp && e.key === "Enter"){
+        e.preventDefault();
+        const pid = tagInp.dataset.tagInput;
+        const val = (tagInp.value||"").trim();
+        if(!val) return;
+        updateProject(pid, p => {
+          p.tags = Array.isArray(p.tags) ? p.tags : [];
+          if(!p.tags.includes(val)) p.tags.unshift(val);
+        });
+        tagInp.value = "";
+        showToast("태그를 추가했어.");
+        return;
+      }
+
+      const todoInp = e.target.closest("[data-todo-input]");
+      if(todoInp && e.key === "Enter"){
+        e.preventDefault();
+        const pid = todoInp.dataset.todoInput;
+        const text = (todoInp.value||"").trim();
+        if(!text) return;
+        updateProject(pid, p => {
+          p.todos = Array.isArray(p.todos) ? p.todos : [];
+          p.todos.unshift({ id: uid(), text, done:false, prio:1, subOpen:false, subs:[] });
+        });
+        todoInp.value = "";
+        showToast("todo를 추가했어.");
+        return;
+      }
+
+      const subInp = e.target.closest("[data-sub-input]");
+      if(subInp && e.key === "Enter"){
+        e.preventDefault();
+        const pid = subInp.dataset.subInput;
+        const tid = subInp.dataset.subTid;
+        const text = (subInp.value||"").trim();
+        if(!text) return;
+
+        updateProject(pid, p => {
+          p.todos = (p.todos||[]).map(t => {
+            if(t.id !== tid) return t;
+            const subs = Array.isArray(t.subs) ? t.subs : [];
+            subs.unshift({ id: uid(), text, done:false });
+            return { ...t, subs, subOpen: true };
+          });
+        });
+
+        subInp.value = "";
+        showToast("서브스텝을 추가했어.");
+        return;
+      }
+    });
+
+    /* ========= markdown export ========= */
+    function mdForProject(p){
+      const lines = [];
+      lines.push(`# ${p.name || "Project"}`);
+      lines.push(`- Stage: ${STAGE_LABEL[p.stage] || p.stage}`);
+      lines.push(`- Start: ${p.startDate || ""}`);
+      lines.push(`- Pinned: ${p.pinned ? "yes" : "no"}`);
+      if((p.tags||[]).length) lines.push(`- Tags: ${p.tags.join(", ")}`);
+      lines.push("");
+
+      const links = (p.links||[]).slice(0,3).filter(x => (x.url||"").trim());
+      if(links.length){
+        lines.push(`## Links`);
+        for(const lk of links){
+          lines.push(`- ${lk.label || "Link"}: ${normalizeUrl(lk.url)}`);
+        }
+        lines.push("");
+      }
+
+      if((p.feedback||"").trim()){
+        lines.push(`## Feedback`);
+        lines.push(p.feedback.trim());
+        lines.push("");
+      }
+
+      lines.push(`## Todos`);
+      const todos = (p.todos||[]);
+      if(!todos.length){
+        lines.push(`- (empty)`);
+      }else{
+        for(const t of todos){
+          const pr = Math.max(1, Math.min(3, t.prio||1));
+          const prTxt = "★".repeat(pr);
+          lines.push(`- [${t.done ? "x" : " "}] ${t.text} (${prTxt})`);
+          const subs = (t.subs||[]);
+          for(const s of subs){
+            lines.push(`  - [${s.done ? "x" : " "}] ${s.text}`);
+          }
+        }
+      }
+      return lines.join("\n");
+    }
+
+    function formatAllAsMarkdown(){
+      const lines = [];
+      lines.push(`# Projects Export`);
+      lines.push(`- Exported: ${new Date().toISOString()}`);
+      lines.push(`- Active: ${projects.length}`);
+      lines.push(`- Archived: ${archived.length}`);
+      lines.push("");
+      for(const stage of STAGES){
+        const list = projects.filter(p => p.stage === stage);
+        lines.push(`## ${STAGE_LABEL[stage]} (${list.length})`);
+        if(!list.length){
+          lines.push(`- (empty)`);
+          lines.push("");
+          continue;
+        }
+        for(const p of list){
+          lines.push(mdForProject(p));
+          lines.push("\n---\n");
+        }
+        lines.push("");
+      }
+      if(archived.length){
+        lines.push(`## Archived (${archived.length})`);
+        for(const p of archived){
+          lines.push(mdForProject(p));
+          lines.push("\n---\n");
+        }
+      }
+      return lines.join("\n");
+    }
+
+    /* =========================
+       Modal (Archive)
+    ========================= */
+    let _undoPayload = null;
+    function hideModalToast(){
+      mToast.classList.remove("show");
+      mToast.setAttribute("aria-hidden","true");
+      _undoPayload = null;
+      clearTimeout(hideModalToast._t);
+    }
+    function showModalToast(message, undoFn){
+      _undoPayload = { undoFn };
+      mToastMsg.textContent = message || "삭제했어.";
+      mToast.classList.add("show");
+      mToast.setAttribute("aria-hidden","false");
+      clearTimeout(hideModalToast._t);
+      hideModalToast._t = setTimeout(hideModalToast, 3000);
+    }
+    mUndoBtn.addEventListener("click", () => {
+      if(_undoPayload && typeof _undoPayload.undoFn === "function"){
+        _undoPayload.undoFn();
+      }
+      hideModalToast();
+    });
+
+    function openModal(){
+      selectedIds.clear();
+      modalQ = (searchInput.value||"").trim();
+      pickedId = null;
+
+      modalOverlay.classList.add("open");
+      modalOverlay.setAttribute("aria-hidden","false");
+
+      pickedText.textContent = "프로젝트를 선택해줘";
+      copyMdBtn.disabled = true;
+      downloadMdBtn.disabled = true;
+      restoreOneBtn.disabled = true;
+
+      previewBox.innerHTML = `
+        <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+          왼쪽에서 프로젝트를 선택하면, 상세를 보여줘.
+        </div>
+      `;
+
+      buildList();
+      hideModalToast();
+    }
+
+    function closeModal(){
+      modalOverlay.classList.remove("open");
+      modalOverlay.setAttribute("aria-hidden","true");
+      hideModalToast();
+    }
+
+    function matchesArchive(p, q){
+      const s = String(q||"").trim().toLowerCase();
+      if(!s) return true;
+      const parts = [
+        p.name, p.startDate, p.feedback,
+        ...(p.tags||[]),
+        ...((p.links||[]).map(x => `${x.label||""} ${x.url||""}`)),
+        ...((p.todos||[]).map(t => t.text)),
+        ...((p.todos||[]).flatMap(t => (t.subs||[]).map(su => su.text)))
+      ].join(" ").toLowerCase();
+      return parts.includes(s);
+    }
+
+    function getCounts(p){
+      const total = (p.todos||[]).length;
+      const done = (p.todos||[]).filter(t => !!t.done).length;
+      return { total, done };
+    }
+
+    function buildList(){
+      const q = (modalQ||"").trim();
+      const list = archived
+        .filter(p => matchesArchive(p, q))
+        .slice()
+        .sort((a,b) => {
+          const ap = a.pinned ? 1 : 0;
+          const bp = b.pinned ? 1 : 0;
+          if(ap !== bp) return bp - ap;
+          const ad = String(a.startDate||"");
+          const bd = String(b.startDate||"");
+          if(ad !== bd) return (bd > ad ? 1 : -1);
+          return String(a.name||"").localeCompare(String(b.name||""), "ko");
+        });
+
+      listPanel.innerHTML = "";
+
+      if(!list.length){
+        listPanel.innerHTML = `
+          <div style="color: rgba(30,30,30,0.55); font-size:12px; padding:8px;">
+            보관함이 비어있어.
+          </div>
+        `;
+        return;
+      }
+
+      for(const p of list){
+        const { total, done } = getCounts(p);
+        const checked = selectedIds.has(p.id);
+
+        const row = document.createElement("div");
+        row.className = "row";
+
+        const chk = document.createElement("div");
+        chk.className = "selChk" + (checked ? " on" : "");
+        chk.title = "선택";
+        chk.dataset.sel = p.id;
+        chk.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 7L10 17l-5-5" stroke="rgba(70,70,70,0.95)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `;
+
+        const col = document.createElement("div");
+        col.className = "rowCol";
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "rowBtn" + (pickedId === p.id ? " active" : "");
+        btn.dataset.pick = p.id;
+
+        const pinTag = p.pinned ? ` <span style="color:rgba(30,30,30,0.50); font-size:11px;">• pinned</span>` : "";
+        btn.innerHTML = `${escapeHtml(p.name||"Project")}${pinTag}<small>${done}/${total} · ${escapeHtml(p.startDate||"")}</small>`;
+
+        col.appendChild(btn);
+        row.appendChild(chk);
+        row.appendChild(col);
+
+        listPanel.appendChild(row);
+      }
+    }
+
+    function setPicked(id){
+      pickedId = id;
+      const p = archived.find(x => x.id === id);
+      if(!p) return;
+
+      pickedText.textContent = `선택: ${p.name || "Project"}`;
+      copyMdBtn.disabled = false;
+      downloadMdBtn.disabled = false;
+      restoreOneBtn.disabled = false;
+
+      renderPreview(p, modalQ);
+      buildList();
+    }
+
+    function renderPreview(p, q){
+      const { total, done } = getCounts(p);
+
+      const tags = (p.tags||[]).map(t => `<span class="badge">${escapeHtml(t)}</span>`).join(" ");
+      const links = (p.links||[]).slice(0,3).filter(x => (x.url||"").trim());
+      const linkHtml = links.length ? `
+        <div style="display:grid; gap:6px;">
+          <div style="color:rgba(30,30,30,0.72); font-size:12.5px; font-family:EnterSanChaek, ui-sans-serif;">Links</div>
+          ${links.map(lk => `
+            <div style="font-size:12.5px; color:rgba(30,30,30,0.80); min-width:0;">
+              <span class="badge">${escapeHtml(lk.label||"Link")}</span>
+              <span style="color:rgba(30,30,30,0.55);">${highlight(lk.url||"", q)}</span>
+            </div>
+          `).join("")}
+        </div>
+      ` : "";
+
+      const todos = (p.todos||[]);
+      const todoView = q
+        ? todos.filter(t =>
+            String(t.text||"").toLowerCase().includes(String(q||"").toLowerCase()) ||
+            (t.subs||[]).some(su => String(su.text||"").toLowerCase().includes(String(q||"").toLowerCase()))
+          )
+        : todos;
+
+      previewBox.innerHTML = `
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <span class="badge">Start: ${escapeHtml(p.startDate||"")}</span>
+          <span class="badge">Todos: ${done}/${total}</span>
+          <span class="badge">Pinned: ${p.pinned ? "yes" : "no"}</span>
+          <span class="badge">Archived</span>
         </div>
 
-        <!-- Date picker popover container (inside previewBox via absolute
+        ${tags ? `<div style="display:flex; gap:6px; flex-wrap:wrap;">${tags}</div>` : ""}
+
+        ${linkHtml}
+
+        <div style="display:grid; gap:6px;">
+          <div style="color:rgba(30,30,30,0.72); font-size:12.5px; font-family:EnterSanChaek, ui-sans-serif;">Feedback</div>
+          <div style="font-size:12.5px; color:rgba(30,30,30,0.80); line-height:1.45; white-space:pre-wrap;">
+            ${p.feedback ? highlight(p.feedback, q) : `<span style="color:rgba(30,30,30,0.45);">(empty)</span>`}
+          </div>
+        </div>
+
+        <div style="display:grid; gap:6px;">
+          <div style="color:rgba(30,30,30,0.72); font-size:12.5px; font-family:EnterSanChaek, ui-sans-serif;">Todos</div>
+          ${
+            todoView.length
+            ? todoView.map(t => {
+                const pr = Math.max(1, Math.min(3, t.prio||1));
+                const prTxt = "★".repeat(pr);
+                const subs = (t.subs||[]);
+                return `
+                  <div style="display:grid; gap:6px; border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:10px; background:rgba(255,255,255,0.70);">
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                      <span class="badge">${t.done ? "done" : "todo"}</span>
+                      <span class="badge">${prTxt}</span>
+                      <div style="font-size:12.8px; color:rgba(30,30,30,0.86); min-width:0;">
+                        ${highlight(t.text||"", q)}
+                      </div>
+                    </div>
+                    ${
+                      subs.length ? `
+                        <div style="display:grid; gap:6px; padding-left:6px;">
+                          ${subs.map(su => `
+                            <div style="display:flex; gap:8px; align-items:center; min-width:0;">
+                              <span class="badge">${su.done ? "x" : " "}</span>
+                              <span style="font-size:12.5px; color:rgba(30,30,30,0.78); min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                ${highlight(su.text||"", q)}
+                              </span>
+                            </div>
+                          `).join("")}
+                        </div>
+                      ` : `<div style="color:rgba(30,30,30,0.45); font-size:12px;">(no substeps)</div>`
+                    }
+                  </div>
+                `;
+              }).join("")
+            : `<div style="color:rgba(30,30,30,0.45); font-size:12px;">(empty)</div>`
+          }
+        </div>
+      `;
+    }
+
+    function toggleSelect(id){
+      if(selectedIds.has(id)) selectedIds.delete(id);
+      else selectedIds.add(id);
+    }
+
+    function safeNameForFile(s){
+      return String(s||"Project").replace(/[^\w가-힣\- ]/g,"").trim().slice(0,40).replace(/\s+/g,"_") || "Project";
+    }
+
+    function restoreArchivedProject(id){
+      const idx = archived.findIndex(p => p.id === id);
+      if(idx < 0) return;
+      const p = archived[idx];
+      archived.splice(idx, 1);
+
+      // restore rule: return to Backlog by default, but keep old stage if you want
+      const restored = { ...deepClone(p) };
+      if(!STAGES.includes(restored.stage)) restored.stage = "backlog";
+      restored.doneSummaryOpen = false;
+
+      projects.unshift(restored);
+      persist();
+      renderBoard();
+    }
+
+    function deleteArchivedWithUndo(id){
+      const idx = archived.findIndex(p => p.id === id);
+      if(idx < 0) return;
+      const removed = archived[idx];
+      archived.splice(idx, 1);
+      persist();
+      buildList();
+
+      // if picked removed
+      if(pickedId === id){
+        pickedId = null;
+        pickedText.textContent = "프로젝트를 선택해줘";
+        copyMdBtn.disabled = true;
+        downloadMdBtn.disabled = true;
+        restoreOneBtn.disabled = true;
+        previewBox.innerHTML = `
+          <div style="color: rgba(30,30,30,0.55); font-size:12px;">
+            왼쪽에서 프로젝트를 선택하면, 상세를 보여줘.
+          </div>
+        `;
+      }
+
+      showModalToast("삭제했어.", () => {
+        archived.unshift(removed);
+        persist();
+        buildList();
+      });
+    }
+
+    // open modal
+    archiveBtn.addEventListener("click", openModal);
+    closeModalBtn.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", (e) => {
+      if(e.target === modalOverlay) closeModal();
+    });
+
+    // modal list interactions
+    listPanel.addEventListener("click", (e) => {
+      const sel = e.target.closest("[data-sel]");
+      if(sel){
+        toggleSelect(sel.dataset.sel);
+        buildList();
+        return;
+      }
+      const pick = e.target.closest("[data-pick]");
+      if(pick){
+        setPicked(pick.dataset.pick);
+        return;
+      }
+    });
+
+    searchInput.addEventListener("input", () => {
+      modalQ = (searchInput.value||"").trim();
+      buildList();
+      if(pickedId){
+        const p = archived.find(x => x.id === pickedId);
+        if(p) renderPreview(p, modalQ);
+      }
+    });
+
+    copyMdBtn.addEventListener("click", async () => {
+      if(!pickedId) return;
+      const p = archived.find(x => x.id === pickedId);
+      if(!p) return;
+      const md = mdForProject(p);
+      const ok = await copyToClipboard(md);
+      showToast(ok ? "Markdown 복사 완료." : "복사 실패 (권한 확인)");
+    });
+
+    downloadMdBtn.addEventListener("click", () => {
+      if(!pickedId) return;
+      const p = archived.find(x => x.id === pickedId);
+      if(!p) return;
+      const md = mdForProject(p);
+      downloadText(`Project_${safeNameForFile(p.name)}.md`, md);
+      showToast("다운로드를 시작했어.");
+    });
+
+    restoreOneBtn.addEventListener("click", () => {
+      if(!pickedId) return;
+      restoreArchivedProject(pickedId);
+      showToast("복원했어.");
+      buildList();
+      renderBoard();
+    });
+
+    function getSelected(){
+      return Array.from(selectedIds);
+    }
+
+    bulkPinBtn.addEventListener("click", () => {
+      const ids = getSelected();
+      if(!ids.length){ showToast("선택된 항목이 없어."); return; }
+      archived = archived.map(p => ids.includes(p.id) ? ({...p, pinned:true}) : p);
+      persist();
+      buildList();
+      showToast(`${ids.length}개 pin.`);
+    });
+
+    bulkUnpinBtn.addEventListener("click", () => {
+      const ids = getSelected();
+      if(!ids.length){ showToast("선택된 항목이 없어."); return; }
+      archived = archived.map(p => ids.includes(p.id) ? ({...p, pinned:false}) : p);
+      persist();
+      buildList();
+      showToast(`${ids.length}개 unpin.`);
+    });
+
+    bulkExportBtn.addEventListener("click", async () => {
+      const ids = getSelected();
+      if(!ids.length){ showToast("선택된 항목이 없어."); return; }
+      const parts = [];
+      for(const id of ids){
+        const p = archived.find(x => x.id === id);
+        if(p) parts.push(mdForProject(p));
+      }
+      const md = parts.join("\n\n---\n\n");
+      const ok = await copyToClipboard(md);
+      showToast(ok ? "Export(복사) 완료." : "복사 실패 (권한 확인)");
+    });
+
+    bulkRestoreBtn.addEventListener("click", () => {
+      const ids = getSelected();
+      if(!ids.length){ showToast("선택된 항목이 없어."); return; }
+      for(const id of ids) restoreArchivedProject(id);
+      selectedIds.clear();
+      buildList();
+      renderBoard();
+      showToast(`${ids.length}개 복원했어.`);
+    });
+
+    bulkDeleteBtn.addEventListener("click", () => {
+      const ids = getSelected();
+      if(!ids.length){ showToast("선택된 항목이 없어."); return; }
+
+      const ok = confirm(`선택한 ${ids.length}개를 삭제할까? (Undo는 마지막 1개만 제공)`);
+      if(!ok) return;
+
+      // delete sequentially, provide undo for last deleted only
+      const lastId = ids[ids.length - 1];
+      for(const id of ids){
+        if(id === lastId) deleteArchivedWithUndo(id);
+        else{
+          archived = archived.filter(p => p.id !== id);
+        }
+      }
+      persist();
+      selectedIds.clear();
+      buildList();
+      showToast("삭제 완료.");
+    });
+
+    // Esc to close modal
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape"){
+        if(modalOverlay.classList.contains("open")) closeModal();
+      }
+    });
+
+    /* ========= quick note about star link ========= */
+    // If you want to keep using GitHub, change STAR_IMG_URL to your GitHub Pages served path,
+    // or keep raw.githubusercontent.com but ensure CORS/availability.
+    // We'll also warn once if image failed.
+    setTimeout(() => {
+      if(!STAR_OK){
+        // This is the "link might be wrong" signal.
+        // The provided blob URL is definitely wrong for <img> usage.
+        showToast("우선순위 별 이미지가 로드되지 않아 ●●●로 대체 중이야. (SBstar 링크 확인)");
+      }
+    }, 1200);
+
+  </script>
+</body>
+</html>
