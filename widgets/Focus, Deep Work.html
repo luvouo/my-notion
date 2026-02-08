@@ -1,1 +1,1937 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Focus / Deep Work — Soft Schedule</title>
+
+  <style>
+    :root{
+      /* Pastel Skyblue (slightly desaturated) */
+      --accent-1: rgba(165, 206, 240, 0.88);
+      --accent-2: rgba(140, 190, 232, 0.52);
+      --border:   rgba(140, 190, 232, 0.60);
+
+      --text: rgba(30,30,30,0.92);
+      --muted: rgba(30,30,30,0.38);
+
+      --glass: rgba(255,255,255,0.10);
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --radius: 20px;
+    }
+
+    @font-face{
+      font-family: "EnterSanChaek";
+      src: url("../fonts/엔터산책10.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      background: transparent;
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: var(--text);
+    }
+
+    .wrap{
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2.6vw, 16px);
+      box-sizing: border-box;
+    }
+
+    .card{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(14px, 2.8vw, 18px);
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(120% 80% at 0% 0%, rgba(165,206,240,0.20), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(140,190,232,0.14), transparent 55%);
+      pointer-events:none;
+    }
+
+    .inner{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+    }
+
+    .top{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pearl{
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: block;
+      object-fit: cover;
+      flex: 0 0 auto;
+      box-shadow: 0 0 0 2px rgba(165,206,240,0.22);
+    }
+
+    .title h1{
+      margin:0;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: clamp(15px, 3.8vw, 18px);
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      margin-left: auto;
+      font-variant-numeric: tabular-nums;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      border: 1px solid rgba(140,190,232,0.35);
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: rgba(30,30,30,0.68);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      user-select:none;
+    }
+
+    .controls{
+      display:flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .inputRow{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      flex: 1 1 520px;
+      min-width: 0;
+    }
+
+    .input{
+      flex: 1 1 240px;
+      min-width: 0;
+      border: 1px solid rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 12px 12px;
+      outline: none;
+      color: var(--text);
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .input::placeholder{ color: rgba(30,30,30,0.45); }
+
+    .btn{
+      flex: 0 0 auto;
+      border: 1px solid rgba(140,190,232,0.70);
+      background: rgba(165,206,240,0.18);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(30,30,30,0.85);
+      cursor: pointer;
+      transition: transform .08s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .btn:active{ transform: scale(0.98); }
+    .btn:hover{
+      background: rgba(165,206,240,0.24);
+      border-color: rgba(140,190,232,0.90);
+    }
+    .btn:focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
+    }
+
+    .btn.secondary{
+      border: 1px solid rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.08);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: rgba(30,30,30,0.78);
+    }
+    .btn.secondary:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      color: var(--accent-1);
+    }
+
+    #addBtn{
+      height: clamp(28px, 3.2vw, 32px);
+      min-width: clamp(28px, 3.2vw, 32px);
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(30,30,30,0.48);
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(140,190,232,0.45);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+    #addBtn:hover{
+      background: rgba(165,206,240,0.16);
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+    }
+    #addBtn:active{ transform: scale(0.96); }
+    #addBtn:disabled{
+      opacity: 0.45;
+      cursor: not-allowed;
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(140,190,232,0.25);
+      box-shadow: none;
+      transform: none;
+    }
+
+    .pickerRow{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .seg{
+      display:flex;
+      gap: 6px;
+      align-items:center;
+      padding: 6px;
+      border: 1px solid rgba(140,190,232,0.30);
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+    }
+
+    .seg button{
+      border: 1px solid rgba(140,190,232,0.28);
+      background: rgba(255,255,255,0.08);
+      color: rgba(30,30,30,0.70);
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+      white-space: nowrap;
+    }
+    .seg button:hover{
+      border-color: rgba(140,190,232,0.58);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+    }
+    .seg button:active{ transform: scale(0.98); }
+    .seg button.on{
+      background: rgba(165,206,240,0.18);
+      border-color: rgba(140,190,232,0.72);
+      color: rgba(30,30,30,0.86);
+      box-shadow: 0 10px 26px rgba(140,190,232,0.10);
+    }
+
+    .select{
+      border: 1px solid rgba(140,190,232,0.45);
+      background: rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.78);
+      outline:none;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      cursor: pointer;
+    }
+    .select:focus-visible{ box-shadow: 0 0 0 3px rgba(165,206,240,0.22); }
+
+    .list{
+      display:grid;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .section{
+      border: 1px solid rgba(140,190,232,0.30);
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .sectionHead{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .sectionTitle{
+      display:flex;
+      align-items: baseline;
+      gap: 10px;
+      min-width: 0;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: rgba(30,30,30,0.82);
+      font-size: 13px;
+    }
+    .sectionTitle small{
+      color: rgba(30,30,30,0.40);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .items{
+      margin-top: 10px;
+      display:grid;
+      gap: 8px;
+    }
+
+    .item{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(140,190,232,0.22);
+      background: rgba(255,255,255,0.06);
+      min-width: 0;
+    }
+
+    .check{
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      border-radius: 6px;
+      border: 1.6px solid rgba(140,190,232,0.95);
+      display:grid;
+      place-items:center;
+      flex: 0 0 auto;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      padding: 0;
+    }
+    .check:hover{
+      background: rgba(165,206,240,0.12);
+      border-color: rgba(140,190,232,1);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+    }
+    .check:active{ transform: scale(0.98); }
+    .check svg{
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .main{
+      flex: 1 1 auto;
+      min-width: 0;
+      display:flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .row1{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      min-width:0;
+    }
+
+    .text{
+      flex: 1 1 auto;
+      min-width: 0;
+      line-height: 1.45;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sub{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      color: rgba(30,30,30,0.50);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      flex-wrap: wrap;
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(0,0,0,0.03);
+      color: rgba(30,30,30,0.62);
+      font-size: 11px;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .tag.deep{
+      border-color: rgba(140,190,232,0.40);
+      background: rgba(165,206,240,0.18);
+    }
+    .tag.focus{
+      border-color: rgba(140,190,232,0.26);
+      background: rgba(255,255,255,0.10);
+    }
+    .tag.admin{
+      border-color: rgba(0,0,0,0.08);
+      background: rgba(0,0,0,0.03);
+    }
+
+    .dots{
+      letter-spacing: 1px;
+      color: rgba(30,30,30,0.62);
+    }
+
+    .miniBtn{
+      border: 1px solid rgba(140,190,232,0.30);
+      background: rgba(255,255,255,0.08);
+      color: rgba(30,30,30,0.72);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      transition: box-shadow .18s ease, border-color .18s ease, color .18s ease, transform .08s ease;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+    }
+    .miniBtn:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      color: var(--accent-1);
+    }
+    .miniBtn:active{ transform: scale(0.98); }
+
+    .iconBtn{
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(140,190,232,0.35);
+      background: rgba(255,255,255,0.08);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, transform .08s ease, box-shadow .18s ease;
+      flex: 0 0 auto;
+    }
+    .iconBtn:hover{
+      border-color: rgba(140,190,232,0.70);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+      background: rgba(255,255,255,0.10);
+    }
+    .iconBtn:active{ transform: scale(0.98); }
+    .iconBtn.on{
+      border-color: rgba(140,190,232,0.70);
+      background: rgba(165,206,240,0.16);
+    }
+    .iconBtn svg{
+      width: 14px;
+      height: 14px;
+      stroke: rgba(110,110,110,0.70);
+    }
+    .iconBtn.danger svg{
+      stroke: rgba(140,140,140,0.82);
+    }
+
+    .item.done{ opacity: 0.78; }
+    .item.done .text{ text-decoration: line-through; color: rgba(30,30,30,0.50); }
+    .item.done .check{
+      background: rgba(165,206,240,0.18);
+      border-color: rgba(140,190,232,1);
+    }
+    .item.done .check svg{ opacity: 1; transform: scale(1); }
+
+    .pinDot{
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(165,206,240,0.88);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
+      flex: 0 0 auto;
+    }
+
+    .timerBar{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    .timerPill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      border: 1px solid rgba(140,190,232,0.30);
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: rgba(30,30,30,0.70);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      user-select:none;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timerTime{
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.78);
+      font-variant-numeric: tabular-nums;
+      min-width: 86px;
+      text-align:center;
+    }
+
+    .toast{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(30,30,30,0.62);
+      font-size: 12px;
+      line-height: 1;
+
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+
+      transition: opacity .14s ease, transform .14s ease;
+    }
+    .toast:not(:empty){
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast::before{
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(165,206,240,0.88);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
+      flex: 0 0 auto;
+    }
+
+    .footer{
+      display:flex;
+      justify-content: space-between;
+      align-items:flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .footerLeft{
+      display:flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 180px;
+    }
+
+    .footer-actions{
+      display:flex;
+      justify-content: flex-end;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-left: 8px;
+      padding-right: 2px;
+      scrollbar-width: none;
+      width: 100%;
+    }
+    .footer-actions::-webkit-scrollbar{ display:none; }
+    .footer-actions > .btn{ flex: 0 0 auto; }
+
+    /* ===== Modal (History / Archive) ===== */
+    .modalOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      z-index: 5000;
+      overflow: hidden;
+    }
+    .modalOverlay.open{ display:flex; }
+
+    .modal{
+      width: min(860px, 100%);
+      max-height: calc(100vh - 20px);
+      display: flex;
+      flex-direction: column;
+      border-radius: 18px;
+      border: 1px solid rgba(140,190,232,0.38);
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .modalHeader{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      flex-wrap: nowrap;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .mhLeft{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .mhLeft strong{
+      font-size: 14px;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      flex: 0 0 auto;
+    }
+
+    .search{
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.70);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      outline: none;
+      min-width: 0;
+      flex: 1 1 260px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .search::placeholder{ color: rgba(30,30,30,0.45); }
+
+    .mhRight{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+      min-width: 0;
+      flex-wrap: nowrap;
+    }
+
+    .modalBody{
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    .hist{
+      padding: 12px 14px;
+      overflow: auto;
+      min-height: 0;
+      display:grid;
+      gap: 10px;
+    }
+
+    .histGroupTitle{
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color: rgba(30,30,30,0.78);
+      font-size: 13px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .histGroupTitle small{
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size: 12px;
+      color: rgba(30,30,30,0.45);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .histBox{
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.66);
+      display: grid;
+      gap: 10px;
+    }
+
+    .hItem{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(30,30,30,0.86);
+      line-height: 1.25;
+      min-width: 0;
+    }
+
+    .badge{
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(0,0,0,0.03);
+      color: rgba(30,30,30,0.58);
+      flex: 0 0 auto;
+      font-variant-numeric: tabular-nums;
+    }
+    .badge.done{
+      border-color: rgba(140,190,232,0.40);
+      background: rgba(165,206,240,0.18);
+      color: rgba(30,30,30,0.62);
+    }
+    .mark{
+      background: rgba(165,206,240,0.35);
+      border-radius: 6px;
+      padding: 0 3px;
+    }
+
+    .mToast{
+      position: absolute;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.90);
+      border: 1px solid rgba(140,190,232,0.35);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+      border-radius: 999px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .14s ease, transform .14s ease;
+      transform-origin: center;
+    }
+    .mToast.show{
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .mToastMsg{
+      font-size: 12.5px;
+      color: rgba(30,30,30,0.75);
+      white-space: nowrap;
+    }
+    .mUndoBtn{
+      border: 1px solid rgba(140,190,232,0.55);
+      background: rgba(165,206,240,0.16);
+      color: rgba(30,30,30,0.82);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .mUndoBtn:hover{
+      border-color: rgba(140,190,232,0.80);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+    }
+
+    @media (max-width: 420px){
+      .meta{ width:100%; justify-content:flex-end; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="Focus / Deep Work Widget">
+      <div class="inner">
+        <div class="top">
+          <div class="title">
+            <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+            <h1>Focus / Deep Work</h1>
+          </div>
+
+          <div class="meta">
+            <span class="pill" id="todayText">Today: 0000.00.00</span>
+            <span class="pill" id="sumText">0/0 done</span>
+            <span class="pill" id="timerState">Timer: idle</span>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="inputRow">
+            <input id="taskInput" class="input" type="text" placeholder="집중할 일 한 줄…" maxlength="90" />
+
+            <div class="pickerRow">
+              <div class="seg" id="tagSeg" aria-label="Tag">
+                <button type="button" data-tag="deep" class="on">Deep</button>
+                <button type="button" data-tag="focus">Focus</button>
+                <button type="button" data-tag="admin">Admin</button>
+              </div>
+
+              <div class="seg" id="lvlSeg" aria-label="Intensity">
+                <button type="button" data-lvl="1" class="on">●</button>
+                <button type="button" data-lvl="2">●●</button>
+                <button type="button" data-lvl="3">●●●</button>
+              </div>
+
+              <select class="select" id="estSelect" title="Estimate">
+                <option value="25">25m</option>
+                <option value="50">50m</option>
+                <option value="90">90m</option>
+                <option value="custom">Custom…</option>
+              </select>
+
+              <button id="addBtn" type="button" title="추가" aria-label="추가"></button>
+            </div>
+          </div>
+
+          <div class="timerBar" aria-label="Timer controls">
+            <span class="timerPill">
+              <span style="opacity:.75">Target</span>
+              <span id="timerTarget">25m</span>
+            </span>
+            <span class="timerPill">
+              <span style="opacity:.75">Left</span>
+              <span class="timerTime" id="timerLeft">00:00</span>
+            </span>
+
+            <button class="btn secondary" id="startBtn" type="button">Start</button>
+            <button class="btn secondary" id="pauseBtn" type="button" disabled>Pause</button>
+            <button class="btn secondary" id="resetBtn" type="button" disabled>Reset</button>
+          </div>
+        </div>
+
+        <div class="list">
+          <div class="section">
+            <div class="sectionHead">
+              <div class="sectionTitle">
+                <span>Focus List</span>
+                <small id="filterHint">All</small>
+              </div>
+
+              <div style="display:flex; gap:8px; flex-wrap: wrap; justify-content:flex-end;">
+                <select class="select" id="filterSelect" title="Filter">
+                  <option value="all">Filter: All</option>
+                  <option value="deep">Deep</option>
+                  <option value="focus">Focus</option>
+                  <option value="admin">Admin</option>
+                  <option value="active">Active</option>
+                  <option value="done">Done</option>
+                </select>
+
+                <select class="select" id="sortSelect" title="Sort">
+                  <option value="pinned">Sort: Pinned</option>
+                  <option value="lvl">Intensity</option>
+                  <option value="recent">Recent</option>
+                </select>
+
+                <button class="miniBtn" id="pickActiveBtn" type="button" title="타이머로 할 일 선택">Pick Active</button>
+              </div>
+            </div>
+
+            <div class="items" id="items"></div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="footerLeft">
+            <span id="countText">0/0 done</span>
+            <div class="toast" id="toast"></div>
+          </div>
+
+          <div class="footer-actions">
+            <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
+            <button class="btn secondary" id="copyBtn" type="button">Copy</button>
+            <button class="btn secondary" id="clearDoneBtn" type="button">Clear done</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History / Archive Modal -->
+  <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Focus History / Archive">
+      <div class="modalHeader">
+        <div class="mhLeft">
+          <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+          <strong>Focus History / Archive</strong>
+          <input id="searchInput" class="search" type="text" placeholder="검색: 날짜(YYYY.MM.DD) 또는 키워드…" />
+        </div>
+
+        <div class="mhRight">
+          <button class="btn secondary" id="closeModalBtn" type="button">닫기</button>
+        </div>
+      </div>
+
+      <div class="modalBody">
+        <div class="hist" id="hist"></div>
+      </div>
+
+      <!-- Undo Toast -->
+      <div class="mToast" id="mToast" aria-hidden="true">
+        <div class="mToastMsg" id="mToastMsg">삭제했어.</div>
+        <button class="mUndoBtn" id="mUndoBtn" type="button">Undo</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================
+       Storage (scoped)
+    ========================= */
+    const WORKSPACE_ID_STORAGE_KEY = "soft_schedule_workspace_id_v1";
+    function getWorkspaceIdMaybe(){
+      const v = localStorage.getItem(WORKSPACE_ID_STORAGE_KEY);
+      return (v && String(v).trim()) ? String(v).trim() : "";
+    }
+    const workspace_id = getWorkspaceIdMaybe();
+
+    const FOCUS_KEY = workspace_id
+      ? `soft_schedule_focus_${workspace_id}_v1`
+      : `soft_schedule_focus_v1`;
+
+    const FOCUS_LOG_KEY = workspace_id
+      ? `soft_schedule_focus_log_${workspace_id}_v1`
+      : `soft_schedule_focus_log_v1`;
+
+    /* =========================
+       Utils
+    ========================= */
+    function pad2(n){ return String(n).padStart(2,"0"); }
+    function ymd(d=new Date()){
+      return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+    }
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+    }
+    function showToast(msg){
+      toast.textContent = msg;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.textContent = "", 1600);
+    }
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try{
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          return ok;
+        }catch(err){
+          document.body.removeChild(ta);
+          return false;
+        }
+      }
+    }
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+    function highlight(text, query){
+      const t = String(text);
+      const q = String(query || "").trim();
+      if(!q) return escapeHtml(t);
+      const idx = t.toLowerCase().indexOf(q.toLowerCase());
+      if(idx === -1) return escapeHtml(t);
+      const before = escapeHtml(t.slice(0, idx));
+      const mid = escapeHtml(t.slice(idx, idx + q.length));
+      const after = escapeHtml(t.slice(idx + q.length));
+      return `${before}<span class="mark">${mid}</span>${after}`;
+    }
+
+    function uuid(){
+      return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()));
+    }
+
+    /* =========================
+       Data model
+    =========================
+       focusState = {
+         items: [{
+           id, text,
+           tag: "deep"|"focus"|"admin",
+           lvl: 1|2|3,
+           estMin: number,
+           done: boolean,
+           pinned: boolean,
+           createdAt: number,
+           doneAt?: number
+         }],
+         activeId: string|null
+       }
+
+       log = {
+         "YYYY.MM.DD": [{
+            id, text, tag, lvl,
+            estMin,
+            startedAt, endedAt,
+            seconds,
+            result: "done"|"stopped"
+         }]
+       }
+    ========================= */
+
+    function emptyFocusState(){
+      return { items: [], activeId: null };
+    }
+    function loadFocus(){
+      try{
+        const raw = localStorage.getItem(FOCUS_KEY);
+        if(!raw) return emptyFocusState();
+        const p = JSON.parse(raw);
+        if(!p || typeof p !== "object") return emptyFocusState();
+        if(!Array.isArray(p.items)) p.items = [];
+        if(typeof p.activeId !== "string") p.activeId = null;
+        // normalize fields
+        p.items = p.items.map(it => ({
+          id: String(it.id || uuid()),
+          text: String(it.text || "").slice(0, 200),
+          tag: (it.tag === "deep" || it.tag === "focus" || it.tag === "admin") ? it.tag : "deep",
+          lvl: [1,2,3].includes(+it.lvl) ? +it.lvl : 2,
+          estMin: Number.isFinite(+it.estMin) ? clamp(+it.estMin, 1, 600) : 25,
+          done: !!it.done,
+          pinned: !!it.pinned,
+          createdAt: Number.isFinite(+it.createdAt) ? +it.createdAt : Date.now(),
+          doneAt: Number.isFinite(+it.doneAt) ? +it.doneAt : null
+        }));
+        if(p.activeId && !p.items.some(x => x.id === p.activeId)) p.activeId = null;
+        return p;
+      }catch(e){
+        return emptyFocusState();
+      }
+    }
+    function saveFocus(state){
+      localStorage.setItem(FOCUS_KEY, JSON.stringify(state));
+    }
+
+    function loadLog(){
+      try{
+        const raw = localStorage.getItem(FOCUS_LOG_KEY);
+        if(!raw) return {};
+        const p = JSON.parse(raw);
+        return (p && typeof p === "object") ? p : {};
+      }catch(e){
+        return {};
+      }
+    }
+    function saveLog(log){
+      localStorage.setItem(FOCUS_LOG_KEY, JSON.stringify(log));
+    }
+
+    /* =========================
+       DOM
+    ========================= */
+    const todayText = document.getElementById("todayText");
+    const sumText = document.getElementById("sumText");
+    const timerStateEl = document.getElementById("timerState");
+
+    const taskInput = document.getElementById("taskInput");
+    const tagSeg = document.getElementById("tagSeg");
+    const lvlSeg = document.getElementById("lvlSeg");
+    const estSelect = document.getElementById("estSelect");
+
+    const addBtn = document.getElementById("addBtn");
+    const itemsEl = document.getElementById("items");
+
+    const filterSelect = document.getElementById("filterSelect");
+    const sortSelect = document.getElementById("sortSelect");
+    const filterHint = document.getElementById("filterHint");
+
+    const pickActiveBtn = document.getElementById("pickActiveBtn");
+
+    const timerTarget = document.getElementById("timerTarget");
+    const timerLeft = document.getElementById("timerLeft");
+    const startBtn = document.getElementById("startBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const countText = document.getElementById("countText");
+    const toast = document.getElementById("toast");
+
+    const historyBtn = document.getElementById("historyBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const clearDoneBtn = document.getElementById("clearDoneBtn");
+
+    const modalOverlay = document.getElementById("modalOverlay");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const searchInput = document.getElementById("searchInput");
+    const hist = document.getElementById("hist");
+
+    const mToast = document.getElementById("mToast");
+    const mToastMsg = document.getElementById("mToastMsg");
+    const mUndoBtn = document.getElementById("mUndoBtn");
+
+    todayText.textContent = `Today: ${ymd(new Date())}`;
+
+    /* add icon */
+    addBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+        <path d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"/>
+      </svg>
+    `;
+
+    /* =========================
+       UI state
+    ========================= */
+    let focusState = loadFocus();
+    let logState = loadLog();
+
+    let uiTag = "deep";
+    let uiLvl = 1;
+    let uiEstMin = 25;
+
+    function setTag(tag){
+      uiTag = tag;
+      tagSeg.querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.tag === tag));
+    }
+    function setLvl(lvl){
+      uiLvl = lvl;
+      lvlSeg.querySelectorAll("button").forEach(b => b.classList.toggle("on", +b.dataset.lvl === lvl));
+    }
+
+    /* =========================
+       Timer
+    ========================= */
+    const TIMER_KEY = workspace_id
+      ? `soft_schedule_focus_timer_${workspace_id}_v1`
+      : `soft_schedule_focus_timer_v1`;
+
+    // timerStore: { status:"idle"|"running"|"paused", activeId, targetSec, leftSec, startedAt, lastTickAt, sessionStartAt }
+    let timerStore = (() => {
+      try{
+        const raw = localStorage.getItem(TIMER_KEY);
+        if(!raw) return null;
+        const p = JSON.parse(raw);
+        return (p && typeof p === "object") ? p : null;
+      }catch(e){ return null; }
+    })();
+
+    function saveTimerStore(){
+      localStorage.setItem(TIMER_KEY, JSON.stringify(timerStore));
+    }
+    function clearTimerStore(){
+      localStorage.removeItem(TIMER_KEY);
+      timerStore = null;
+    }
+
+    function fmtMMSS(sec){
+      sec = Math.max(0, Math.floor(sec));
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${pad2(m)}:${pad2(s)}`;
+    }
+
+    function ensureActiveExists(){
+      if(timerStore && timerStore.activeId){
+        const ok = focusState.items.some(x => x.id === timerStore.activeId);
+        if(!ok){
+          // if active removed, stop timer safely
+          clearTimerStore();
+          setTimerUIIdle();
+        }
+      }
+    }
+
+    function setTimerUIIdle(){
+      timerStateEl.textContent = `Timer: idle`;
+      timerTarget.textContent = `${uiEstMin}m`;
+      timerLeft.textContent = fmtMMSS(uiEstMin*60);
+
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      resetBtn.disabled = true;
+    }
+
+    function setTimerUIRunning(){
+      timerStateEl.textContent = `Timer: running`;
+      startBtn.disabled = true;
+      pauseBtn.disabled = false;
+      resetBtn.disabled = false;
+    }
+
+    function setTimerUIPaused(){
+      timerStateEl.textContent = `Timer: paused`;
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      resetBtn.disabled = false;
+    }
+
+    let tickHandle = null;
+
+    function stopTick(){
+      if(tickHandle) clearInterval(tickHandle);
+      tickHandle = null;
+    }
+
+    function startTick(){
+      stopTick();
+      tickHandle = setInterval(() => {
+        if(!timerStore || timerStore.status !== "running") return;
+        const now = Date.now();
+        const last = Number(timerStore.lastTickAt || now);
+        const delta = Math.max(0, Math.floor((now - last)/1000));
+        if(delta <= 0) return;
+
+        timerStore.leftSec = Math.max(0, Math.floor(timerStore.leftSec - delta));
+        timerStore.lastTickAt = now;
+        saveTimerStore();
+
+        timerLeft.textContent = fmtMMSS(timerStore.leftSec);
+
+        if(timerStore.leftSec <= 0){
+          // finished
+          onTimerFinished();
+        }
+      }, 300);
+    }
+
+    function askCustomMinutes(def=25){
+      const raw = prompt("몇 분으로 설정할까? (1~600)", String(def));
+      if(raw == null) return null;
+      const n = Math.round(+raw);
+      if(!Number.isFinite(n)) return null;
+      return clamp(n, 1, 600);
+    }
+
+    function applyEstToUI(min){
+      uiEstMin = clamp(min, 1, 600);
+      timerTarget.textContent = `${uiEstMin}m`;
+      if(!timerStore || timerStore.status === "idle"){
+        timerLeft.textContent = fmtMMSS(uiEstMin*60);
+      }
+    }
+
+    function startTimer(){
+      // require active selection
+      const activeId = focusState.activeId;
+      if(!activeId){
+        showToast("먼저 Active를 선택해줘.");
+        return;
+      }
+      const item = focusState.items.find(x => x.id === activeId);
+      if(!item){
+        showToast("Active가 유효하지 않아.");
+        focusState.activeId = null;
+        saveFocus(focusState);
+        render();
+        return;
+      }
+
+      const targetSec = Math.max(60, Math.floor((item.estMin || uiEstMin) * 60));
+      timerStore = {
+        status: "running",
+        activeId,
+        targetSec,
+        leftSec: targetSec,
+        startedAt: Date.now(),
+        lastTickAt: Date.now(),
+        sessionStartAt: Date.now()
+      };
+      saveTimerStore();
+      timerTarget.textContent = `${Math.round(targetSec/60)}m`;
+      timerLeft.textContent = fmtMMSS(timerStore.leftSec);
+      setTimerUIRunning();
+      startTick();
+      showToast("타이머 시작.");
+    }
+
+    function pauseTimer(){
+      if(!timerStore || timerStore.status !== "running") return;
+      timerStore.status = "paused";
+      timerStore.lastTickAt = Date.now();
+      saveTimerStore();
+      setTimerUIPaused();
+      showToast("일시정지.");
+    }
+
+    function resumeTimer(){
+      if(!timerStore || timerStore.status !== "paused") return;
+      timerStore.status = "running";
+      timerStore.lastTickAt = Date.now();
+      saveTimerStore();
+      setTimerUIRunning();
+      showToast("재개.");
+    }
+
+    function resetTimer(){
+      if(!timerStore) return;
+      const ok = confirm("타이머를 리셋할까? (세션 로그는 남기지 않음)");
+      if(!ok) return;
+
+      clearTimerStore();
+      stopTick();
+      setTimerUIIdle();
+      showToast("리셋했어.");
+    }
+
+    function logSession(result){
+      if(!timerStore) return;
+      const activeId = timerStore.activeId;
+      const item = focusState.items.find(x => x.id === activeId);
+      const endAt = Date.now();
+      const sec = Math.max(0, Math.floor((timerStore.targetSec - timerStore.leftSec)));
+      const dateKey = ymd(new Date());
+
+      if(!logState[dateKey]) logState[dateKey] = [];
+      logState[dateKey].unshift({
+        id: uuid(),
+        text: item ? item.text : "(unknown)",
+        tag: item ? item.tag : "deep",
+        lvl: item ? item.lvl : 2,
+        estMin: Math.round((timerStore.targetSec||0)/60),
+        startedAt: timerStore.sessionStartAt || timerStore.startedAt,
+        endedAt: endAt,
+        seconds: sec,
+        result: result
+      });
+      saveLog(logState);
+    }
+
+    function onTimerFinished(){
+      stopTick();
+      if(!timerStore) return;
+
+      timerStore.status = "idle";
+      saveTimerStore();
+
+      timerLeft.textContent = fmtMMSS(0);
+      timerStateEl.textContent = `Timer: finished`;
+
+      const okDone = confirm("타이머가 끝났어.\n\n이 작업을 done 처리할까?");
+      logSession(okDone ? "done" : "stopped");
+
+      if(okDone){
+        const id = timerStore.activeId;
+        const it = focusState.items.find(x => x.id === id);
+        if(it){
+          it.done = true;
+          it.doneAt = Date.now();
+        }
+        saveFocus(focusState);
+      }
+
+      clearTimerStore();
+      setTimerUIIdle();
+      render();
+      showToast("세션을 기록했어.");
+    }
+
+    /* Restore timer store on load */
+    function restoreTimerUI(){
+      if(!timerStore){
+        setTimerUIIdle();
+        return;
+      }
+      ensureActiveExists();
+      if(!timerStore){
+        setTimerUIIdle();
+        return;
+      }
+
+      timerTarget.textContent = `${Math.round((timerStore.targetSec||0)/60)}m`;
+      timerLeft.textContent = fmtMMSS(timerStore.leftSec || 0);
+
+      if(timerStore.status === "running"){
+        setTimerUIRunning();
+        // fix lastTickAt to now to prevent huge jump if tab slept
+        timerStore.lastTickAt = Date.now();
+        saveTimerStore();
+        startTick();
+      }else if(timerStore.status === "paused"){
+        setTimerUIPaused();
+      }else{
+        setTimerUIIdle();
+      }
+    }
+
+    /* =========================
+       CRUD
+    ========================= */
+    function addItem(text, tag, lvl, estMin){
+      const t = (text || "").trim();
+      if(!t) return;
+
+      const item = {
+        id: uuid(),
+        text: t,
+        tag: (tag === "deep" || tag === "focus" || tag === "admin") ? tag : "deep",
+        lvl: [1,2,3].includes(+lvl) ? +lvl : 2,
+        estMin: clamp(+estMin || 25, 1, 600),
+        done: false,
+        pinned: false,
+        createdAt: Date.now(),
+        doneAt: null
+      };
+      focusState.items.unshift(item);
+      saveFocus(focusState);
+      render();
+    }
+
+    function toggleDone(id){
+      const it = focusState.items.find(x => x.id === id);
+      if(!it) return;
+      it.done = !it.done;
+      it.doneAt = it.done ? Date.now() : null;
+      saveFocus(focusState);
+      render();
+    }
+
+    function togglePin(id){
+      const it = focusState.items.find(x => x.id === id);
+      if(!it) return;
+      it.pinned = !it.pinned;
+      saveFocus(focusState);
+      render();
+      showToast(it.pinned ? "Pinned." : "Unpinned.");
+    }
+
+    function setActive(id){
+      const it = focusState.items.find(x => x.id === id);
+      if(!it) return;
+      focusState.activeId = id;
+      saveFocus(focusState);
+
+      // sync UI estimate to this item
+      applyEstToUI(it.estMin || uiEstMin);
+
+      render();
+      showToast("Active로 선택했어.");
+    }
+
+    /* ===== Undo delete (3s) ===== */
+    let _undoPayload = null;
+    function hideModalToast(){
+      mToast.classList.remove("show");
+      mToast.setAttribute("aria-hidden","true");
+      _undoPayload = null;
+      clearTimeout(hideModalToast._t);
+    }
+    function showModalToast(message, undoFn){
+      _undoPayload = { undoFn };
+      mToastMsg.textContent = message || "삭제했어.";
+      mToast.classList.add("show");
+      mToast.setAttribute("aria-hidden","false");
+      clearTimeout(hideModalToast._t);
+      hideModalToast._t = setTimeout(hideModalToast, 3000);
+    }
+    mUndoBtn.addEventListener("click", () => {
+      if(_undoPayload && typeof _undoPayload.undoFn === "function"){
+        _undoPayload.undoFn();
+      }
+      hideModalToast();
+    });
+
+    function deleteItemWithUndo(id){
+      const idx = focusState.items.findIndex(x => x.id === id);
+      if(idx < 0) return;
+      const removed = focusState.items[idx];
+
+      // if active removed, also reset timer safely
+      const wasActive = (focusState.activeId === id);
+      focusState.items.splice(idx, 1);
+      if(wasActive) focusState.activeId = null;
+
+      saveFocus(focusState);
+      render();
+
+      showToast("삭제했어. (Undo 3s)");
+      showModalToast("삭제했어.", () => {
+        focusState.items.splice(Math.min(idx, focusState.items.length), 0, removed);
+        if(wasActive) focusState.activeId = removed.id;
+        saveFocus(focusState);
+        render();
+      });
+    }
+
+    function clearDone(){
+      const before = focusState.items.length;
+      focusState.items = focusState.items.filter(x => !x.done);
+      if(focusState.activeId && !focusState.items.some(x => x.id === focusState.activeId)){
+        focusState.activeId = null;
+      }
+      saveFocus(focusState);
+      render();
+      showToast(`완료를 지웠어. (-${before - focusState.items.length})`);
+    }
+
+    /* =========================
+       Rendering
+    ========================= */
+    function tagLabel(tag){
+      if(tag === "deep") return "Deep";
+      if(tag === "focus") return "Focus";
+      return "Admin";
+    }
+    function tagClass(tag){
+      if(tag === "deep") return "tag deep";
+      if(tag === "focus") return "tag focus";
+      return "tag admin";
+    }
+    function dots(lvl){
+      if(lvl === 1) return "●";
+      if(lvl === 2) return "●●";
+      return "●●●";
+    }
+
+    function computeView(items){
+      const f = filterSelect.value;
+
+      let out = items.slice();
+
+      if(f === "deep" || f === "focus" || f === "admin"){
+        out = out.filter(x => x.tag === f);
+      }else if(f === "active"){
+        out = out.filter(x => x.id === focusState.activeId);
+      }else if(f === "done"){
+        out = out.filter(x => x.done);
+      }
+
+      const sort = sortSelect.value;
+
+      const byRecent = (a,b) => (b.createdAt - a.createdAt);
+      const byLvl = (a,b) => (b.lvl - a.lvl) || (b.createdAt - a.createdAt);
+      const byPinned = (a,b) => ((b.pinned?1:0) - (a.pinned?1:0)) || byLvl(a,b);
+
+      if(sort === "recent") out.sort(byRecent);
+      else if(sort === "lvl") out.sort(byLvl);
+      else out.sort(byPinned);
+
+      return out;
+    }
+
+    function render(){
+      const all = focusState.items;
+      const total = all.length;
+      const done = all.filter(x => x.done).length;
+
+      countText.textContent = `${done}/${total} done`;
+      sumText.textContent = `${done}/${total} done`;
+
+      const f = filterSelect.value;
+      filterHint.textContent = (f === "all") ? "All"
+        : (f === "active") ? "Active"
+        : (f === "done") ? "Done"
+        : tagLabel(f);
+
+      // Active pill
+      const active = focusState.activeId ? all.find(x => x.id === focusState.activeId) : null;
+      if(active){
+        timerStateEl.textContent = `Active: ${active.tag.toUpperCase()} ${dots(active.lvl)}`;
+        timerStateEl.title = active.text;
+      }else{
+        timerStateEl.textContent = `Timer: idle`;
+        timerStateEl.title = "";
+      }
+
+      // Keep timer target/left consistent with selected active item when idle
+      if((!timerStore || timerStore.status === "idle") && active){
+        applyEstToUI(active.estMin || uiEstMin);
+      }
+
+      const view = computeView(all);
+
+      itemsEl.innerHTML = "";
+      if(view.length === 0){
+        itemsEl.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">(empty)</div>`;
+      }else{
+        for(const it of view){
+          const row = document.createElement("div");
+          row.className = "item" + (it.done ? " done" : "");
+          const isActive = (focusState.activeId === it.id);
+
+          row.innerHTML = `
+            <button class="check" type="button" role="checkbox" aria-checked="${it.done}"
+              data-act="done" data-id="${escapeHtml(it.id)}">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <div class="main">
+              <div class="row1">
+                ${it.pinned ? `<span class="pinDot" title="pinned"></span>` : ``}
+                <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+              </div>
+              <div class="sub">
+                <span class="${tagClass(it.tag)}">${tagLabel(it.tag)}</span>
+                <span class="dots" title="intensity">${dots(it.lvl)}</span>
+                <span title="estimate">${Math.round(it.estMin)}m</span>
+                ${isActive ? `<span class="tag deep" title="active" style="background:rgba(165,206,240,0.22)">Active</span>` : ``}
+              </div>
+            </div>
+
+            <button class="miniBtn" type="button" data-act="active" data-id="${escapeHtml(it.id)}" title="Active로 선택">Active</button>
+
+            <button class="iconBtn ${it.pinned ? "on" : ""}" type="button" data-act="pin" data-id="${escapeHtml(it.id)}" title="${it.pinned ? "Unpin" : "Pin"}">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M9 3h6l1 6-2 2v5l-2 2-2-2v-5l-2-2 1-6z" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M12 21v-5" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </button>
+
+            <button class="iconBtn danger" type="button" data-act="del" data-id="${escapeHtml(it.id)}" title="Delete">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 7h10l-1 14H8L7 7z" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M6 7h12" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </button>
+          `;
+          itemsEl.appendChild(row);
+        }
+      }
+    }
+
+    /* =========================
+       Copy/Export
+    ========================= */
+    function formatForCopy(){
+      const lines = [];
+      lines.push(`[Focus / Deep Work | ${ymd(new Date())}]`);
+      const all = computeView(focusState.items);
+      if(all.length === 0){
+        lines.push(`- (empty)`);
+        return lines.join("\n");
+      }
+      for(const it of all){
+        lines.push(`- [${it.done ? "x" : " "}] (${tagLabel(it.tag)}/${dots(it.lvl)}/${Math.round(it.estMin)}m) ${it.text}${it.pinned ? " [pinned]" : ""}${(focusState.activeId===it.id) ? " [active]" : ""}`);
+      }
+      return lines.join("\n");
+    }
+
+    /* =========================
+       History modal
+    ========================= */
+    function openModal(){
+      logState = loadLog();
+      modalOverlay.classList.add("open");
+      modalOverlay.setAttribute("aria-hidden","false");
+      buildHistory();
+    }
+    function closeModal(){
+      modalOverlay.classList.remove("open");
+      modalOverlay.setAttribute("aria-hidden","true");
+      hideModalToast();
+    }
+
+    function buildHistory(){
+      const q = (searchInput.value || "").trim().toLowerCase();
+      hist.innerHTML = "";
+
+      const keys = Object.keys(logState || {}).sort((a,b) => (b.localeCompare(a))); // recent first
+
+      let shown = 0;
+
+      for(const day of keys){
+        const arr = Array.isArray(logState[day]) ? logState[day] : [];
+        const filtered = !q ? arr : arr.filter(x => {
+          const t = String(x.text||"").toLowerCase();
+          return day.toLowerCase().includes(q) || t.includes(q);
+        });
+
+        if(filtered.length === 0) continue;
+
+        const head = document.createElement("div");
+        head.className = "histGroupTitle";
+        head.innerHTML = `<span>${escapeHtml(day)}</span><small>${filtered.length} sessions</small>`;
+
+        const box = document.createElement("div");
+        box.className = "histBox";
+
+        for(const s of filtered){
+          const minutes = Math.round((s.seconds||0)/60);
+          const badgeCls = (s.result === "done") ? "badge done" : "badge";
+          const badgeText = (s.result === "done") ? "done" : "stopped";
+          const textHtml = highlight(s.text || "", q);
+
+          const row = document.createElement("div");
+          row.className = "hItem";
+          row.innerHTML = `
+            <span class="${badgeCls}">${badgeText}</span>
+            <span class="${tagClass(s.tag)}">${tagLabel(s.tag)}</span>
+            <span class="badge">${dots(+s.lvl||2)}</span>
+            <span class="badge">${Math.round(s.estMin||0)}m</span>
+            <span class="badge">${minutes}m</span>
+            <span style="min-width:0; flex:1 1 auto;">${textHtml}</span>
+            <button class="iconBtn danger" type="button" title="세션 삭제" data-hdel="${escapeHtml(s.id)}" data-hday="${escapeHtml(day)}">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 7h10l-1 14H8L7 7z" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M6 7h12" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </button>
+          `;
+          box.appendChild(row);
+        }
+
+        hist.appendChild(head);
+        hist.appendChild(box);
+
+        shown += filtered.length;
+        if(shown > 250) break; // safety cap
+      }
+
+      if(hist.children.length === 0){
+        hist.innerHTML = `<div style="color: rgba(30,30,30,0.55); font-size:12px;">(no history)</div>`;
+      }
+    }
+
+    function deleteHistoryWithUndo(day, sid){
+      const arr = Array.isArray(logState[day]) ? logState[day] : [];
+      const idx = arr.findIndex(x => x.id === sid);
+      if(idx < 0) return;
+
+      const removed = arr[idx];
+      arr.splice(idx, 1);
+      logState[day] = arr;
+      saveLog(logState);
+      buildHistory();
+      showToast("세션 삭제. (Undo 3s)");
+
+      showModalToast("삭제했어.", () => {
+        const cur = loadLog();
+        const a = Array.isArray(cur[day]) ? cur[day] : [];
+        a.splice(Math.min(idx, a.length), 0, removed);
+        cur[day] = a;
+        saveLog(cur);
+        logState = cur;
+        buildHistory();
+      });
+    }
+
+    /* =========================
+       Events
+    ========================= */
+    function syncAddButtonState(){
+      const hasText = (taskInput.value || "").trim().length > 0;
+      addBtn.disabled = !hasText;
+    }
+    taskInput.addEventListener("input", syncAddButtonState);
+
+    tagSeg.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-tag]");
+      if(!b) return;
+      setTag(b.dataset.tag);
+    });
+
+    lvlSeg.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-lvl]");
+      if(!b) return;
+      setLvl(+b.dataset.lvl);
+    });
+
+    estSelect.addEventListener("change", () => {
+      const v = estSelect.value;
+      if(v === "custom"){
+        const n = askCustomMinutes(uiEstMin);
+        if(n != null){
+          applyEstToUI(n);
+          // also set select label back to custom (kept)
+          estSelect.value = "custom";
+        }else{
+          estSelect.value = String(uiEstMin);
+        }
+      }else{
+        applyEstToUI(+v);
+      }
+    });
+
+    addBtn.addEventListener("click", () => {
+      addItem(taskInput.value, uiTag, uiLvl, uiEstMin);
+      taskInput.value = "";
+      taskInput.focus();
+      syncAddButtonState();
+      showToast("추가했어.");
+    });
+
+    taskInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        if(!addBtn.disabled) addBtn.click();
+      }
+    });
+
+    itemsEl.addEventListener("click", (e) => {
+      const act = e.target.closest("[data-act]");
+      if(!act) return;
+      const id = act.dataset.id;
+      const type = act.dataset.act;
+
+      if(type === "done") toggleDone(id);
+      else if(type === "pin") togglePin(id);
+      else if(type === "active") setActive(id);
+      else if(type === "del") deleteItemWithUndo(id);
+    });
+
+    filterSelect.addEventListener("change", render);
+    sortSelect.addEventListener("change", render);
+
+    pickActiveBtn.addEventListener("click", () => {
+      const candidates = computeView(focusState.items).filter(x => !x.done);
+      if(candidates.length === 0){
+        showToast("선택할 항목이 없어.");
+        return;
+      }
+      // pick strongest first
+      candidates.sort((a,b)=> (b.lvl-a.lvl) || ((b.pinned?1:0)-(a.pinned?1:0)) || (b.createdAt-a.createdAt));
+      setActive(candidates[0].id);
+    });
+
+    startBtn.addEventListener("click", () => {
+      if(timerStore && timerStore.status === "paused"){
+        resumeTimer();
+      }else{
+        startTimer();
+      }
+    });
+    pauseBtn.addEventListener("click", pauseTimer);
+    resetBtn.addEventListener("click", resetTimer);
+
+    clearDoneBtn.addEventListener("click", clearDone);
+
+    copyBtn.addEventListener("click", async () => {
+      const text = formatForCopy();
+      const ok = await copyToClipboard(text);
+      showToast(ok ? "복사했어." : "복사 실패 (권한 확인)");
+    });
+
+    historyBtn.addEventListener("click", openModal);
+    closeModalBtn.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", (e) => {
+      if(e.target === modalOverlay) closeModal();
+    });
+
+    searchInput.addEventListener("input", buildHistory);
+
+    hist.addEventListener("click", (e) => {
+      const del = e.target.closest("[data-hdel]");
+      if(!del) return;
+      const sid = del.dataset.hdel;
+      const day = del.dataset.hday;
+      deleteHistoryWithUndo(day, sid);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape"){
+        if(modalOverlay.classList.contains("open")) closeModal();
+      }
+    });
+
+    /* =========================
+       Init
+    ========================= */
+    setTag("deep");
+    setLvl(1);
+    applyEstToUI(25);
+    syncAddButtonState();
+    render();
+    restoreTimerUI();
+
+    // If tab becomes hidden/visible, keep timer stable
+    document.addEventListener("visibilitychange", () => {
+      if(!timerStore) return;
+      if(timerStore.status !== "running") return;
+      timerStore.lastTickAt = Date.now();
+      saveTimerStore();
+    });
+  </script>
+</body>
+</html>
 
