@@ -500,6 +500,7 @@
         content:"";
         position:absolute;
         inset:-6px;               /* 터치 히트박스만 확대 */
+        pointer-events: none;
       }
     }
     
@@ -1233,6 +1234,13 @@
   const copyPopover = document.getElementById("copyPopover");
   const toast = document.getElementById("toast");
 
+  function syncAddButtonState(){
+  const hasText = (inputEl.value || "").trim().length > 0;
+  addBtn.disabled = !hasText;
+  }
+
+  inputEl.addEventListener("input", syncAddButtonState);
+
   // Modal
   const modalOverlay = document.getElementById("modalOverlay");
   const closeModalBtn = document.getElementById("closeModalBtn");
@@ -1253,14 +1261,6 @@
     </svg>
   `;
 
-  // ===== Add button enable/disable sync =====
-function syncAddButtonState(){
-  const hasText = (inputEl.value || "").trim().length > 0;
-  addBtn.disabled = !hasText;
-}
-
-inputEl.addEventListener("input", syncAddButtonState);
-syncAddButtonState(); // 초기 1회
 
   let state = [];
   let archive = {};
@@ -1270,6 +1270,7 @@ syncAddButtonState(); // 초기 1회
   // ✅ 최초 로딩: 오늘 데이터 서버에서 받음
   state = USE_SUPABASE ? await sbLoadDay(todayStr) : loadDay(KEY_TODAY);
   render();
+  syncAddButtonState();   // ✅ 추가
 
   // =====================
   // 4) CRUD (서버 모드에서는 서버로 반영)
@@ -1605,7 +1606,6 @@ syncAddButtonState(); // 초기 1회
   addItem(inputEl.value);
   inputEl.value = "";
   inputEl.focus();
-  syncAddButtonState();   // ✅ 추가
   });  
 
  inputEl.addEventListener("keydown", (e) => {
