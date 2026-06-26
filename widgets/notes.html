@@ -26,7 +26,41 @@
       --shadow: 0 10px 30px rgba(0,0,0,0.06);
       --radius: 20px;
     }
+    
+      /* ===== Design tokens (shared) ===== */
+      --font-display: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
 
+      --radius-card: 20px;
+      --radius-control: 14px;
+      --radius-pill: 999px;
+
+      --gap-1: 8px;
+      --gap-2: 10px;
+      --gap-3: 12px;
+
+      --stroke-strong: rgba(255,170,190,0.70);
+      --stroke-soft: rgba(255,170,190,0.45);
+
+      --bg-control: rgba(255,255,255,0.10);
+      --bg-soft: rgba(255,255,255,0.06);
+
+      /* Interaction ring (hover/focus “중간 강도”) */
+      --ring: 0 0 0 3px rgba(255,192,203,0.22);
+      --ring-strong: 0 0 0 3px rgba(255,192,203,0.28);
+
+      /* Control height scale */
+      --h-control: 44px; /* input 기준 높이(시각 기준) */
+    }
+
+    @font-face{
+      font-family: "EnterSanChaek";
+      src: url("../fonts/엔터산책10.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    
     html, body{
       margin:0;
       padding:0;
