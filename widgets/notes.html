@@ -13,45 +13,42 @@
   <title>Memo — Soft Schedule</title>
 
   <style>
-    :root{
-      /* ✅ Cool Gray (slightly bluish gray) */
-      --accent-1: rgba(210, 218, 228, 0.90);  /* border highlight */
-      --accent-2: rgba(190, 200, 212, 0.55);  /* soft */
-      --border: rgba(200, 208, 220, 0.62);
+   :root{
+  /* ✅ Cool Gray (slightly bluish gray) */
+  --accent-1: rgba(210, 218, 228, 0.90);
+  --accent-2: rgba(190, 200, 212, 0.55);
+  --border: rgba(200, 208, 220, 0.62);
 
-      --text: rgba(28, 30, 33, 0.92);
-      --muted: rgba(28, 30, 33, 0.55);
+  --text: rgba(28, 30, 33, 0.92);
+  --muted: rgba(28, 30, 33, 0.55);
 
-      --glass: rgba(255,255,255,0.10);
-      --shadow: 0 10px 30px rgba(0,0,0,0.06);
-      --radius: 20px;
-    }
-    
-      /* ===== Design tokens (shared) ===== */
-      --font-display: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  --glass: rgba(255,255,255,0.10);
+  --shadow: 0 10px 30px rgba(0,0,0,0.06);
+  --radius: 20px;
 
-      --radius-card: 20px;
-      --radius-control: 14px;
-      --radius-pill: 999px;
+  /* ===== Design tokens (shared) ===== */
+  --font-display: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+    "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
 
-      --gap-1: 8px;
-      --gap-2: 10px;
-      --gap-3: 12px;
+  --radius-card: 20px;
+  --radius-control: 14px;
+  --radius-pill: 999px;
 
-      --stroke-strong: rgba(255,170,190,0.70);
-      --stroke-soft: rgba(255,170,190,0.45);
+  --gap-1: 8px;
+  --gap-2: 10px;
+  --gap-3: 12px;
 
-      --bg-control: rgba(255,255,255,0.10);
-      --bg-soft: rgba(255,255,255,0.06);
+  --stroke-strong: rgba(200,208,220,0.70);
+  --stroke-soft: rgba(200,208,220,0.45);
 
-      /* Interaction ring (hover/focus “중간 강도”) */
-      --ring: 0 0 0 3px rgba(255,192,203,0.22);
-      --ring-strong: 0 0 0 3px rgba(255,192,203,0.28);
+  --bg-control: rgba(255,255,255,0.10);
+  --bg-soft: rgba(255,255,255,0.06);
 
-      /* Control height scale */
-      --h-control: 44px; /* input 기준 높이(시각 기준) */
-    }
+  --ring: 0 0 0 3px rgba(210,218,228,0.22);
+  --ring-strong: 0 0 0 3px rgba(210,218,228,0.28);
+
+  --h-control: 44px;
+}
 
     @font-face{
       font-family: "EnterSanChaek";
@@ -120,22 +117,24 @@
       min-width: 0;
     }
 
-    .dot{
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--accent-1);
-      box-shadow: 0 0 0 6px rgba(210,218,228,0.22);
-      flex: 0 0 auto;
+    .pearl{
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: block;
+  object-fit: cover;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 2px rgba(255,192,203,0.22);
     }
 
-    h1{
-      margin:0;
-      font-size: clamp(14px, 3.6vw, 16px);
-      letter-spacing: -0.2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .title h1{
+  margin:0;
+  font-family: var(--font-display);
+  font-size: clamp(14px, 3.6vw, 16px);
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
     }
 
     .meta{
@@ -175,13 +174,16 @@
     }
 
     .linkBtn{
-      border: 1px solid rgba(200,208,220,0.55);
-      background: rgba(255,255,255,0.08);
-      padding: 8px 10px;
-      border-radius: 12px;
-      cursor:pointer;
-      transition: background .2s ease;
-      -webkit-tap-highlight-color: transparent;
+    border: 1px solid rgba(200,208,220,0.55);
+    background: rgba(255,255,255,0.08);
+    padding: 8px 10px;
+    border-radius: 12px;
+    cursor:pointer;
+    transition: background .2s ease;
+    -webkit-tap-highlight-color: transparent;
+  
+    font-family: var(--font-display);
+    font-size: 12px;
     }
     .linkBtn:hover{ background: rgba(255,255,255,0.14); }
 
@@ -197,7 +199,7 @@
       <div class="inner">
         <div class="top">
           <div class="title">
-            <span class="dot" aria-hidden="true"></span>
+            <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
             <h1>Memo</h1>
           </div>
           <div class="meta" id="metaText"></div>
