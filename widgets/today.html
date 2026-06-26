@@ -455,6 +455,54 @@
       box-shadow: none;
     }
 
+        /* ===== Add(＋) button tuning (place at very end of <style>) ===== */
+    #addBtn{
+      height: 38px;               /* 입력창보다 살짝 작게 */
+      min-width: 38px;
+      padding: 0;
+    
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    
+      font-size: 18px;            /* 기호 크기 소폭 축소 */
+      font-weight: 400;
+      line-height: 1;
+      color: rgba(30,30,30,0.58); /* 덜 까맣게 */
+    
+      border-radius: 999px;
+    }
+    
+    #addBtn:hover{
+      background: rgba(255,192,203,0.14);
+    }
+    #addBtn:active{
+      transform: scale(0.97);
+    }
+    
+    #addBtn:disabled{
+      opacity: 0.45;
+      cursor: not-allowed;
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,170,190,0.30);
+      transform: none;
+    }
+    #addBtn:disabled:hover{
+      background: rgba(255,255,255,0.06);
+    }
+    
+    /* ✅ 모바일에서만 '보이지 않는' 터치 영역 확대 */
+    @media (pointer: coarse){
+      #addBtn{
+        position: relative;
+      }
+      #addBtn::after{
+        content:"";
+        position:absolute;
+        inset:-6px;               /* 터치 히트박스만 확대 */
+      }
+    }
+    
     /* -------- Modal -------- */
     .modalOverlay{
       position: fixed;
@@ -1205,12 +1253,14 @@
     </svg>
   `;
 
-  function syncAddButtonState(){
-    const hasText = (inputEl.value || "").trim().length > 0;
-    addBtn.disabled = !hasText;
-  }
-  inputEl.addEventListener("input", syncAddButtonState);
-  syncAddButtonState();
+  // ===== Add button enable/disable sync =====
+function syncAddButtonState(){
+  const hasText = (inputEl.value || "").trim().length > 0;
+  addBtn.disabled = !hasText;
+}
+
+inputEl.addEventListener("input", syncAddButtonState);
+syncAddButtonState(); // 초기 1회
 
   let state = [];
   let archive = {};
@@ -1551,19 +1601,19 @@
   // =====================
   // 7) Events
   // =====================
-  addBtn.addEventListener("click", async () => {
-    await addItem(inputEl.value);
-    inputEl.value = "";
-    inputEl.focus();
-    syncAddButtonState();
-  });
+  addBtn.addEventListener("click", () => {
+  addItem(inputEl.value);
+  inputEl.value = "";
+  inputEl.focus();
+  syncAddButtonState();   // ✅ 추가
+  });  
 
-  inputEl.addEventListener("keydown", async (e) => {
-    if(e.key === "Enter"){
-      e.preventDefault();
-      if(!addBtn.disabled) addBtn.click();
-    }
-  });
+ inputEl.addEventListener("keydown", (e) => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    if(!addBtn.disabled) addBtn.click(); // ✅ Enter = ＋ 버튼과 동일 동작
+  }
+});
 
   listEl.addEventListener("click", async (e) => {
     const check = e.target.closest(".check");
