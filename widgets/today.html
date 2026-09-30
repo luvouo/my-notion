@@ -1748,6 +1748,7 @@
         }
 
         const rows = view.map(it => {
+          const isPending = pendingArchiveToggles.has(`${dateStr}::${it.id}`);
           const badgeCls = it.done ? "badge done" : "badge";
           const badgeText = it.done ? "done" : "todo";
           const textHtml = highlight(it.text || "", q);
