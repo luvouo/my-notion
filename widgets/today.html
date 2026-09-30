@@ -1978,6 +1978,25 @@
     showToast("백업에 실패했습니다. 기존 기록은 변경하지 않았습니다.");
   }
 });
+      const copyPassBtn = document.createElement("button");
+copyPassBtn.type = "button";
+copyPassBtn.className = "btn secondary";
+copyPassBtn.textContent = "패스코드 복사";
+document.getElementById("backupTodayBtn").after(copyPassBtn);
+
+copyPassBtn.addEventListener("click", async () => {
+  const pass = (localStorage.getItem("bora_widgets_passcode_v1") || "").trim();
+
+  if (!pass) {
+    showToast("저장된 패스코드가 없습니다.");
+    return;
+  }
+
+  const ok = await copyToClipboard(pass);
+  showToast(ok
+    ? "패스코드를 복사했습니다."
+    : "복사하지 못했습니다.");
+});
       
       // =====================
       // 10) Initial load
