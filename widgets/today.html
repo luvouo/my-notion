@@ -1999,6 +1999,7 @@
 
       render();
       syncAddButtonState();
+      metaText.textContent = `${todayStr} · ${USE_SUPABASE ? "서버" : "로컬"} · ${workspace_id.slice(0, 8)}`;
     })();
   </script>
 
