@@ -969,6 +969,7 @@
             <button class="btn secondary" id="carryYesterdayBtn" type="button">Carry over</button>
             <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
             <button class="btn secondary" id="copyTodayBtn" type="button">Copy</button>
+            <button class="btn secondary" id="backupTodayBtn" type="button">Backup</button>
 
             <!-- kept but hidden -->
             <button class="btn secondary" id="clearDoneBtn" type="button">완료 삭제</button>
@@ -1952,6 +1953,32 @@
         showToast("검색을 초기화했어.");
       });
 
+      document.getElementById("backupTodayBtn").addEventListener("click", async () => {
+  try {
+    const backup = {};
+
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith("soft_schedule_today_")) {
+        backup[key] = localStorage.getItem(key);
+      }
+    }
+
+    if (Object.keys(backup).length === 0) {
+      showToast("백업할 로컬 기록이 없습니다.");
+      return;
+    }
+
+    const ok = await copyToClipboard(JSON.stringify(backup, null, 2));
+
+    showToast(ok
+      ? "백업을 복사했습니다. 메모장에 붙여 넣어 주세요."
+      : "복사하지 못했습니다. 백업은 아직 완료되지 않았습니다.");
+  } catch (err) {
+    console.error("[Today Widget] backup failed:", err);
+    showToast("백업에 실패했습니다. 기존 기록은 변경하지 않았습니다.");
+  }
+});
+      
       // =====================
       // 10) Initial load
       // =====================
