@@ -3162,6 +3162,8 @@
           catch(err){ describeSupabaseError("week delete sync failed", err); showToast("서버 삭제 실패. 로컬에서는 삭제했어."); }
         }
         localStorage.removeItem(WEEK_PREFIX + id);
+        try{ await deleteRemoteWeek(id); }
+        catch(err){ console.error("[This Week Widget] remote delete failed:", err); showToast("서버 삭제 실패. 로컬에서는 삭제했어."); }
         selectedWeeks.delete(id);
         if(pickedWeekId === id) pickedWeekId = null;
 
@@ -3292,6 +3294,8 @@
           catch(err){ describeSupabaseError("week delete sync failed", err); }
         }
         localStorage.removeItem(WEEK_PREFIX + id);
+        try{ await deleteRemoteWeek(id); }
+        catch(err){ console.error("[This Week Widget] remote delete failed:", err); }
         selectedWeeks.delete(id);
         if(pickedWeekId === id) pickedWeekId = null;
       }
