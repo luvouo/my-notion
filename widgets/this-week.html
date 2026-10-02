@@ -1563,144 +1563,244 @@
       return base;
     }
 
-    /*
-      Weekly records use otherwise-unused, due-date-less rows in the same `items`
-      table as Today. The entire existing week object remains unchanged in
-      localStorage; sync bookkeeping is kept under a separate key.
-    */
-    const WEEK_SYNC_PRIORITY = 92026;
-    const WEEK_SYNC_META_KEY = `soft_schedule_week_sync_${workspace_id}_v1`;
-    let remoteRowsByWeek = new Map();
+    /* ========= Supabase item-per-row sync ========= */
+    const WEEK_SYNC_META_KEY = `soft_schedule_week_row_sync_${workspace_id}_v2`;
     const syncTimers = new Map();
+    const syncedWeekStates = new Map();
+    const bootstrapStartedAt = new Date().toISOString();
 
-    function stableJson(value){ return JSON.stringify(value); }
     function loadSyncMeta(){
-      try{ return JSON.parse(localStorage.getItem(WEEK_SYNC_META_KEY) || "{}") || {}; }
-      catch(e){ return {}; }
-    }
-    function saveSyncSnapshot(weekId, state, updatedAt){
-      const meta = loadSyncMeta();
-      meta[weekId] = { state: normalizeWeekState(state), updatedAt: updatedAt || new Date().toISOString() };
-      localStorage.setItem(WEEK_SYNC_META_KEY, JSON.stringify(meta));
-    }
-    function parseRemoteWeek(row){
       try{
-        const payload = JSON.parse(row.title || "");
-        if(payload && payload.kind === "this-week-v1" && parseWeekRangeId(payload.weekId)){
-          return { row, weekId: payload.weekId, state: normalizeWeekState(payload.state), updatedAt: row.updated_at || payload.updatedAt || "" };
-        }
-      }catch(e){}
-      return null;
+        const parsed = JSON.parse(localStorage.getItem(WEEK_SYNC_META_KEY) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+      }catch(e){ return {}; }
     }
-    function mergeItems(localItems, remoteItems){
-      const result = (localItems || []).map(item => ({...item}));
-      const positions = new Map(result.map((item, index) => [item.id, index]));
-      for(const remote of (remoteItems || [])){
-        if(!positions.has(remote.id)){
-          positions.set(remote.id, result.length);
-          result.push({...remote});
-          continue;
-        }
-        const index = positions.get(remote.id);
-        const local = result[index];
-        // Concurrent completion is monotonic; text is only replaced when empty.
-        result[index] = { ...remote, ...local, text: local.text || remote.text || "", done: !!(local.done || remote.done) };
-      }
-      return result;
+    let syncMeta = loadSyncMeta();
+    function saveSyncMeta(){ localStorage.setItem(WEEK_SYNC_META_KEY, JSON.stringify(syncMeta)); }
+    function syncMetaKey(kind, id){ return `${kind}:${String(id)}`; }
+    function getLocalUpdatedAt(kind, id){ return syncMeta[syncMetaKey(kind, id)] || bootstrapStartedAt; }
+    function setLocalUpdatedAt(kind, id, updatedAt){
+      syncMeta[syncMetaKey(kind, id)] = updatedAt || new Date().toISOString();
     }
-    function mergeWeekStates(localState, remoteState){
-      const local = normalizeWeekState(localState);
-      const remote = normalizeWeekState(remoteState);
-      const merged = emptyWeekState();
-      for(let i=0;i<7;i++) merged.days[String(i)] = mergeItems(local.days[String(i)], remote.days[String(i)]);
-      merged.thisInbox = mergeItems(local.thisInbox, remote.thisInbox);
-      merged.nextInbox = mergeItems(local.nextInbox, remote.nextInbox);
-      return merged;
+    function cloneWeekState(state){ return normalizeWeekState(JSON.parse(JSON.stringify(state))); }
+    function isoForWeekDay(weekId, dayIndex){
+      const range = parseWeekRangeId(weekId);
+      if(!range) throw new Error(`Invalid week id: ${weekId}`);
+      return addDays(range.start, Number(dayIndex)).toISOString();
     }
-    async function loadRemoteWeeks(){
-      const rows = await sbFetch("items", { query: {
-        select: "id,title,updated_at", workspace_id: `eq.${workspace_id}`,
-        deleted: "eq.false", due_at: "is.null", pinned: "eq.true",
-        priority: `eq.${WEEK_SYNC_PRIORITY}`, limit: "500"
-      }});
-      remoteRowsByWeek = new Map();
-      for(const row of (rows || [])){
-        const parsed = parseRemoteWeek(row);
-        if(parsed) remoteRowsByWeek.set(parsed.weekId, parsed);
-      }
+    function weekIdForDueAt(dueAt){
+      const date = new Date(dueAt);
+      if(Number.isNaN(date.getTime())) return "";
+      return weekIdFromMonday(mondayOfWeek(date));
     }
-    async function upsertRemoteWeek(weekId, state){
-      if(!USE_SUPABASE) return;
-      const current = remoteRowsByWeek.get(weekId);
-      const updatedAt = new Date().toISOString();
-      const row = {
-        id: current ? current.row.id : crypto.randomUUID(), workspace_id,
-        title: JSON.stringify({ kind:"this-week-v1", weekId, state:normalizeWeekState(state), updatedAt }),
-        status: "todo", due_at: null, deleted: false, updated_at: updatedAt,
-        pinned: true, priority: WEEK_SYNC_PRIORITY
+    function dayIndexForDueAt(dueAt){
+      const date = new Date(dueAt);
+      if(Number.isNaN(date.getTime())) return -1;
+      return Math.round((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - mondayOfWeek(date)) / 86400000);
+    }
+    function weekIdForInboxRow(row){
+      const start = ymdToDate(String(row.week_start || "").replaceAll("-", "."));
+      return start ? weekIdFromMonday(start) : "";
+    }
+    function describeSupabaseError(context, err){
+      console.error(`[This Week Widget] ${context}`, {
+        status: err && err.status,
+        code: err && err.code,
+        message: err && err.message,
+        details: err && err.details,
+        hint: err && err.hint,
+        responseBody: err && err.responseBody,
+        error: err
+      });
+    }
+    function itemRow(item, weekId, dayIndex, updatedAt){
+      return {
+        id: item.id,
+        workspace_id,
+        title: (item.text || "").trim(),
+        status: item.done ? "done" : "todo",
+        due_at: isoForWeekDay(weekId, dayIndex),
+        deleted: false,
+        updated_at: updatedAt
       };
-      const saved = await sbFetch("items?on_conflict=id", { method:"POST", body:[row] });
-      const savedRow = (saved && saved[0]) || row;
-      remoteRowsByWeek.set(weekId, { row:savedRow, weekId, state:normalizeWeekState(state), updatedAt });
-      saveSyncSnapshot(weekId, state, updatedAt);
     }
-    function queueRemoteWeekSave(weekId, state){
-      if(!USE_SUPABASE) return;
-      const snapshot = normalizeWeekState(JSON.parse(JSON.stringify(state)));
-      clearTimeout(syncTimers.get(weekId));
-      const timer = setTimeout(async () => {
-        try{ await upsertRemoteWeek(weekId, snapshot); updateServerStatus(); }
-        catch(err){ console.error("[This Week Widget] sync failed:", err); showToast("서버 저장 실패. 로컬에는 저장했어."); }
-        finally{ syncTimers.delete(weekId); }
-      }, 250);
-      syncTimers.set(weekId, timer);
+    function inboxRow(item, weekId, bucket, updatedAt){
+      const range = parseWeekRangeId(weekId);
+      if(!range) throw new Error(`Invalid week id: ${weekId}`);
+      return {
+        workspace_id,
+        id: String(item.id),
+        week_start: range.startStr.replaceAll(".", "-"),
+        bucket,
+        title: (item.text || "").trim(),
+        status: item.done ? "done" : "todo",
+        deleted: false,
+        updated_at: updatedAt
+      };
     }
-    async function deleteRemoteWeek(weekId){
-      if(!USE_SUPABASE) return;
-      const remote = remoteRowsByWeek.get(weekId);
-      if(remote){
-        await sbFetch(`items?id=eq.${remote.row.id}`, {
-          method:"PATCH", body:{ deleted:true, updated_at:new Date().toISOString() }
-        });
-        remoteRowsByWeek.delete(weekId);
-      }
-      const meta = loadSyncMeta();
-      delete meta[weekId];
-      localStorage.setItem(WEEK_SYNC_META_KEY, JSON.stringify(meta));
+    async function loadRemoteRows(){
+      const [items, inboxes] = await Promise.all([
+        sbFetch("items", { query: {
+          select: "id,title,status,due_at,deleted,updated_at",
+          workspace_id: `eq.${workspace_id}`,
+          due_at: "not.is.null",
+          order: "updated_at.asc",
+          limit: "5000"
+        }}),
+        sbFetch("weekly_inbox_items", { query: {
+          select: "workspace_id,id,week_start,bucket,title,status,deleted,updated_at",
+          workspace_id: `eq.${workspace_id}`,
+          order: "updated_at.asc",
+          limit: "5000"
+        }})
+      ]);
+      return { items: items || [], inboxes: inboxes || [] };
+    }
+    async function upsertItem(row){
+      return sbFetch("items?on_conflict=id", {
+        method:"POST",
+        body:[row],
+        prefer:"return=representation,resolution=merge-duplicates"
+      });
+    }
+    async function patchItemDeleted(id, updatedAt){
+      return sbFetch(`items?id=eq.${encodeURIComponent(id)}`, {
+        method:"PATCH", body:{ deleted:true, updated_at:updatedAt }
+      });
+    }
+    async function upsertInbox(row){
+      return sbFetch("weekly_inbox_items?on_conflict=workspace_id,id", {
+        method:"POST",
+        body:[row],
+        prefer:"return=representation,resolution=merge-duplicates"
+      });
+    }
+    async function patchInboxDeleted(id, updatedAt){
+      return sbFetch(`weekly_inbox_items?workspace_id=eq.${encodeURIComponent(workspace_id)}&id=eq.${encodeURIComponent(String(id))}`, {
+        method:"PATCH", body:{ deleted:true, updated_at:updatedAt }
+      });
+    }
+    function remoteItemToLocal(row){ return { id:row.id, text:row.title || "", done:row.status === "done" }; }
+    function remoteInboxToLocal(row){ return { id:String(row.id), text:row.title || "", done:row.status === "done" }; }
+    function chooseMergedItem(localItem, remoteRow, kind){
+      if(!localItem) return remoteRow.deleted ? null : (kind === "item" ? remoteItemToLocal(remoteRow) : remoteInboxToLocal(remoteRow));
+      const localAt = getLocalUpdatedAt(kind, localItem.id);
+      const remoteAt = remoteRow.updated_at || "";
+      if(remoteAt > localAt) return remoteRow.deleted ? null : (kind === "item" ? remoteItemToLocal(remoteRow) : remoteInboxToLocal(remoteRow));
+      return localItem;
     }
     async function bootstrapWeekSync(){
-      await loadRemoteWeeks();
+      const remote = await loadRemoteRows();
       const localIds = [];
       for(let i=0;i<localStorage.length;i++){
         const key = localStorage.key(i);
         if(key && key.startsWith(WEEK_PREFIX) && parseWeekRangeId(key.slice(WEEK_PREFIX.length))) localIds.push(key.slice(WEEK_PREFIX.length));
       }
-      const ids = new Set([...localIds, ...remoteRowsByWeek.keys()]);
-      const meta = loadSyncMeta();
-      for(const weekId of ids){
+      const remoteByWeek = new Map();
+      const ensureRemoteWeek = id => {
+        if(!remoteByWeek.has(id)) remoteByWeek.set(id, { items:[], inboxes:[] });
+        return remoteByWeek.get(id);
+      };
+      for(const row of remote.items){
+        const weekId = weekIdForDueAt(row.due_at);
+        const dayIndex = dayIndexForDueAt(row.due_at);
+        if(weekId && dayIndex >= 0 && dayIndex < 7) ensureRemoteWeek(weekId).items.push({...row, dayIndex});
+      }
+      for(const row of remote.inboxes){
+        const weekId = weekIdForInboxRow(row);
+        if(weekId && (row.bucket === "this_week" || row.bucket === "next_week")) ensureRemoteWeek(weekId).inboxes.push(row);
+      }
+      const weekIds = new Set([...localIds, ...remoteByWeek.keys()]);
+      for(const weekId of weekIds){
         const key = WEEK_PREFIX + weekId;
         const hasLocal = localStorage.getItem(key) !== null;
-        const local = hasLocal ? loadWeek(key) : null;
-        const remote = remoteRowsByWeek.get(weekId);
-        if(!remote){
-          if(hasLocal) await upsertRemoteWeek(weekId, local);
-          continue;
+        const resolved = hasLocal ? loadWeek(key) : emptyWeekState();
+        const remoteWeek = remoteByWeek.get(weekId) || { items:[], inboxes:[] };
+        for(const row of remoteWeek.items){
+          const day = String(row.dayIndex);
+          const index = resolved.days[day].findIndex(item => String(item.id) === String(row.id));
+          const local = index >= 0 ? resolved.days[day][index] : null;
+          const merged = chooseMergedItem(local, row, "item");
+          if(index >= 0){ if(merged) resolved.days[day][index] = merged; else resolved.days[day].splice(index, 1); }
+          else if(merged) resolved.days[day].push(merged);
+          if((row.updated_at || "") > getLocalUpdatedAt("item", row.id)) setLocalUpdatedAt("item", row.id, row.updated_at);
         }
-        if(!hasLocal){
-          saveWeek(key, remote.state, false);
-          saveSyncSnapshot(weekId, remote.state, remote.updatedAt);
-          continue;
+        for(const row of remoteWeek.inboxes){
+          const target = row.bucket === "this_week" ? "thisInbox" : "nextInbox";
+          const index = resolved[target].findIndex(item => String(item.id) === String(row.id));
+          const local = index >= 0 ? resolved[target][index] : null;
+          const merged = chooseMergedItem(local, row, "inbox");
+          if(index >= 0){ if(merged) resolved[target][index] = merged; else resolved[target].splice(index, 1); }
+          else if(merged) resolved[target].push(merged);
+          if((row.updated_at || "") > getLocalUpdatedAt("inbox", row.id)) setLocalUpdatedAt("inbox", row.id, row.updated_at);
         }
-        const base = meta[weekId] && normalizeWeekState(meta[weekId].state);
-        let resolved;
-        if(base && stableJson(local) === stableJson(base)) resolved = remote.state;
-        else if(base && stableJson(remote.state) === stableJson(base)) resolved = local;
-        else if(stableJson(local) === stableJson(remote.state)) resolved = local;
-        else resolved = mergeWeekStates(local, remote.state);
         saveWeek(key, resolved, false);
-        if(stableJson(resolved) !== stableJson(remote.state)) await upsertRemoteWeek(weekId, resolved);
-        else saveSyncSnapshot(weekId, resolved, remote.updatedAt);
+        syncedWeekStates.set(weekId, cloneWeekState(resolved));
+        await syncWeekState(weekId, resolved, remoteWeek);
+        syncedWeekStates.set(weekId, cloneWeekState(resolved));
       }
+      saveSyncMeta();
+    }
+    async function syncWeekState(weekId, state, knownRemote = null){
+      const current = normalizeWeekState(state);
+      const previous = syncedWeekStates.get(weekId) || emptyWeekState();
+      const remoteItems = new Map((knownRemote ? knownRemote.items : []).map(row => [String(row.id), row]));
+      const remoteInboxes = new Map((knownRemote ? knownRemote.inboxes : []).map(row => [String(row.id), row]));
+      const now = new Date().toISOString();
+
+      const currentItems = new Map();
+      const previousItems = new Map();
+      for(let day=0;day<7;day++){
+        for(const item of (current.days[String(day)] || [])) currentItems.set(String(item.id), { item, day });
+        for(const item of (previous.days[String(day)] || [])) previousItems.set(String(item.id), { item, day });
+      }
+      for(const [id, entry] of currentItems){
+        const old = previousItems.get(id);
+        const remote = remoteItems.get(id);
+        const localChanged = !old || old.day !== entry.day || old.item.text !== entry.item.text || !!old.item.done !== !!entry.item.done;
+        const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.title !== entry.item.text || (remote.status === "done") !== !!entry.item.done || Number(remote.dayIndex) !== entry.day);
+        if(localChanged || remoteDiffers){
+          const updatedAt = localChanged ? now : getLocalUpdatedAt("item", entry.item.id);
+          setLocalUpdatedAt("item", entry.item.id, updatedAt);
+          await upsertItem(itemRow(entry.item, weekId, entry.day, updatedAt));
+        }
+      }
+      for(const [id, old] of previousItems){
+        if(!currentItems.has(id)){ setLocalUpdatedAt("item", old.item.id, now); await patchItemDeleted(old.item.id, now); }
+      }
+
+      const currentInboxes = new Map();
+      const previousInboxes = new Map();
+      for(const [key, bucket] of [["thisInbox","this_week"],["nextInbox","next_week"]]){
+        for(const item of (current[key] || [])) currentInboxes.set(String(item.id), { item, bucket });
+        for(const item of (previous[key] || [])) previousInboxes.set(String(item.id), { item, bucket });
+      }
+      for(const [id, entry] of currentInboxes){
+        const old = previousInboxes.get(id);
+        const remote = remoteInboxes.get(id);
+        const localChanged = !old || old.bucket !== entry.bucket || old.item.text !== entry.item.text || !!old.item.done !== !!entry.item.done;
+        const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.bucket !== entry.bucket || remote.title !== entry.item.text || (remote.status === "done") !== !!entry.item.done);
+        if(localChanged || remoteDiffers){
+          const updatedAt = localChanged ? now : getLocalUpdatedAt("inbox", entry.item.id);
+          setLocalUpdatedAt("inbox", entry.item.id, updatedAt);
+          await upsertInbox(inboxRow(entry.item, weekId, entry.bucket, updatedAt));
+        }
+      }
+      for(const [id, old] of previousInboxes){
+        if(!currentInboxes.has(id)){ setLocalUpdatedAt("inbox", old.item.id, now); await patchInboxDeleted(old.item.id, now); }
+      }
+      syncedWeekStates.set(weekId, cloneWeekState(current));
+      saveSyncMeta();
+    }
+    function queueWeekSync(weekId, state){
+      if(!USE_SUPABASE) return;
+      const snapshot = cloneWeekState(state);
+      clearTimeout(syncTimers.get(weekId));
+      syncTimers.set(weekId, setTimeout(async () => {
+        try{ await syncWeekState(weekId, snapshot); }
+        catch(err){ describeSupabaseError("row sync failed", err); showToast("서버 저장 실패. 로컬에는 저장했어."); }
+        finally{ syncTimers.delete(weekId); }
+      }, 250));
     }
 
     function loadWeek(key){
@@ -1713,7 +1813,7 @@
     }
     function saveWeek(key, data, sync = true){
       localStorage.setItem(key, JSON.stringify(normalizeWeekState(data)));
-      if(sync) queueRemoteWeekSave(key.slice(WEEK_PREFIX.length), data);
+      if(sync) queueWeekSync(key.slice(WEEK_PREFIX.length), data);
     }
 
     // keep older weeks saved to archive store when they pass
@@ -1847,7 +1947,7 @@
     if(USE_SUPABASE){
       try{ await bootstrapWeekSync(); }
       catch(err){
-        console.error("[This Week Widget] initial sync failed:", err);
+        describeSupabaseError("initial sync failed", err);
         USE_SUPABASE = false;
         setTimeout(() => showToast("서버 연결 실패. 로컬 모드로 열었어."), 0);
       }
@@ -3057,6 +3157,10 @@
         const ok = confirm(`이 주차(로컬 데이터)를 삭제할까? (되돌리기 불가)\n\n${id}`);
         if(!ok) return;
 
+        if(USE_SUPABASE){
+          try{ await syncWeekState(id, emptyWeekState()); }
+          catch(err){ describeSupabaseError("week delete sync failed", err); showToast("서버 삭제 실패. 로컬에서는 삭제했어."); }
+        }
         localStorage.removeItem(WEEK_PREFIX + id);
         try{ await deleteRemoteWeek(id); }
         catch(err){ console.error("[This Week Widget] remote delete failed:", err); showToast("서버 삭제 실패. 로컬에서는 삭제했어."); }
@@ -3185,6 +3289,10 @@
       if(!ok) return;
 
       for(const id of ids){
+        if(USE_SUPABASE){
+          try{ await syncWeekState(id, emptyWeekState()); }
+          catch(err){ describeSupabaseError("week delete sync failed", err); }
+        }
         localStorage.removeItem(WEEK_PREFIX + id);
         try{ await deleteRemoteWeek(id); }
         catch(err){ console.error("[This Week Widget] remote delete failed:", err); }
