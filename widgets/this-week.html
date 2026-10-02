@@ -1224,6 +1224,17 @@
           </div>
         </div>
 
+        <div class="nextInboxRow" id="thisInboxRow" aria-label="This Week Inbox">
+          <div class="nextInboxLeft">
+            <span class="nextInboxTitle">This Week Inbox</span>
+            <span class="nextInboxCount" id="thisInboxCount">0</span>
+          </div>
+          <div class="nextInboxRight">
+            <button class="btn secondary" id="thisAddBtn" type="button">Add</button>
+            <button class="btn secondary" id="thisShowBtn" type="button">Show</button>
+          </div>
+        </div>
+
         <div class="nextInboxRow" id="nextInboxRow" aria-label="Next Week Inbox">
           <div class="nextInboxLeft">
             <span class="nextInboxTitle">Next Week Inbox</span>
@@ -1322,9 +1333,9 @@
   </div>
 
   <div class="miniOverlay" id="miniOverlay" aria-hidden="true">
-    <div class="miniModal" role="dialog" aria-modal="true" aria-label="Next Week Add">
+    <div class="miniModal" role="dialog" aria-modal="true" aria-label="Inbox Add" id="miniModal">
       <div class="miniHead">
-        <strong>Next Week Inbox에 넣을 한 줄</strong>
+        <strong id="miniTitle">Next Week Inbox에 넣을 한 줄</strong>
         <button class="popClose" id="miniCloseBtn" type="button" aria-label="닫기">✕</button>
       </div>
       <div class="miniBody">
@@ -1492,7 +1503,7 @@
     function emptyWeekState(){
       const days = {};
       for(let i=0;i<7;i++) days[String(i)] = [];
-      return { days, nextInbox: [] };
+      return { days, thisInbox: [], nextInbox: [] };
     }
     function normalizeWeekState(parsed){
       const base = emptyWeekState();
@@ -1504,6 +1515,7 @@
           base.days[k] = Array.isArray(parsed.days[k]) ? parsed.days[k] : [];
         }
       }
+      base.thisInbox = Array.isArray(parsed.thisInbox) ? parsed.thisInbox : [];
       base.nextInbox = Array.isArray(parsed.nextInbox) ? parsed.nextInbox : [];
       return base;
     }
@@ -1575,11 +1587,15 @@
 
     const toast = document.getElementById("toast");
 
+    const thisInboxCount = document.getElementById("thisInboxCount");
+    const thisAddBtn = document.getElementById("thisAddBtn");
+    const thisShowBtn = document.getElementById("thisShowBtn");
     const nextInboxCount = document.getElementById("nextInboxCount");
     const nextAddBtn = document.getElementById("nextAddBtn");
     const nextShowBtn = document.getElementById("nextShowBtn");
 
     const nextPopover = document.getElementById("nextPopover");
+    const nextPopTitle = document.getElementById("nextPopTitle");
     const nextPopCloseBtn = document.getElementById("nextPopCloseBtn");
     const nextPopList = document.getElementById("nextPopList");
     const nextCopyBtn = document.getElementById("nextCopyBtn");
@@ -1605,6 +1621,8 @@
     const downloadWeekMdBtn = document.getElementById("downloadWeekMdBtn");
 
     const miniOverlay = document.getElementById("miniOverlay");
+    const miniModal = document.getElementById("miniModal");
+    const miniTitle = document.getElementById("miniTitle");
     const miniCloseBtn = document.getElementById("miniCloseBtn");
     const miniCancelBtn = document.getElementById("miniCancelBtn");
     const miniOkBtn = document.getElementById("miniOkBtn");
@@ -1693,13 +1711,20 @@
       return { total, done };
     }
 
-    function renderNextInboxRow(){
-      const arr = weekState.nextInbox || [];
-      nextInboxCount.textContent = String(arr.length);
+    let activeInboxKey = "nextInbox";
+
+    function inboxLabel(key){
+      return key === "thisInbox" ? "This Week Inbox" : "Next Week Inbox";
+    }
+
+    function renderInboxRows(){
+      thisInboxCount.textContent = String((weekState.thisInbox || []).length);
+      nextInboxCount.textContent = String((weekState.nextInbox || []).length);
     }
 
     function renderNextPopover(){
-      const arr = weekState.nextInbox || [];
+      const arr = weekState[activeInboxKey] || [];
+      nextPopTitle.textContent = inboxLabel(activeInboxKey);
       nextPopList.innerHTML = "";
 
       if(arr.length === 0){
@@ -1803,7 +1828,7 @@
       }
 
       countText.textContent = `${allDone}/${allTotal} done`;
-      renderNextInboxRow();
+      renderInboxRows();
     }
 
     buildWeekdayPills();
@@ -1850,57 +1875,58 @@
       showToast("완료를 지웠어.");
     }
 
-    function addNextInbox(text){
+    function addInbox(text){
       const t = (text || "").trim();
       if(!t) return;
 
-      const arr = weekState.nextInbox || (weekState.nextInbox = []);
+      const arr = weekState[activeInboxKey] || (weekState[activeInboxKey] = []);
       arr.unshift({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
         done: false
       });
       persistCurrentWeek();
-      renderNextInboxRow();
+      renderInboxRows();
       if(nextPopover.classList.contains("open")) renderNextPopover();
-      showToast("Next Week Inbox에 추가했어.");
+      showToast(`${inboxLabel(activeInboxKey)}에 추가했어.`);
     }
 
-    function toggleNextInbox(id){
-      const arr = weekState.nextInbox || [];
-      weekState.nextInbox = arr.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+    function toggleInbox(id){
+      const arr = weekState[activeInboxKey] || [];
+      weekState[activeInboxKey] = arr.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
       persistCurrentWeek();
-      renderNextInboxRow();
+      renderInboxRows();
       renderNextPopover();
     }
 
-    function deleteNextInbox(id){
-      const arr = weekState.nextInbox || [];
-      weekState.nextInbox = arr.filter(it => it.id !== id);
+    function deleteInbox(id){
+      const arr = weekState[activeInboxKey] || [];
+      weekState[activeInboxKey] = arr.filter(it => it.id !== id);
       persistCurrentWeek();
-      renderNextInboxRow();
+      renderInboxRows();
       renderNextPopover();
     }
 
-    function clearNextDone(){
-      const arr = weekState.nextInbox || [];
-      weekState.nextInbox = arr.filter(it => !it.done);
+    function clearInboxDone(){
+      const arr = weekState[activeInboxKey] || [];
+      weekState[activeInboxKey] = arr.filter(it => !it.done);
       persistCurrentWeek();
-      renderNextInboxRow();
+      renderInboxRows();
       renderNextPopover();
-      showToast("Next Week 완료를 지웠어.");
+      showToast(`${inboxLabel(activeInboxKey)} 완료를 지웠어.`);
     }
 
-    async function copyNextInbox(){
-      const arr = weekState.nextInbox || [];
+    async function copyInbox(){
+      const arr = weekState[activeInboxKey] || [];
+      const label = inboxLabel(activeInboxKey);
       const lines = [];
-      lines.push(`# Next Week Inbox`);
+      lines.push(`# ${label}`);
       lines.push(`> from ${getWeekId()}`);
       lines.push("");
       if(arr.length === 0) lines.push(`- (empty)`);
       else for(const it of arr) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
       const ok = await copyToClipboard(lines.join("\n"));
-      showToast(ok ? "Next Week Inbox를 복사했어." : "복사 실패 (권한 확인)");
+      showToast(ok ? `${label}를 복사했어.` : "복사 실패 (권한 확인)");
     }
 
     weekList.addEventListener("click", (e) => {
@@ -2081,7 +2107,8 @@
       nextPopover.style.top  = `${top}px`;
     }
 
-    function openNextPopover(anchorEl){
+    function openNextPopover(anchorEl, inboxKey){
+      activeInboxKey = inboxKey;
       renderNextPopover();
       nextPopover.classList.add("open");
       nextPopover.setAttribute("aria-hidden", "false");
@@ -2097,7 +2124,11 @@
       nextPopover.setAttribute("aria-hidden", "true");
     }
 
-    function openMiniAdd(){
+    function openMiniAdd(inboxKey){
+      activeInboxKey = inboxKey;
+      const label = inboxLabel(activeInboxKey);
+      miniTitle.textContent = `${label}에 넣을 한 줄`;
+      miniModal.setAttribute("aria-label", `${label} Add`);
       miniOverlay.classList.add("open");
       miniOverlay.setAttribute("aria-hidden","false");
       miniInput.value = "";
@@ -2113,11 +2144,12 @@
         closeMiniAdd();
         return;
       }
-      addNextInbox(text);
+      addInbox(text);
       closeMiniAdd();
     }
 
-    nextAddBtn.addEventListener("click", () => openMiniAdd());
+    thisAddBtn.addEventListener("click", () => openMiniAdd("thisInbox"));
+    nextAddBtn.addEventListener("click", () => openMiniAdd("nextInbox"));
     miniCloseBtn.addEventListener("click", closeMiniAdd);
     miniCancelBtn.addEventListener("click", closeMiniAdd);
     miniOkBtn.addEventListener("click", confirmMiniAdd);
@@ -2127,10 +2159,20 @@
       if(e.key === "Escape"){ closeMiniAdd(); }
     });
 
+    function toggleInboxPopover(anchorEl, inboxKey){
+      const isSameOpen = nextPopover.classList.contains("open") && activeInboxKey === inboxKey;
+      if(isSameOpen) closeNextPopover();
+      else openNextPopover(anchorEl, inboxKey);
+    }
+
+    thisShowBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleInboxPopover(thisShowBtn, "thisInbox");
+    });
+
     nextShowBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      if(nextPopover.classList.contains("open")) closeNextPopover();
-      else openNextPopover(nextShowBtn);
+      toggleInboxPopover(nextShowBtn, "nextInbox");
     });
 
     nextPopCloseBtn.addEventListener("click", closeNextPopover);
@@ -2139,24 +2181,24 @@
       const check = e.target.closest("[data-nx-id]");
       const del = e.target.closest("[data-nx-del]");
       if(check){
-        toggleNextInbox(check.dataset.nxId);
+        toggleInbox(check.dataset.nxId);
         return;
       }
       if(del){
-        deleteNextInbox(del.dataset.nxDel);
+        deleteInbox(del.dataset.nxDel);
         return;
       }
     });
 
-    nextCopyBtn.addEventListener("click", copyNextInbox);
-    nextClearDoneBtn.addEventListener("click", clearNextDone);
+    nextCopyBtn.addEventListener("click", copyInbox);
+    nextClearDoneBtn.addEventListener("click", clearInboxDone);
 
     nextPopover.addEventListener("click", (e)=> e.stopPropagation());
 
     document.addEventListener("click", (e) => {
       if(!nextPopover.classList.contains("open")) return;
       const inside = nextPopover.contains(e.target);
-      const onBtn = nextShowBtn.contains(e.target);
+      const onBtn = nextShowBtn.contains(e.target) || thisShowBtn.contains(e.target);
       if(!inside && !onBtn) closeNextPopover();
     });
 
@@ -2167,10 +2209,14 @@
     });
 
     window.addEventListener("resize", () => {
-      if(nextPopover.classList.contains("open")) placeNextPopover(nextShowBtn);
+      if(nextPopover.classList.contains("open")){
+        placeNextPopover(activeInboxKey === "thisInbox" ? thisShowBtn : nextShowBtn);
+      }
     }, { passive: true });
     window.addEventListener("scroll", () => {
-      if(nextPopover.classList.contains("open")) placeNextPopover(nextShowBtn);
+      if(nextPopover.classList.contains("open")){
+        placeNextPopover(activeInboxKey === "thisInbox" ? thisShowBtn : nextShowBtn);
+      }
     }, { passive: true });
 
     function formatWeekForCopy(weekId, data){
@@ -2192,6 +2238,11 @@
           lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
         }
       }
+
+      const tx = Array.isArray(data.thisInbox) ? data.thisInbox : [];
+      lines.push(`\nThis Week Inbox`);
+      if(tx.length === 0) lines.push(`- (empty)`);
+      else for(const it of tx) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
 
       const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
       lines.push(`\nNext Week Inbox`);
@@ -2222,6 +2273,17 @@
         }
         lines.push("");
       }
+
+      lines.push(`## This Week Inbox`);
+      const tx = Array.isArray(data.thisInbox) ? data.thisInbox : [];
+      if(tx.length === 0){
+        lines.push(`- (empty)`);
+      }else{
+        for(const it of tx){
+          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+        }
+      }
+      lines.push("");
 
       lines.push(`## Next Week Inbox`);
       const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
@@ -2336,8 +2398,11 @@
           if(tx.includes(lowerQ)) return true;
         }
       }
-      const nx = (data && Array.isArray(data.nextInbox)) ? data.nextInbox : [];
-      for(const it of nx){
+      const inboxes = [
+        ...(data && Array.isArray(data.thisInbox) ? data.thisInbox : []),
+        ...(data && Array.isArray(data.nextInbox) ? data.nextInbox : [])
+      ];
+      for(const it of inboxes){
         const tx = String(it.text || "").toLowerCase();
         if(tx.includes(lowerQ)) return true;
       }
@@ -2559,8 +2624,9 @@
     /* ✅ 프리뷰: done 토글 + delete(Undo 3s) */
     function togglePreviewDone(weekId, sec, itemId){
       const data = loadWeekStateById(weekId);
-      if(sec === "nx"){
-        data.nextInbox = (data.nextInbox || []).map(it => it.id === itemId ? ({...it, done: !it.done}) : it);
+      if(sec === "tx" || sec === "nx"){
+        const key = sec === "tx" ? "thisInbox" : "nextInbox";
+        data[key] = (data[key] || []).map(it => it.id === itemId ? ({...it, done: !it.done}) : it);
       }else{
         const day = String(sec);
         const arr = (data.days && data.days[day]) ? data.days[day] : [];
@@ -2577,12 +2643,13 @@
       let removed = null;
       let removedIndex = -1;
 
-      if(sec === "nx"){
-        const arr = data.nextInbox || [];
+      if(sec === "tx" || sec === "nx"){
+        const key = sec === "tx" ? "thisInbox" : "nextInbox";
+        const arr = data[key] || [];
         removedIndex = arr.findIndex(it => it.id === itemId);
         if(removedIndex >= 0){
           removed = arr[removedIndex];
-          data.nextInbox = arr.filter(it => it.id !== itemId);
+          data[key] = arr.filter(it => it.id !== itemId);
         }
       }else{
         const day = String(sec);
@@ -2602,11 +2669,12 @@
 
       showModalToast("삭제했어.", () => {
         const cur = loadWeekStateById(weekId);
-        if(sec === "nx"){
-          const arr = cur.nextInbox || [];
+        if(sec === "tx" || sec === "nx"){
+          const key = sec === "tx" ? "thisInbox" : "nextInbox";
+          const arr = cur[key] || [];
           const idx = Math.min(Math.max(0, removedIndex), arr.length);
           arr.splice(idx, 0, removed);
-          cur.nextInbox = arr;
+          cur[key] = arr;
         }else{
           const day = String(sec);
           const arr = (cur.days && cur.days[day]) ? cur.days[day] : (cur.days[day] = []);
@@ -2686,6 +2754,29 @@
               </span>
               ${togBtnHtml(id, String(i), it.id, it.done)}
               ${trashBtnHtml(id, String(i), it.id)}
+            </div>
+          `);
+        }
+      }
+
+      const tx = Array.isArray(data.thisInbox) ? data.thisInbox : [];
+      rows.push(`<div style="margin-top:10px; color:rgba(30,30,30,0.72); font-size:12.5px; font-family:EnterSanChaek, ui-sans-serif, system-ui;">This Week Inbox</div>`);
+      if(tx.length === 0){
+        rows.push(`<div style="color: rgba(30,30,30,0.45); font-size:12px;">(empty)</div>`);
+      }else{
+        const viewTx = q ? tx.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase())) : tx;
+        for(const it of viewTx){
+          const badgeCls = it.done ? "badge done" : "badge";
+          const badgeText = it.done ? "done" : "todo";
+          const textHtml = highlight(it.text || "", q);
+          rows.push(`
+            <div class="pItem">
+              <span class="${badgeCls}">${badgeText}</span>
+              <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
+                ${textHtml}
+              </span>
+              ${togBtnHtml(id, "tx", it.id, it.done)}
+              ${trashBtnHtml(id, "tx", it.id)}
             </div>
           `);
         }
