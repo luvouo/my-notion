@@ -1753,8 +1753,10 @@
           const badgeCls = it.done ? "badge done" : "badge";
           const badgeText = it.done ? "done" : "todo";
           const textHtml = highlight(it.text || "", q);
+          const toggleKey = `${dateStr}::${it.id}`;
+          const isPending = pendingArchiveToggles.has(toggleKey);
           return `
-              <div class="pItem">
+            <div class="pItem">
               <button class="${badgeCls}" type="button" data-preview-toggle="${escapeHtml(it.id)}"
                 aria-label="${escapeHtml(it.text || "할 일")} 상태를 ${it.done ? "todo" : "done"}로 변경"
                 aria-pressed="${it.done}" ${isPending ? "disabled" : ""}>${badgeText}</button>
@@ -1815,7 +1817,54 @@
         }
       }
 
-      
+      async function toggleArchivedItem(dateStr, id, button){
+        const items = archive[dateStr] || [];
+        const index = items.findIndex(it => String(it.id) === String(id));
+        if(index === -1) return;
+
+        const toggleKey = `${dateStr}::${id}`;
+        if(pendingArchiveToggles.has(toggleKey)) return;
+        pendingArchiveToggles.add(toggleKey);
+
+        const previousDone = Boolean(items[index].done);
+        const nextDone = !previousDone;
+        archive[dateStr] = items.map((it, i) => i === index ? ({ ...it, done: nextDone }) : it);
+
+        // Supabase의 아카이브에는 오늘도 포함되므로, 메인 목록도 즉시 같은 상태로 맞춘다.
+        if(dateStr === todayStr){
+          state = state.map(it => String(it.id) === String(id) ? ({ ...it, done: nextDone }) : it);
+          render();
+        }
+
+        button.disabled = true;
+        buildDates();
+
+        try{
+          if(USE_SUPABASE){
+            await sbPatchRow(id, {
+              status: nextDone ? "done" : "todo",
+              updated_at: nowIso()
+            });
+          }else{
+            saveArchive(archive);
+          }
+        }catch(err){
+          console.error("[Today Widget] archive toggle sync failed:", err);
+          archive[dateStr] = (archive[dateStr] || []).map(it =>
+            String(it.id) === String(id) ? ({ ...it, done: previousDone }) : it
+          );
+          if(dateStr === todayStr){
+            state = state.map(it => String(it.id) === String(id) ? ({ ...it, done: previousDone }) : it);
+            render();
+          }
+          buildDates();
+          showToast("상태 변경을 저장하지 못했어.");
+        }finally{
+          pendingArchiveToggles.delete(toggleKey);
+          buildDates();
+        }
+      }
+
       // =====================
       // 8) Popover
       // =====================
@@ -1933,7 +1982,7 @@
         if(!button || button.disabled || !pickedDate) return;
         await toggleArchivedItem(pickedDate, button.dataset.previewToggle, button);
       });
-      
+
       copyPickedBtn.addEventListener("click", copyPicked);
 
       carryPickedBtn.addEventListener("click", () => {
