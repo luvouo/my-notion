@@ -1568,6 +1568,8 @@
     const syncTimers = new Map();
     const syncedWeekStates = new Map();
     const bootstrapStartedAt = new Date().toISOString();
+    let remoteRefreshPromise = null;
+    let localMutationVersion = 0;
 
     function loadSyncMeta(){
       try{
@@ -1689,8 +1691,9 @@
       if(remoteAt > localAt) return remoteRow.deleted ? null : (kind === "item" ? remoteItemToLocal(remoteRow) : remoteInboxToLocal(remoteRow));
       return localItem;
     }
-    async function bootstrapWeekSync(){
+    async function bootstrapWeekSync(expectedMutationVersion = null){
       const remote = await loadRemoteRows();
+      if(expectedMutationVersion !== null && expectedMutationVersion !== localMutationVersion) return false;
       const localIds = [];
       for(let i=0;i<localStorage.length;i++){
         const key = localStorage.key(i);
@@ -1712,6 +1715,7 @@
       }
       const weekIds = new Set([...localIds, ...remoteByWeek.keys()]);
       for(const weekId of weekIds){
+        if(expectedMutationVersion !== null && expectedMutationVersion !== localMutationVersion) return false;
         const key = WEEK_PREFIX + weekId;
         const hasLocal = localStorage.getItem(key) !== null;
         const resolved = hasLocal ? loadWeek(key) : emptyWeekState();
@@ -1740,6 +1744,7 @@
         syncedWeekStates.set(weekId, cloneWeekState(resolved));
       }
       saveSyncMeta();
+      return true;
     }
     async function syncWeekState(weekId, state, knownRemote = null){
       const current = normalizeWeekState(state);
@@ -1794,6 +1799,7 @@
     }
     function queueWeekSync(weekId, state){
       if(!USE_SUPABASE) return;
+      localMutationVersion += 1;
       const snapshot = cloneWeekState(state);
       clearTimeout(syncTimers.get(weekId));
       syncTimers.set(weekId, setTimeout(async () => {
@@ -1801,6 +1807,30 @@
         catch(err){ describeSupabaseError("row sync failed", err); showToast("서버 저장 실패. 로컬에는 저장했어."); }
         finally{ syncTimers.delete(weekId); }
       }, 250));
+    }
+
+    async function refreshFromRemote(){
+      if(!USE_SUPABASE || syncTimers.size > 0) return;
+      if(remoteRefreshPromise) return remoteRefreshPromise;
+      remoteRefreshPromise = (async () => {
+        try{
+          const expectedMutationVersion = localMutationVersion;
+          const applied = await bootstrapWeekSync(expectedMutationVersion);
+          if(!applied) return;
+          weekState = loadWeek(getWeekKey());
+          renderWeekList();
+          if(nextPopover.classList.contains("open")) renderNextPopover();
+          if(modalOverlay.classList.contains("open")){
+            buildWeeks();
+            if(pickedWeekId) renderWeekPreview(pickedWeekId);
+          }
+        }catch(err){
+          describeSupabaseError("remote refresh failed", err);
+        }finally{
+          remoteRefreshPromise = null;
+        }
+      })();
+      return remoteRefreshPromise;
     }
 
     function loadWeek(key){
@@ -2130,6 +2160,19 @@
 
     buildWeekdayPills();
     renderWeekList();
+
+    // Today refreshes from Supabase when it is loaded (and its history modal
+    // explicitly reloads). This Week stays open much longer in two clients, so
+    // also re-check remote rows periodically and whenever the page is resumed.
+    const REMOTE_REFRESH_INTERVAL_MS = 15000;
+    setInterval(() => {
+      if(document.visibilityState === "visible") refreshFromRemote();
+    }, REMOTE_REFRESH_INTERVAL_MS);
+    document.addEventListener("visibilitychange", () => {
+      if(document.visibilityState === "visible") refreshFromRemote();
+    });
+    window.addEventListener("focus", refreshFromRemote);
+    window.addEventListener("pageshow", refreshFromRemote);
 
     function addItemToDay(dayIndex, text){
       const t = (text || "").trim();

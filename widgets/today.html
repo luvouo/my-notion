@@ -1749,7 +1749,6 @@
         }
 
         const rows = view.map(it => {
-          const isPending = pendingArchiveToggles.has(`${dateStr}::${it.id}`);
           const badgeCls = it.done ? "badge done" : "badge";
           const badgeText = it.done ? "done" : "todo";
           const textHtml = highlight(it.text || "", q);
@@ -1769,54 +1768,6 @@
 
         previewBox.innerHTML = rows;
       }
-      async function toggleArchivedItem(dateStr, id, button){
-        const items = archive[dateStr] || [];
-        const index = items.findIndex(it => String(it.id) === String(id));
-        if(index === -1) return;
-
-        const toggleKey = `${dateStr}::${id}`;
-        if(pendingArchiveToggles.has(toggleKey)) return;
-        pendingArchiveToggles.add(toggleKey);
-
-        const previousDone = Boolean(items[index].done);
-        const nextDone = !previousDone;
-        archive[dateStr] = items.map((it, i) => i === index ? ({ ...it, done: nextDone }) : it);
-
-        // Supabase의 아카이브에는 오늘도 포함되므로, 메인 목록도 즉시 같은 상태로 맞춘다.
-        if(dateStr === todayStr){
-          state = state.map(it => String(it.id) === String(id) ? ({ ...it, done: nextDone }) : it);
-          render();
-        }
-
-        button.disabled = true;
-        buildDates();
-
-        try{
-          if(USE_SUPABASE){
-            await sbPatchRow(id, {
-              status: nextDone ? "done" : "todo",
-              updated_at: nowIso()
-            });
-          }else{
-            saveArchive(archive);
-          }
-        }catch(err){
-          console.error("[Today Widget] archive toggle sync failed:", err);
-          archive[dateStr] = (archive[dateStr] || []).map(it =>
-            String(it.id) === String(id) ? ({ ...it, done: previousDone }) : it
-          );
-          if(dateStr === todayStr){
-            state = state.map(it => String(it.id) === String(id) ? ({ ...it, done: previousDone }) : it);
-            render();
-          }
-          buildDates();
-          showToast("상태 변경을 저장하지 못했어.");
-        }finally{
-          pendingArchiveToggles.delete(toggleKey);
-          buildDates();
-        }
-      }
-
       async function toggleArchivedItem(dateStr, id, button){
         const items = archive[dateStr] || [];
         const index = items.findIndex(it => String(it.id) === String(id));
