@@ -559,6 +559,42 @@
     }
     .feedback::placeholder{ color: rgba(30,30,30,0.42); }
 
+    .richWrap{ display:grid; gap:8px; min-width:0; }
+    .richToolbar{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .richBtn,
+    .richSelect{
+      min-height: 30px;
+      border: 1px solid rgba(190,200,212,0.35);
+      background: rgba(255,255,255,0.18);
+      color: rgba(28,30,33,0.72);
+      border-radius: 999px;
+      padding: 5px 9px;
+      font: 12px "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+      box-sizing: border-box;
+    }
+    .richBtn{ cursor:pointer; min-width:30px; }
+    .richSelect{ max-width: 150px; min-width:0; }
+    .richBtn:hover,
+    .richSelect:hover{ border-color: rgba(190,200,212,0.70); }
+    .richEditor{
+      min-height: 100px;
+      border: 1px solid rgba(190,200,212,0.18);
+      background: rgba(255,255,255,0.70);
+      border-radius: 14px;
+      padding: 10px;
+      outline: none;
+      font-size: 14px;
+      color: rgba(30,30,30,0.86);
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      box-sizing: border-box;
+    }
+    .richEditor:empty::before{
+      content: attr(data-placeholder);
+      color: rgba(30,30,30,0.42);
+      pointer-events:none;
+    }
+
     .miniBtn{
       border: 1px solid rgba(190,200,212,0.35);
       background: rgba(255,255,255,0.08);
@@ -1258,6 +1294,103 @@
       }[m]));
     }
     function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
+    const RICH_TAGS = new Set(["STRONG","B","EM","I","U","S","SPAN","BR","DIV"]);
+    const RICH_FONTS = new Set([
+      "inherit",
+      '"EnterSanChaek", ui-sans-serif, system-ui, sans-serif',
+      "Georgia, 'Times New Roman', serif",
+      "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    ]);
+    const RICH_SIZES = new Set(["12px","14px","16px","18px","20px"]);
+    const richRanges = new WeakMap();
+
+    function sanitizeRichHtml(html){
+      const template = document.createElement("template");
+      template.innerHTML = String(html || "");
+      const cleanNode = node => {
+        if(node.nodeType === Node.TEXT_NODE){
+          return document.createTextNode(node.nodeValue.replace(/\u200B/g, ""));
+        }
+        if(node.nodeType !== Node.ELEMENT_NODE) return document.createDocumentFragment();
+        const tag = node.tagName.toUpperCase();
+        if(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","LINK","META"].includes(tag)){
+          return document.createDocumentFragment();
+        }
+        if(!RICH_TAGS.has(tag)){
+          const fragment = document.createDocumentFragment();
+          [...node.childNodes].forEach(child => fragment.appendChild(cleanNode(child)));
+          return fragment;
+        }
+        const clean = document.createElement(tag.toLowerCase());
+        if(tag === "SPAN"){
+          const family = node.style.fontFamily;
+          const size = node.style.fontSize;
+          const weight = node.style.fontWeight;
+          const style = node.style.fontStyle;
+          const decoration = node.style.textDecoration;
+          if(RICH_FONTS.has(family)) clean.style.fontFamily = family;
+          if(RICH_SIZES.has(size)) clean.style.fontSize = size;
+          if(["bold","700"].includes(weight)) clean.style.fontWeight = "bold";
+          if(style === "italic") clean.style.fontStyle = "italic";
+          if(["underline","line-through"].includes(decoration)) clean.style.textDecoration = decoration;
+        }
+        [...node.childNodes].forEach(child => clean.appendChild(cleanNode(child)));
+        return clean;
+      };
+      const output = document.createElement("div");
+      [...template.content.childNodes].forEach(node => output.appendChild(cleanNode(node)));
+      return output.innerHTML;
+    }
+    function plainTextToRichHtml(text){
+      const div = document.createElement("div");
+      div.textContent = String(text || "");
+      return div.innerHTML.replace(/\r?\n/g, "<br>");
+    }
+    function richPlainText(editor){
+      return String(editor.innerText || "").replace(/\u200B/g, "").replace(/\n+$/, "");
+    }
+    function saveRichRange(editor){
+      const selection = window.getSelection();
+      if(!selection || !selection.rangeCount) return;
+      const range = selection.getRangeAt(0);
+      if(editor.contains(range.commonAncestorContainer)) richRanges.set(editor, range.cloneRange());
+    }
+    function restoreRichRange(editor){
+      const range = richRanges.get(editor);
+      if(!range) return false;
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return true;
+    }
+    function applyRichStyle(editor, property, value){
+      editor.focus();
+      if(!restoreRichRange(editor)) return;
+      const selection = window.getSelection();
+      const range = selection.getRangeAt(0);
+      const span = document.createElement("span");
+      span.style[property] = value;
+      if(range.collapsed){
+        span.textContent = "\u200B";
+        range.insertNode(span);
+        range.setStart(span.firstChild, 1);
+        range.collapse(true);
+      }else{
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
+        range.selectNodeContents(span);
+      }
+      selection.removeAllRanges();
+      selection.addRange(range);
+      richRanges.set(editor, range.cloneRange());
+    }
+    function runRichCommand(editor, command){
+      editor.focus();
+      restoreRichRange(editor);
+      document.execCommand(command, false, null);
+      saveRichRange(editor);
+      editor.dispatchEvent(new Event("input", { bubbles:true }));
+    }
     function urlEntry(value){
       if(typeof value === "string") return { label: "", url: value };
       if(value && typeof value === "object"){
@@ -1269,6 +1402,12 @@
       return Object.prototype.hasOwnProperty.call(p || {}, "notes")
         ? String(p.notes || "")
         : String((p && p.feedback) || "");
+    }
+    function projectNotesRichHtml(p){
+      if(Object.prototype.hasOwnProperty.call(p || {}, "notesHtml")){
+        return sanitizeRichHtml(p.notesHtml || "");
+      }
+      return plainTextToRichHtml(projectNotes(p));
     }
 
     function emptyProject(name="New Project"){
@@ -1283,6 +1422,7 @@
         urls: [{ label: "", url: "" }],
         objective: "",
         notes: "",
+        notesHtml: "",
         todos: [],
       };
     }
@@ -2016,7 +2156,28 @@
 
         <div class="section">
           <div class="fieldLabel">Notes</div>
-          <textarea class="feedback" data-notes placeholder="작업 메모, 수정점, 아이디어…">${escapeHtml(projectNotes(p))}</textarea>
+          <div class="richWrap" data-rich-wrap>
+            <div class="richToolbar" data-rich-toolbar>
+              <button class="richBtn" type="button" data-rich-command="bold" aria-label="Bold"><strong>B</strong></button>
+              <button class="richBtn" type="button" data-rich-command="italic" aria-label="Italic"><em>I</em></button>
+              <button class="richBtn" type="button" data-rich-command="underline" aria-label="Underline"><u>U</u></button>
+              <button class="richBtn" type="button" data-rich-command="strikeThrough" aria-label="Strikethrough"><s>S</s></button>
+              <select class="richSelect" data-rich-font aria-label="Font family">
+                <option value="inherit">Default / System</option>
+                <option value='"EnterSanChaek", ui-sans-serif, system-ui, sans-serif'>EnterSanChaek</option>
+                <option value="Georgia, 'Times New Roman', serif">Serif</option>
+                <option value="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Monospace</option>
+              </select>
+              <select class="richSelect" data-rich-size aria-label="Font size">
+                <option value="">Size</option>
+                <option value="12px">12px</option><option value="14px">14px</option>
+                <option value="16px">16px</option><option value="18px">18px</option><option value="20px">20px</option>
+              </select>
+              <button class="richBtn" type="button" data-rich-command="removeFormat">Clear</button>
+            </div>
+            <div class="richEditor" contenteditable="true" role="textbox" aria-multiline="true"
+              data-notes-rich data-rich-editor data-placeholder="작업 메모, 수정점, 아이디어…">${projectNotesRichHtml(p)}</div>
+          </div>
         </div>
 
         <div class="section">
@@ -2481,6 +2642,53 @@
       clearSubDragStyles();
     });
 
+    function richEditorForControl(control){
+      const wrap = control.closest("[data-rich-wrap]");
+      return wrap && wrap.querySelector("[data-rich-editor]");
+    }
+    document.addEventListener("selectionchange", ()=>{
+      const editor = projectModalOverlay.querySelector("[data-rich-editor]");
+      if(editor) saveRichRange(editor);
+    });
+    projectModalOverlay.addEventListener("pointerdown", (e)=>{
+      const control = e.target.closest("[data-rich-toolbar] button, [data-rich-toolbar] select");
+      if(!control) return;
+      const editor = richEditorForControl(control);
+      if(editor) saveRichRange(editor);
+      if(control.tagName === "BUTTON") e.preventDefault();
+    });
+    projectModalOverlay.addEventListener("click", (e)=>{
+      const button = e.target.closest("[data-rich-command]");
+      if(!button) return;
+      const editor = richEditorForControl(button);
+      if(editor) runRichCommand(editor, button.dataset.richCommand);
+    });
+    projectModalOverlay.addEventListener("change", (e)=>{
+      const font = e.target.closest("[data-rich-font]");
+      const size = e.target.closest("[data-rich-size]");
+      const control = font || size;
+      if(!control || !control.value) return;
+      const editor = richEditorForControl(control);
+      if(!editor) return;
+      applyRichStyle(editor, font ? "fontFamily" : "fontSize", control.value);
+      editor.dispatchEvent(new Event("input", { bubbles:true }));
+      if(size) size.value = "";
+    });
+    projectModalOverlay.addEventListener("paste", (e)=>{
+      const editor = e.target.closest("[data-rich-editor]");
+      if(!editor) return;
+      e.preventDefault();
+      document.execCommand("insertText", false, e.clipboardData.getData("text/plain"));
+    });
+    projectModalOverlay.addEventListener("mouseup", (e)=>{
+      const editor = e.target.closest("[data-rich-editor]");
+      if(editor) saveRichRange(editor);
+    });
+    projectModalOverlay.addEventListener("keyup", (e)=>{
+      const editor = e.target.closest("[data-rich-editor]");
+      if(editor) saveRichRange(editor);
+    });
+
     projectModalOverlay.addEventListener("input", (e)=>{
       if(!openProjectId) return;
       const pid = openProjectId;
@@ -2499,9 +2707,12 @@
         return;
       }
 
-      const notes = e.target.closest("[data-notes]");
+      const notes = e.target.closest("[data-notes-rich]");
       if(notes){
-        updateProject(pid, p => p.notes = notes.value || "");
+        updateProject(pid, p => {
+          p.notesHtml = sanitizeRichHtml(notes.innerHTML);
+          p.notes = richPlainText(notes);
+        });
         return;
       }
 
