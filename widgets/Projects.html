@@ -854,7 +854,7 @@
     }
     .urlRow{
       display:grid;
-      grid-template-columns: minmax(120px, .7fr) minmax(180px, 1.3fr) auto;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
       gap: 8px;
       align-items:center;
       min-width: 0;
@@ -1110,7 +1110,7 @@
           </div>
 
           <div style="display:flex; gap:8px; flex-wrap:nowrap;">
-            <button class="btn secondary" id="archiveBtn" type="button">History / Archive</button>
+            <button class="btn secondary" id="clearSearchBtn" type="button">Clear Search</button>
             <button class="btn secondary" id="exportAllBtn" type="button">Export</button>
           </div>
         </div>
@@ -1124,7 +1124,7 @@
           </div>
 
           <div class="footer-actions">
-            <button class="btn secondary" id="clearSearchBtn" type="button">Clear Search</button>
+            <button class="btn secondary" id="archiveBtn" type="button">History / Archive</button>
           </div>
         </div>
       </div>
@@ -2128,6 +2128,13 @@
       });
     }
 
+    function focusSubInput(todoId){
+      requestAnimationFrame(()=>{
+        const input = projectModalOverlay.querySelector(`[data-sub-input="${CSS.escape(todoId)}"]`);
+        if(input) input.focus();
+      });
+    }
+
     function addTodo(pid, text){
       const value = String(text || "").trim();
       if(!value) return false;
@@ -2246,10 +2253,14 @@
       const subToggle = e.target.closest("[data-sub-toggle]");
       if(subToggle){
         const tid = subToggle.dataset.subToggle;
+        const project = findProject(pid);
+        const todo = project && (project.todos||[]).find(t => t.id === tid);
+        const willOpen = todo ? !todo.subOpen : false;
         updateProject(pid, p => {
           p.todos = (p.todos||[]).map(t => t.id === tid ? ({...t, subOpen: !t.subOpen}) : t);
         });
         renderProjectModal(pid);
+        if(willOpen) focusSubInput(tid);
         return;
       }
 
@@ -2268,6 +2279,7 @@
           });
         });
         renderProjectModal(pid);
+        focusSubInput(tid);
         return;
       }
 
@@ -2471,6 +2483,7 @@
           });
         });
         renderProjectModal(openProjectId);
+        focusSubInput(tid);
         return;
       }
     });
