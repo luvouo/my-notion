@@ -2315,7 +2315,7 @@
         showToast("현재 보고 있는 주가 이번 주가 아니야.");
         return;
       }
-      const idx = Math.min(6, Math.max(0, Math.round((today - mon)/86400000)));
+      const idx = (today.getDay() + 6) % 7;
       setSelectedDay(idx);
       showToast("Today 기준으로 이동했어.");
     });
