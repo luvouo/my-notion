@@ -7,9 +7,9 @@
 
   <style>
     :root{
-      --accent-1: rgba(165, 206, 240, 0.88);
-      --accent-2: rgba(140, 190, 232, 0.52);
-      --border:   rgba(140, 190, 232, 0.60);
+      --accent-1: rgba(210, 218, 228, 0.88);
+      --accent-2: rgba(190, 200, 212, 0.52);
+      --border:   rgba(200, 208, 220, 0.60);
 
       --text: rgba(30,30,30,0.92);
       --muted: rgba(30,30,30,0.38);
@@ -18,9 +18,9 @@
       --shadow: 0 10px 30px rgba(0,0,0,0.06);
       --radius: 20px;
 
-      /* ✅ pinned pale skyblue */
-      --pin-bg: rgba(165, 206, 240, 0.20);
-      --pin-bd: rgba(140, 190, 232, 0.38);
+      /* ✅ pinned pale cool gray */
+      --pin-bg: rgba(210, 218, 228, 0.20);
+      --pin-bd: rgba(190, 200, 212, 0.38);
     }
 
     @font-face{
@@ -64,8 +64,8 @@
       position:absolute;
       inset:-2px;
       background:
-        radial-gradient(120% 80% at 0% 0%, rgba(165,206,240,0.20), transparent 55%),
-        radial-gradient(80% 80% at 100% 20%, rgba(140,190,232,0.14), transparent 55%);
+        radial-gradient(120% 80% at 0% 0%, rgba(210,218,228,0.20), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(190,200,212,0.14), transparent 55%);
       pointer-events:none;
     }
 
@@ -98,7 +98,7 @@
       display: block;
       object-fit: cover;
       flex: 0 0 auto;
-      box-shadow: 0 0 0 2px rgba(165,206,240,0.22);
+      box-shadow: 0 0 0 2px rgba(210,218,228,0.22);
     }
 
     .title h1{
@@ -142,7 +142,7 @@
     .input{
       flex: 1 1 240px;
       min-width: 0;
-      border: 1px solid rgba(140,190,232,0.45);
+      border: 1px solid rgba(190,200,212,0.45);
       background: rgba(255,255,255,0.10);
       border-radius: 14px;
       padding: 12px 12px;
@@ -156,8 +156,8 @@
 
     .btn{
       flex: 0 0 auto;
-      border: 1px solid rgba(140,190,232,0.70);
-      background: rgba(165,206,240,0.18);
+      border: 1px solid rgba(190,200,212,0.70);
+      background: rgba(210,218,228,0.18);
       border-radius: 14px;
       padding: 12px 14px;
       font-size: 13px;
@@ -172,17 +172,17 @@
     }
     .btn:active{ transform: scale(0.98); }
     .btn:hover{
-      background: rgba(165,206,240,0.24);
-      border-color: rgba(140,190,232,0.90);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+      background: rgba(210,218,228,0.24);
+      border-color: rgba(190,200,212,0.90);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.18);
     }
     .btn:focus-visible{
       outline: none;
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.28);
     }
 
     .btn.secondary{
-      border: 1px solid rgba(140,190,232,0.45);
+      border: 1px solid rgba(190,200,212,0.45);
       background: rgba(255,255,255,0.08);
       padding: 10px 12px;
       border-radius: 12px;
@@ -197,7 +197,7 @@
     }
 
     .col{
-      border: 1px solid rgba(140,190,232,0.30);
+      border: 1px solid rgba(190,200,212,0.30);
       background: rgba(255,255,255,0.06);
       border-radius: 16px;
       padding: 10px;
@@ -245,7 +245,7 @@
       width: 100%;
       text-align: left;
 
-      border: 1px solid rgba(140,190,232,0.22);
+      border: 1px solid rgba(190,200,212,0.22);
       background: rgba(255,255,255,0.62);
       border-radius: 16px;
       padding: 10px;
@@ -260,8 +260,8 @@
       transition: border-color .18s ease, background .18s ease, transform .08s ease, box-shadow .18s ease;
     }
     .pCompact:hover{
-      border-color: rgba(140,190,232,0.45);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.14);
+      border-color: rgba(190,200,212,0.45);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.14);
     }
     .pCompact:active{ transform: scale(0.99); }
 
@@ -283,8 +283,8 @@
       width: 9px;
       height: 9px;
       border-radius: 999px;
-      background: rgba(140,190,232,0.85);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+      background: rgba(190,200,212,0.85);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.18);
       flex: 0 0 auto;
       opacity: 0.75;
     }
@@ -328,7 +328,7 @@
       display:inline-flex;
       align-items:center;
       gap: 6px;
-      border: 1px solid rgba(140,190,232,0.22);
+      border: 1px solid rgba(190,200,212,0.22);
       background: rgba(255,255,255,0.60);
       border-radius: 999px;
       padding: 5px 9px;
@@ -387,8 +387,8 @@
       width: 6px;
       height: 6px;
       border-radius: 999px;
-      background: rgba(165,206,240,0.88);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
+      background: rgba(210,218,228,0.88);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.16);
       flex: 0 0 auto;
     }
 
@@ -412,8 +412,8 @@
     /* ===== Drag styles ===== */
     .pCompact.dragging{ opacity: 0.55; }
     .col.dropOver{
-      border-color: rgba(140,190,232,0.70);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.18) inset;
+      border-color: rgba(190,200,212,0.70);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.18) inset;
     }
 
     /* ===== Project Detail Modal ===== */
@@ -436,7 +436,7 @@
       display: flex;
       flex-direction: column;
       border-radius: 18px;
-      border: 1px solid rgba(140,190,232,0.38);
+      border: 1px solid rgba(190,200,212,0.38);
       background: rgba(255,255,255,0.84);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -512,9 +512,17 @@
       min-width: 0;
     }
 
+    .projectFields{
+      display:grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+      min-width: 0;
+    }
+
     .fieldLabel{
-      font-size: 12px;
-      color: rgba(30,30,30,0.55);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: rgba(28,30,33,0.72);
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
@@ -522,7 +530,7 @@
     .textInput{
       width: 100%;
       min-width: 0;
-      border: 1px solid rgba(140,190,232,0.18);
+      border: 1px solid rgba(190,200,212,0.18);
       background: rgba(255,255,255,0.70);
       border-radius: 12px;
       padding: 10px 10px;
@@ -535,7 +543,7 @@
     }
 
     .feedback{
-      border: 1px solid rgba(140,190,232,0.18);
+      border: 1px solid rgba(190,200,212,0.18);
       background: rgba(255,255,255,0.70);
       border-radius: 14px;
       padding: 10px 10px;
@@ -551,8 +559,44 @@
     }
     .feedback::placeholder{ color: rgba(30,30,30,0.42); }
 
+    .richWrap{ display:grid; gap:8px; min-width:0; }
+    .richToolbar{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .richBtn,
+    .richSelect{
+      min-height: 30px;
+      border: 1px solid rgba(190,200,212,0.35);
+      background: rgba(255,255,255,0.18);
+      color: rgba(28,30,33,0.72);
+      border-radius: 999px;
+      padding: 5px 9px;
+      font: 12px "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+      box-sizing: border-box;
+    }
+    .richBtn{ cursor:pointer; min-width:30px; }
+    .richSelect{ max-width: 150px; min-width:0; }
+    .richBtn:hover,
+    .richSelect:hover{ border-color: rgba(190,200,212,0.70); }
+    .richEditor{
+      min-height: 100px;
+      border: 1px solid rgba(190,200,212,0.18);
+      background: rgba(255,255,255,0.70);
+      border-radius: 14px;
+      padding: 10px;
+      outline: none;
+      font-size: 14px;
+      color: rgba(30,30,30,0.86);
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      box-sizing: border-box;
+    }
+    .richEditor:empty::before{
+      content: attr(data-placeholder);
+      color: rgba(30,30,30,0.42);
+      pointer-events:none;
+    }
+
     .miniBtn{
-      border: 1px solid rgba(140,190,232,0.35);
+      border: 1px solid rgba(190,200,212,0.35);
       background: rgba(255,255,255,0.08);
       color: rgba(30,30,30,0.72);
       border-radius: 999px;
@@ -566,8 +610,8 @@
       -webkit-tap-highlight-color: transparent;
     }
     .miniBtn:hover{
-      border-color: rgba(140,190,232,0.70);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
+      border-color: rgba(190,200,212,0.70);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.16);
       color: var(--accent-1);
     }
     .miniBtn:active{ transform: scale(0.99); }
@@ -588,7 +632,7 @@
     .tagInput{
       flex: 1 1 140px;
       min-width: 0;
-      border: 1px solid rgba(140,190,232,0.18);
+      border: 1px solid rgba(190,200,212,0.18);
       background: rgba(255,255,255,0.70);
       border-radius: 12px;
       padding: 9px 10px;
@@ -609,14 +653,14 @@
       font-family: inherit;
     }
     .tagChip button:hover{
-      background: rgba(165,206,240,0.14);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.14);
+      background: rgba(210,218,228,0.14);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.14);
       color: rgba(30,30,30,0.78);
     }
 
     /* ===== Todos (modal) ===== */
     .todoBox{
-      border: 1px solid rgba(140,190,232,0.22);
+      border: 1px solid rgba(190,200,212,0.22);
       background: rgba(255,255,255,0.50);
       border-radius: 14px;
       padding: 10px;
@@ -634,7 +678,7 @@
     .todoInput{
       flex: 1 1 220px;
       min-width: 0;
-      border: 1px solid rgba(140,190,232,0.18);
+      border: 1px solid rgba(190,200,212,0.18);
       background: rgba(255,255,255,0.70);
       border-radius: 12px;
       padding: 9px 10px;
@@ -653,10 +697,10 @@
 
     .tRow{
       display:grid;
-      grid-template-columns: 20px minmax(0,1fr) minmax(120px, 180px);
+      grid-template-columns: 18px 20px minmax(0,1fr) minmax(120px, 180px);
       gap: 10px;
       align-items:start;
-      border: 1px solid rgba(140,190,232,0.18);
+      border: 1px solid rgba(190,200,212,0.18);
       background: rgba(255,255,255,0.66);
       border-radius: 14px;
       padding: 8px 10px;
@@ -664,12 +708,30 @@
       box-sizing: border-box;
       overflow: hidden;
     }
+    .tRow.todoDragging{ opacity: 0.5; }
+    .tRow.todoDropBefore{ box-shadow: 0 3px 0 rgba(190,200,212,0.85) inset; }
+    .tRow.todoDropAfter{ box-shadow: 0 -3px 0 rgba(190,200,212,0.85) inset; }
+    .todoDragHandle,
+    .subDragHandle{
+      width: 18px;
+      min-height: 20px;
+      display:grid;
+      place-items:center;
+      color: rgba(28,30,33,0.45);
+      cursor: grab;
+      user-select:none;
+      touch-action:none;
+      font-size: 15px;
+      line-height: 1;
+    }
+    .todoDragHandle:active,
+    .subDragHandle:active{ cursor: grabbing; }
 
     .tChk{
       width: 18px;
       height: 18px;
       border-radius: 6px;
-      border: 1.4px solid rgba(140,190,232,0.55);
+      border: 1.4px solid rgba(190,200,212,0.55);
       background: rgba(255,255,255,0.70);
       cursor:pointer;
       display:grid;
@@ -678,14 +740,14 @@
       transition: background .18s ease, border-color .18s ease, transform .08s ease, box-shadow .18s ease;
     }
     .tChk:hover{
-      border-color: rgba(140,190,232,0.75);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.16);
+      border-color: rgba(190,200,212,0.75);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.16);
     }
     .tChk:active{ transform: scale(0.98); }
     .tChk svg{ width: 12px; height: 12px; opacity: 0; }
     .tChk.on{
-      background: rgba(165,206,240,0.16);
-      border-color: rgba(140,190,232,0.80);
+      background: rgba(210,218,228,0.16);
+      border-color: rgba(190,200,212,0.80);
     }
     .tChk.on svg{ opacity: 1; }
 
@@ -730,7 +792,7 @@
     .subInput{
       flex: 1 1 200px;
       min-width: 0;
-      border: 1px solid rgba(140,190,232,0.18);
+      border: 1px solid rgba(190,200,212,0.18);
       background: rgba(255,255,255,0.70);
       border-radius: 12px;
       padding: 8px 10px;
@@ -751,13 +813,16 @@
       display:flex;
       align-items:center;
       gap: 8px;
-      border: 1px solid rgba(140,190,232,0.16);
+      border: 1px solid rgba(190,200,212,0.16);
       background: rgba(255,255,255,0.62);
       border-radius: 12px;
       padding: 7px 9px;
       min-width: 0;
       box-sizing: border-box;
     }
+    .sRow.subDragging{ opacity: 0.5; }
+    .sRow.subDropBefore{ box-shadow: 0 3px 0 rgba(190,200,212,0.85) inset; }
+    .sRow.subDropAfter{ box-shadow: 0 -3px 0 rgba(190,200,212,0.85) inset; }
     .sRow .sText{
       flex:1 1 auto;
       min-width: 0;
@@ -785,7 +850,7 @@
     .tTools > *{ flex: 0 0 auto; }
 
     .prioBtn{
-      border: 1px solid rgba(140,190,232,0.22);
+      border: 1px solid rgba(190,200,212,0.22);
       background: rgba(255,255,255,0.66);
       border-radius: 999px;
       padding: 6px 9px;
@@ -797,8 +862,8 @@
       transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
     }
     .prioBtn:hover{
-      border-color: rgba(140,190,232,0.55);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.14);
+      border-color: rgba(190,200,212,0.55);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.14);
     }
     .prioBtn:active{ transform: scale(0.99); }
 
@@ -829,7 +894,8 @@
       min-width: 0;
     }
     .urlRow{
-      display:flex;
+      display:grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
       gap: 8px;
       align-items:center;
       min-width: 0;
@@ -837,7 +903,7 @@
     .urlText{
       flex: 1 1 auto;
       min-width: 0;
-      border: 1px solid rgba(140,190,232,0.18);
+      border: 1px solid rgba(190,200,212,0.18);
       background: rgba(255,255,255,0.70);
       border-radius: 12px;
       padding: 9px 10px;
@@ -861,7 +927,7 @@
       height: 38px;
       padding: 0 12px;
 
-      border: 1px solid rgba(140,190,232,0.45);
+      border: 1px solid rgba(190,200,212,0.45);
       background: rgba(255,255,255,0.10);
       border-radius: 14px;
 
@@ -891,13 +957,13 @@
       flex: 0 0 auto;
     }
     .dpTrigger:hover{
-      border-color: rgba(140,190,232,0.75);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
+      border-color: rgba(190,200,212,0.75);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.20);
     }
     .dpTrigger:focus-visible{
       outline: none;
-      border-color: rgba(140,190,232,0.85);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
+      border-color: rgba(190,200,212,0.85);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.28);
     }
     .dpTrigger.filled .dpText,
     .dpTrigger.filled .dpIcon{
@@ -912,7 +978,7 @@
       z-index: 9999;
 
       border-radius: 16px;
-      border: 1px solid rgba(140,190,232,0.45);
+      border: 1px solid rgba(190,200,212,0.45);
       background: rgba(255,255,255,0.92);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -959,8 +1025,8 @@
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
     .dpNav:hover{
-      border-color: rgba(140,190,232,0.65);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
+      border-color: rgba(190,200,212,0.65);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.20);
     }
     .dpNav:active{ transform: scale(0.98); }
 
@@ -999,8 +1065,8 @@
     }
     .dpDay[disabled]{ opacity: 0.35; cursor: default; }
     .dpDay:hover:not([disabled]){
-      border-color: rgba(140,190,232,0.65);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.18);
+      border-color: rgba(190,200,212,0.65);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.18);
     }
     .dpDay:active:not([disabled]){ transform: scale(0.98); }
     .dpDay.today::after{
@@ -1012,9 +1078,9 @@
       margin-top: 2px;
     }
     .dpDay.selected{
-      background: rgba(165,206,240,0.24);
-      border-color: rgba(140,190,232,0.85);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
+      background: rgba(210,218,228,0.24);
+      border-color: rgba(190,200,212,0.85);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.22);
     }
 
     .dpFooter{
@@ -1037,25 +1103,27 @@
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
     .dpAction:hover{
-      border-color: rgba(140,190,232,0.65);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
+      border-color: rgba(190,200,212,0.65);
+      box-shadow: 0 0 0 3px rgba(210,218,228,0.20);
     }
     .dpAction:active{ transform: scale(0.98); }
     .dpAction.primary{
-      background: rgba(165,206,240,0.18);
-      border-color: rgba(140,190,232,0.70);
+      background: rgba(210,218,228,0.18);
+      border-color: rgba(190,200,212,0.70);
     }
 
     @media (max-width: 880px){
       .board{ grid-template-columns: 1fr; }
     }
     @media (max-width: 520px){
+      .projectFields{ grid-template-columns: 1fr; }
+      .urlRow{ grid-template-columns: 1fr; }
       .tRow{
-        grid-template-columns: 20px minmax(0,1fr);
+        grid-template-columns: 18px 20px minmax(0,1fr);
         grid-template-rows: auto auto;
       }
       .tTools{
-        grid-column: 1 / -1;
+        grid-column: 2 / -1;
         justify-content: flex-start;
         align-items: flex-start;
       }
@@ -1083,7 +1151,7 @@
           </div>
 
           <div style="display:flex; gap:8px; flex-wrap:nowrap;">
-            <button class="btn secondary" id="archiveBtn" type="button">History / Archive</button>
+            <button class="btn secondary" id="clearSearchBtn" type="button">Clear Search</button>
             <button class="btn secondary" id="exportAllBtn" type="button">Export</button>
           </div>
         </div>
@@ -1097,7 +1165,7 @@
           </div>
 
           <div class="footer-actions">
-            <button class="btn secondary" id="clearSearchBtn" type="button">Clear Search</button>
+            <button class="btn secondary" id="archiveBtn" type="button">History / Archive</button>
           </div>
         </div>
       </div>
@@ -1114,6 +1182,7 @@
         </div>
 
         <div class="mhRight">
+          <button class="btn secondary" id="pmStageBtn" type="button">Done</button>
           <button class="btn secondary" id="pmPinBtn" type="button">Pin</button>
           <button class="btn secondary" id="pmArchiveBtn" type="button">Archive</button>
           <button class="btn secondary dangerBtn" id="pmDeleteBtn" type="button">Delete</button>
@@ -1225,17 +1294,135 @@
       }[m]));
     }
     function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
+    const RICH_TAGS = new Set(["STRONG","B","EM","I","U","S","SPAN","BR","DIV"]);
+    const RICH_FONTS = new Set([
+      "inherit",
+      '"EnterSanChaek", ui-sans-serif, system-ui, sans-serif',
+      "Georgia, 'Times New Roman', serif",
+      "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    ]);
+    const RICH_SIZES = new Set(["12px","14px","16px","18px","20px"]);
+    const richRanges = new WeakMap();
+
+    function sanitizeRichHtml(html){
+      const template = document.createElement("template");
+      template.innerHTML = String(html || "");
+      const cleanNode = node => {
+        if(node.nodeType === Node.TEXT_NODE){
+          return document.createTextNode(node.nodeValue.replace(/\u200B/g, ""));
+        }
+        if(node.nodeType !== Node.ELEMENT_NODE) return document.createDocumentFragment();
+        const tag = node.tagName.toUpperCase();
+        if(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","LINK","META"].includes(tag)){
+          return document.createDocumentFragment();
+        }
+        if(!RICH_TAGS.has(tag)){
+          const fragment = document.createDocumentFragment();
+          [...node.childNodes].forEach(child => fragment.appendChild(cleanNode(child)));
+          return fragment;
+        }
+        const clean = document.createElement(tag.toLowerCase());
+        if(tag === "SPAN"){
+          const family = node.style.fontFamily;
+          const size = node.style.fontSize;
+          const weight = node.style.fontWeight;
+          const style = node.style.fontStyle;
+          const decoration = node.style.textDecoration;
+          if(RICH_FONTS.has(family)) clean.style.fontFamily = family;
+          if(RICH_SIZES.has(size)) clean.style.fontSize = size;
+          if(["bold","700"].includes(weight)) clean.style.fontWeight = "bold";
+          if(style === "italic") clean.style.fontStyle = "italic";
+          if(["underline","line-through"].includes(decoration)) clean.style.textDecoration = decoration;
+        }
+        [...node.childNodes].forEach(child => clean.appendChild(cleanNode(child)));
+        return clean;
+      };
+      const output = document.createElement("div");
+      [...template.content.childNodes].forEach(node => output.appendChild(cleanNode(node)));
+      return output.innerHTML;
+    }
+    function plainTextToRichHtml(text){
+      const div = document.createElement("div");
+      div.textContent = String(text || "");
+      return div.innerHTML.replace(/\r?\n/g, "<br>");
+    }
+    function richPlainText(editor){
+      return String(editor.innerText || "").replace(/\u200B/g, "").replace(/\n+$/, "");
+    }
+    function saveRichRange(editor){
+      const selection = window.getSelection();
+      if(!selection || !selection.rangeCount) return;
+      const range = selection.getRangeAt(0);
+      if(editor.contains(range.commonAncestorContainer)) richRanges.set(editor, range.cloneRange());
+    }
+    function restoreRichRange(editor){
+      const range = richRanges.get(editor);
+      if(!range) return false;
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      return true;
+    }
+    function applyRichStyle(editor, property, value){
+      editor.focus();
+      if(!restoreRichRange(editor)) return;
+      const selection = window.getSelection();
+      const range = selection.getRangeAt(0);
+      const span = document.createElement("span");
+      span.style[property] = value;
+      if(range.collapsed){
+        span.textContent = "\u200B";
+        range.insertNode(span);
+        range.setStart(span.firstChild, 1);
+        range.collapse(true);
+      }else{
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
+        range.selectNodeContents(span);
+      }
+      selection.removeAllRanges();
+      selection.addRange(range);
+      richRanges.set(editor, range.cloneRange());
+    }
+    function runRichCommand(editor, command){
+      editor.focus();
+      restoreRichRange(editor);
+      document.execCommand(command, false, null);
+      saveRichRange(editor);
+      editor.dispatchEvent(new Event("input", { bubbles:true }));
+    }
+    function urlEntry(value){
+      if(typeof value === "string") return { label: "", url: value };
+      if(value && typeof value === "object"){
+        return { label: String(value.label || ""), url: String(value.url || "") };
+      }
+      return { label: "", url: "" };
+    }
+    function projectNotes(p){
+      return Object.prototype.hasOwnProperty.call(p || {}, "notes")
+        ? String(p.notes || "")
+        : String((p && p.feedback) || "");
+    }
+    function projectNotesRichHtml(p){
+      if(Object.prototype.hasOwnProperty.call(p || {}, "notesHtml")){
+        return sanitizeRichHtml(p.notesHtml || "");
+      }
+      return plainTextToRichHtml(projectNotes(p));
+    }
 
     function emptyProject(name="New Project"){
       return {
         id: uid(),
         name: name,
         startDate: todayYmd(),
+        endDate: "",
         stage: "backlog",
         pinned: false,
         tags: [],
-        urls: [""],      // ✅ URL list (dynamic)
-        feedback: "",
+        urls: [{ label: "", url: "" }],
+        objective: "",
+        notes: "",
+        notesHtml: "",
         todos: [],
       };
     }
@@ -1284,6 +1471,7 @@
     const pmTitle = document.getElementById("pmTitle");
     const pmBody = document.getElementById("pmBody");
     const pmCloseBtn = document.getElementById("pmCloseBtn");
+    const pmStageBtn = document.getElementById("pmStageBtn");
     const pmPinBtn = document.getElementById("pmPinBtn");
     const pmArchiveBtn = document.getElementById("pmArchiveBtn");
     const pmDeleteBtn = document.getElementById("pmDeleteBtn");
@@ -1328,9 +1516,15 @@
       const parts = [
         p.name,
         p.startDate,
+        p.endDate,
+        p.objective,
+        projectNotes(p),
         p.feedback,
         ...(p.tags||[]),
-        ...((p.urls||[]).map(u => u || "")),
+        ...((p.urls||[]).flatMap(u => {
+          const entry = urlEntry(u);
+          return [entry.label, entry.url];
+        })),
         ...((p.todos||[]).map(t => t.text)),
         ...((p.todos||[]).flatMap(t => (t.subs||[]).map(su => su.text)))
       ].join(" ").toLowerCase();
@@ -1441,26 +1635,35 @@
       lines.push(`# ${p.name || "Project"}`);
       lines.push(`- Stage: ${STAGE_LABEL[p.stage] || p.stage}`);
       lines.push(`- Start: ${p.startDate || ""}`);
+      lines.push(`- End: ${p.endDate || ""}`);
       lines.push(`- Pinned: ${p.pinned ? "yes" : "no"}`);
       if((p.tags||[]).length) lines.push(`- Tags: ${p.tags.join(", ")}`);
       lines.push("");
 
-      const urls = (p.urls||[]).map(u => (u||"").trim()).filter(Boolean);
+      const urls = (p.urls||[]).map(urlEntry).filter(entry => entry.url.trim());
       if(urls.length){
         lines.push(`## URLs`);
-        for(const u of urls){
-          lines.push(`- ${normalizeUrl(u)}`);
+        for(const entry of urls){
+          const url = normalizeUrl(entry.url);
+          lines.push(entry.label.trim() ? `- [${entry.label.trim()}](${url})` : `- ${url}`);
         }
         lines.push("");
       }
 
-      if((p.feedback||"").trim()){
-        lines.push(`## Feedback`);
-        lines.push(p.feedback.trim());
+      if((p.objective||"").trim()){
+        lines.push(`## Objective`);
+        lines.push(p.objective.trim());
         lines.push("");
       }
 
-      lines.push(`## Todos`);
+      const notes = projectNotes(p).trim();
+      if(notes){
+        lines.push(`## Notes`);
+        lines.push(notes);
+        lines.push("");
+      }
+
+      lines.push(`## To-do`);
       const todos = (p.todos||[]);
       if(!todos.length){
         lines.push(`- (empty)`);
@@ -1663,10 +1866,12 @@
     let dpView = new Date(); dpView.setDate(1);
     let dpTriggerEl = null;
     let dpTextEl = null;
+    let dpField = "startDate";
 
-    function openDP(triggerEl, textEl, currentDash){
+    function openDP(triggerEl, textEl, field, currentDash){
       dpTriggerEl = triggerEl;
       dpTextEl = textEl;
+      dpField = field === "endDate" ? "endDate" : "startDate";
 
       dpSelectedDate = currentDash || null;
       if(dpSelectedDate){
@@ -1691,6 +1896,7 @@
       pmDpPop.classList.remove("open");
       dpTriggerEl = null;
       dpTextEl = null;
+      dpField = "startDate";
     }
 
     function setSelected(dateObjOrNull, {close=true} = {}){
@@ -1700,13 +1906,12 @@
         dpSelectedDate = null;
         if(dpTextEl) dpTextEl.textContent = "날짜 선택";
         if(dpTriggerEl) dpTriggerEl.classList.remove("filled");
-        // 여기서는 startDate를 today로 유지
-        updateProject(openProjectId, p => { p.startDate = todayYmd(); });
+        updateProject(openProjectId, p => { p[dpField] = dpField === "startDate" ? todayYmd() : ""; });
       }else{
         dpSelectedDate = dashFromDate(dateObjOrNull);
         if(dpTextEl) dpTextEl.textContent = ymdDotFromDash(dpSelectedDate);
         if(dpTriggerEl) dpTriggerEl.classList.add("filled");
-        updateProject(openProjectId, p => { p.startDate = dpSelectedDate; });
+        updateProject(openProjectId, p => { p[dpField] = dpSelectedDate; });
       }
 
       renderProjectModal(openProjectId);
@@ -1803,6 +2008,7 @@
 
       pmTitle.textContent = p.name || "Project";
       pmPinBtn.textContent = p.pinned ? "Unpin" : "Pin";
+      pmStageBtn.textContent = p.stage === "done" ? "Reopen" : "Done";
 
       const tagsHtml = (p.tags||[]).map((t, idx) => `
         <div class="tagChip" title="${escapeHtml(t)}">
@@ -1813,6 +2019,8 @@
 
       const startDash = p.startDate || todayYmd();
       const startDot = ymdDotFromDash(startDash) || startDash;
+      const endDash = p.endDate || "";
+      const endDot = ymdDotFromDash(endDash) || endDash || "날짜 선택";
 
       const todoList = (p.todos||[]).map(t => {
         const subCount = (t.subs||[]).length;
@@ -1821,7 +2029,8 @@
         const subOpen = !!t.subOpen;
 
         const subsHtml = (t.subs||[]).map(su => `
-          <div class="sRow">
+          <div class="sRow" data-sub-row data-sub-parent="${t.id}" data-sub-id="${su.id}">
+            <div class="subDragHandle" draggable="true" title="Drag to reorder" aria-label="Substep 순서 변경">⋮⋮</div>
             <div class="tChk ${su.done ? "on" : ""}" role="checkbox" aria-checked="${su.done}"
               data-sub-tog="${t.id}" data-sub-id="${su.id}">${svgCheck()}</div>
             <div class="sText ${su.done ? "done" : ""}" title="${escapeHtml(su.text)}">${escapeHtml(su.text)}</div>
@@ -1830,7 +2039,8 @@
         `).join("");
 
         return `
-          <div class="tRow">
+          <div class="tRow" data-todo-id="${t.id}">
+            <div class="todoDragHandle" draggable="true" title="Drag to reorder" aria-label="To-do 순서 변경">⋮⋮</div>
             <div class="tChk ${t.done ? "on" : ""}" role="checkbox" aria-checked="${t.done}"
               data-todo-tog="${t.id}">${svgCheck()}</div>
 
@@ -1872,17 +2082,18 @@
       }).join("");
 
       // ✅ URLs dynamic list (position at bottom)
-      const urls = Array.isArray(p.urls) && p.urls.length ? p.urls : [""];
-      const urlRows = urls.map((u, i) => `
+      const urls = Array.isArray(p.urls) && p.urls.length ? p.urls.map(urlEntry) : [urlEntry(null)];
+      const urlRows = urls.map((entry, i) => `
         <div class="urlRow">
-          <input class="urlText" type="text" placeholder="URL…" value="${escapeHtml(u||"")}" data-url-idx="${i}" />
+          <input class="urlText" type="text" placeholder="Name" value="${escapeHtml(entry.label)}" data-url-idx="${i}" data-url-field="label" />
+          <input class="urlText" type="text" placeholder="URL" value="${escapeHtml(entry.url)}" data-url-idx="${i}" data-url-field="url" />
           <button class="miniBtn dangerBtn" type="button" data-url-del="${i}">Delete</button>
         </div>
       `).join("");
 
       pmBody.innerHTML = `
         <div class="section">
-          <div class="row2">
+          <div class="projectFields">
             <div style="display:grid; gap:6px; min-width:0;">
               <div class="fieldLabel">Project Name</div>
               <input class="textInput" data-p-name type="text" maxlength="60" value="${escapeHtml(p.name||"")}" />
@@ -1894,6 +2105,7 @@
               <button type="button"
                 class="dpTrigger ${startDash ? "filled" : ""}"
                 data-dp-trigger
+                data-date-field="startDate"
                 aria-haspopup="dialog"
                 aria-expanded="false">
                 <span class="dpText" data-dp-text>${escapeHtml(startDot)}</span>
@@ -1904,9 +2116,25 @@
                   </svg>
                 </span>
               </button>
-              <div style="font-size:11px; color:rgba(30,30,30,0.42); font-family:EnterSanChaek, ui-sans-serif;">
-                (Upcoming 위젯 Date Picker 방식)
-              </div>
+            </div>
+
+            <div style="display:grid; gap:6px; min-width:0; position:relative;">
+              <div class="fieldLabel">End Date</div>
+
+              <button type="button"
+                class="dpTrigger ${endDash ? "filled" : ""}"
+                data-dp-trigger
+                data-date-field="endDate"
+                aria-haspopup="dialog"
+                aria-expanded="false">
+                <span class="dpText" data-dp-text>${escapeHtml(endDot)}</span>
+                <span class="dpIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path d="M7 3v2M17 3v2M4 8h16M6 5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+                          fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                  </svg>
+                </span>
+              </button>
             </div>
           </div>
         </div>
@@ -1922,13 +2150,39 @@
         </div>
 
         <div class="section">
-          <div class="fieldLabel">Feedback</div>
-          <textarea class="feedback" data-feedback placeholder="개인 feedback / 메모…">${escapeHtml(p.feedback||"")}</textarea>
+          <div class="fieldLabel">Objective</div>
+          <textarea class="feedback" data-objective placeholder="프로젝트의 목적 또는 최종 결과물…">${escapeHtml(p.objective||"")}</textarea>
+        </div>
+
+        <div class="section">
+          <div class="fieldLabel">Notes</div>
+          <div class="richWrap" data-rich-wrap>
+            <div class="richToolbar" data-rich-toolbar>
+              <button class="richBtn" type="button" data-rich-command="bold" aria-label="Bold"><strong>B</strong></button>
+              <button class="richBtn" type="button" data-rich-command="italic" aria-label="Italic"><em>I</em></button>
+              <button class="richBtn" type="button" data-rich-command="underline" aria-label="Underline"><u>U</u></button>
+              <button class="richBtn" type="button" data-rich-command="strikeThrough" aria-label="Strikethrough"><s>S</s></button>
+              <select class="richSelect" data-rich-font aria-label="Font family">
+                <option value="inherit">Default / System</option>
+                <option value='"EnterSanChaek", ui-sans-serif, system-ui, sans-serif'>EnterSanChaek</option>
+                <option value="Georgia, 'Times New Roman', serif">Serif</option>
+                <option value="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Monospace</option>
+              </select>
+              <select class="richSelect" data-rich-size aria-label="Font size">
+                <option value="">Size</option>
+                <option value="12px">12px</option><option value="14px">14px</option>
+                <option value="16px">16px</option><option value="18px">18px</option><option value="20px">20px</option>
+              </select>
+              <button class="richBtn" type="button" data-rich-command="removeFormat">Clear</button>
+            </div>
+            <div class="richEditor" contenteditable="true" role="textbox" aria-multiline="true"
+              data-notes-rich data-rich-editor data-placeholder="작업 메모, 수정점, 아이디어…">${projectNotesRichHtml(p)}</div>
+          </div>
         </div>
 
         <div class="section">
           <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div class="fieldLabel">Todos</div>
+            <div class="fieldLabel">To-do</div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <button class="miniBtn" type="button" data-clear-done>Clear done</button>
             </div>
@@ -1936,7 +2190,7 @@
 
           <div class="todoBox">
             <div class="todoAdd">
-              <input class="todoInput" data-todo-input type="text" maxlength="90" placeholder="todo 추가…" />
+              <input class="todoInput" data-todo-input type="text" maxlength="90" placeholder="Enter" />
               <button class="miniBtn" type="button" data-todo-add>Add</button>
             </div>
             <div class="todoList">
@@ -1987,6 +2241,21 @@
     });
 
     // Modal header actions
+    pmStageBtn.addEventListener("click", ()=>{
+      if(!openProjectId) return;
+      const id = openProjectId;
+      updateProject(id, p => {
+        if(p.stage === "done"){
+          p.stage = "progress";
+        }else{
+          p.stage = "done";
+          if(!p.endDate) p.endDate = todayYmd();
+        }
+      });
+      renderProjectModal(id);
+      const p = findProject(id);
+      showToast(p && p.stage === "done" ? "Done으로 이동했어." : "In Progress로 다시 열었어.");
+    });
     pmPinBtn.addEventListener("click", ()=>{
       if(!openProjectId) return;
       updateProject(openProjectId, p => p.pinned = !p.pinned);
@@ -2019,6 +2288,32 @@
       if(pmDpPop.classList.contains("open")) closeDP();
     });
 
+    function focusTodoInput(){
+      requestAnimationFrame(()=>{
+        const input = projectModalOverlay.querySelector("[data-todo-input]");
+        if(input) input.focus();
+      });
+    }
+
+    function focusSubInput(todoId){
+      requestAnimationFrame(()=>{
+        const input = projectModalOverlay.querySelector(`[data-sub-input="${CSS.escape(todoId)}"]`);
+        if(input) input.focus();
+      });
+    }
+
+    function addTodo(pid, text){
+      const value = String(text || "").trim();
+      if(!value) return false;
+      updateProject(pid, p => {
+        p.todos = Array.isArray(p.todos) ? p.todos : [];
+        p.todos.unshift({ id: uid(), text:value, done:false, prio:1, subOpen:false, subs:[] });
+      });
+      renderProjectModal(pid);
+      focusTodoInput();
+      return true;
+    }
+
     // Modal interactions (delegated)
     projectModalOverlay.addEventListener("click", (e)=>{
       if(!openProjectId) return;
@@ -2031,7 +2326,10 @@
         const p = findProject(pid);
         if(!p) return;
         if(pmDpPop.classList.contains("open")) closeDP();
-        else openDP(dpTrig, txt, p.startDate || todayYmd());
+        else {
+          const field = dpTrig.dataset.dateField === "endDate" ? "endDate" : "startDate";
+          openDP(dpTrig, txt, field, field === "endDate" ? (p.endDate || "") : (p.startDate || todayYmd()));
+        }
         return;
       }
     }, true); // 캡처 단계에서 실행
@@ -2081,12 +2379,7 @@
       if(todoAdd){
         const inp = projectModalOverlay.querySelector("[data-todo-input]");
         const text = inp ? (inp.value||"").trim() : "";
-        if(!text) return;
-        updateProject(pid, p => {
-          p.todos = Array.isArray(p.todos) ? p.todos : [];
-          p.todos.unshift({ id: uid(), text, done:false, prio:1, subOpen:false, subs:[] });
-        });
-        renderProjectModal(pid);
+        addTodo(pid, text);
         return;
       }
 
@@ -2127,10 +2420,14 @@
       const subToggle = e.target.closest("[data-sub-toggle]");
       if(subToggle){
         const tid = subToggle.dataset.subToggle;
+        const project = findProject(pid);
+        const todo = project && (project.todos||[]).find(t => t.id === tid);
+        const willOpen = todo ? !todo.subOpen : false;
         updateProject(pid, p => {
           p.todos = (p.todos||[]).map(t => t.id === tid ? ({...t, subOpen: !t.subOpen}) : t);
         });
         renderProjectModal(pid);
+        if(willOpen) focusSubInput(tid);
         return;
       }
 
@@ -2149,6 +2446,7 @@
           });
         });
         renderProjectModal(pid);
+        focusSubInput(tid);
         return;
       }
 
@@ -2196,7 +2494,7 @@
       if(urlAdd){
         updateProject(pid, p => {
           p.urls = Array.isArray(p.urls) ? p.urls : [];
-          p.urls.push("");
+          p.urls.push({ label:"", url:"" });
         });
         renderProjectModal(pid);
         return;
@@ -2208,11 +2506,187 @@
         updateProject(pid, p => {
           p.urls = Array.isArray(p.urls) ? p.urls : [];
           if(Number.isFinite(idx) && idx >= 0) p.urls.splice(idx, 1);
-          if(!p.urls.length) p.urls = [""];
+          if(!p.urls.length) p.urls = [{ label:"", url:"" }];
         });
         renderProjectModal(pid);
         return;
       }
+    });
+
+    let draggedTodoId = null;
+    function reorderTodoList(todos, sourceId, targetId, after){
+      const reordered = Array.isArray(todos) ? todos.slice() : [];
+      const from = reordered.findIndex(todo => todo.id === sourceId);
+      if(from < 0 || sourceId === targetId) return reordered;
+      const [moved] = reordered.splice(from, 1);
+      let target = reordered.findIndex(todo => todo.id === targetId);
+      if(target < 0) return Array.isArray(todos) ? todos.slice() : [];
+      if(after) target += 1;
+      reordered.splice(target, 0, moved);
+      return reordered;
+    }
+    function clearTodoDragStyles(){
+      projectModalOverlay.querySelectorAll(".tRow").forEach(row => {
+        row.classList.remove("todoDragging", "todoDropBefore", "todoDropAfter");
+      });
+    }
+
+    projectModalOverlay.addEventListener("dragstart", (e)=>{
+      const handle = e.target.closest(".todoDragHandle");
+      const row = handle && handle.closest("[data-todo-id]");
+      if(!row || !openProjectId) return;
+      draggedTodoId = row.dataset.todoId;
+      row.classList.add("todoDragging");
+      e.dataTransfer.effectAllowed = "move";
+      try{ e.dataTransfer.setData("text/plain", `todo:${draggedTodoId}`); }catch(_){}
+    });
+
+    projectModalOverlay.addEventListener("dragover", (e)=>{
+      const row = e.target.closest("[data-todo-id]");
+      if(!draggedTodoId || !row || row.dataset.todoId === draggedTodoId) return;
+      e.preventDefault();
+      const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
+      projectModalOverlay.querySelectorAll(".tRow").forEach(item => {
+        item.classList.remove("todoDropBefore", "todoDropAfter");
+      });
+      row.classList.add(after ? "todoDropAfter" : "todoDropBefore");
+      e.dataTransfer.dropEffect = "move";
+    });
+
+    projectModalOverlay.addEventListener("drop", (e)=>{
+      const row = e.target.closest("[data-todo-id]");
+      if(!openProjectId || !draggedTodoId || !row || row.dataset.todoId === draggedTodoId) return;
+      e.preventDefault();
+      const targetId = row.dataset.todoId;
+      const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
+      const pid = openProjectId;
+      updateProject(pid, p => {
+        p.todos = reorderTodoList(p.todos, draggedTodoId, targetId, after);
+      });
+      draggedTodoId = null;
+      renderProjectModal(pid);
+    });
+
+    projectModalOverlay.addEventListener("dragend", ()=>{
+      draggedTodoId = null;
+      clearTodoDragStyles();
+    });
+
+    let draggedSubId = null;
+    let draggedSubTodoId = null;
+    function reorderSubList(subs, sourceId, targetId, after){
+      const reordered = Array.isArray(subs) ? subs.slice() : [];
+      const from = reordered.findIndex(sub => sub.id === sourceId);
+      if(from < 0 || sourceId === targetId) return reordered;
+      const [moved] = reordered.splice(from, 1);
+      let target = reordered.findIndex(sub => sub.id === targetId);
+      if(target < 0) return Array.isArray(subs) ? subs.slice() : [];
+      if(after) target += 1;
+      reordered.splice(target, 0, moved);
+      return reordered;
+    }
+    function clearSubDragStyles(){
+      projectModalOverlay.querySelectorAll("[data-sub-row]").forEach(row => {
+        row.classList.remove("subDragging", "subDropBefore", "subDropAfter");
+      });
+    }
+
+    projectModalOverlay.addEventListener("dragstart", (e)=>{
+      const handle = e.target.closest(".subDragHandle");
+      const row = handle && handle.closest("[data-sub-row]");
+      if(!row || !openProjectId) return;
+      draggedSubId = row.dataset.subId;
+      draggedSubTodoId = row.dataset.subParent;
+      row.classList.add("subDragging");
+      e.dataTransfer.effectAllowed = "move";
+      try{ e.dataTransfer.setData("text/plain", `sub:${draggedSubTodoId}:${draggedSubId}`); }catch(_){}
+    });
+
+    projectModalOverlay.addEventListener("dragover", (e)=>{
+      const row = e.target.closest("[data-sub-row]");
+      if(!draggedSubId || !draggedSubTodoId || !row) return;
+      if(row.dataset.subParent !== draggedSubTodoId || row.dataset.subId === draggedSubId) return;
+      e.preventDefault();
+      const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
+      projectModalOverlay.querySelectorAll("[data-sub-row]").forEach(item => {
+        item.classList.remove("subDropBefore", "subDropAfter");
+      });
+      row.classList.add(after ? "subDropAfter" : "subDropBefore");
+      e.dataTransfer.dropEffect = "move";
+    });
+
+    projectModalOverlay.addEventListener("drop", (e)=>{
+      const row = e.target.closest("[data-sub-row]");
+      if(!openProjectId || !draggedSubId || !draggedSubTodoId || !row) return;
+      const targetTodoId = row.dataset.subParent;
+      if(targetTodoId !== draggedSubTodoId || row.dataset.subId === draggedSubId) return;
+      e.preventDefault();
+      const sourceId = draggedSubId;
+      const targetId = row.dataset.subId;
+      const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
+      const pid = openProjectId;
+      updateProject(pid, p => {
+        p.todos = (p.todos||[]).map(todo => todo.id === targetTodoId
+          ? { ...todo, subs: reorderSubList(todo.subs, sourceId, targetId, after) }
+          : todo
+        );
+      });
+      draggedSubId = null;
+      draggedSubTodoId = null;
+      renderProjectModal(pid);
+    });
+
+    projectModalOverlay.addEventListener("dragend", ()=>{
+      draggedSubId = null;
+      draggedSubTodoId = null;
+      clearSubDragStyles();
+    });
+
+    function richEditorForControl(control){
+      const wrap = control.closest("[data-rich-wrap]");
+      return wrap && wrap.querySelector("[data-rich-editor]");
+    }
+    document.addEventListener("selectionchange", ()=>{
+      const editor = projectModalOverlay.querySelector("[data-rich-editor]");
+      if(editor) saveRichRange(editor);
+    });
+    projectModalOverlay.addEventListener("pointerdown", (e)=>{
+      const control = e.target.closest("[data-rich-toolbar] button, [data-rich-toolbar] select");
+      if(!control) return;
+      const editor = richEditorForControl(control);
+      if(editor) saveRichRange(editor);
+      if(control.tagName === "BUTTON") e.preventDefault();
+    });
+    projectModalOverlay.addEventListener("click", (e)=>{
+      const button = e.target.closest("[data-rich-command]");
+      if(!button) return;
+      const editor = richEditorForControl(button);
+      if(editor) runRichCommand(editor, button.dataset.richCommand);
+    });
+    projectModalOverlay.addEventListener("change", (e)=>{
+      const font = e.target.closest("[data-rich-font]");
+      const size = e.target.closest("[data-rich-size]");
+      const control = font || size;
+      if(!control || !control.value) return;
+      const editor = richEditorForControl(control);
+      if(!editor) return;
+      applyRichStyle(editor, font ? "fontFamily" : "fontSize", control.value);
+      editor.dispatchEvent(new Event("input", { bubbles:true }));
+      if(size) size.value = "";
+    });
+    projectModalOverlay.addEventListener("paste", (e)=>{
+      const editor = e.target.closest("[data-rich-editor]");
+      if(!editor) return;
+      e.preventDefault();
+      document.execCommand("insertText", false, e.clipboardData.getData("text/plain"));
+    });
+    projectModalOverlay.addEventListener("mouseup", (e)=>{
+      const editor = e.target.closest("[data-rich-editor]");
+      if(editor) saveRichRange(editor);
+    });
+    projectModalOverlay.addEventListener("keyup", (e)=>{
+      const editor = e.target.closest("[data-rich-editor]");
+      if(editor) saveRichRange(editor);
     });
 
     projectModalOverlay.addEventListener("input", (e)=>{
@@ -2227,19 +2701,31 @@
         return;
       }
 
-      const fb = e.target.closest("[data-feedback]");
-      if(fb){
-        updateProject(pid, p => p.feedback = fb.value || "");
+      const objective = e.target.closest("[data-objective]");
+      if(objective){
+        updateProject(pid, p => p.objective = objective.value || "");
+        return;
+      }
+
+      const notes = e.target.closest("[data-notes-rich]");
+      if(notes){
+        updateProject(pid, p => {
+          p.notesHtml = sanitizeRichHtml(notes.innerHTML);
+          p.notes = richPlainText(notes);
+        });
         return;
       }
 
       const url = e.target.closest("[data-url-idx]");
       if(url){
         const idx = Number(url.dataset.urlIdx);
+        const field = url.dataset.urlField === "label" ? "label" : "url";
         updateProject(pid, p => {
           p.urls = Array.isArray(p.urls) ? p.urls : [];
-          while(p.urls.length <= idx) p.urls.push("");
-          p.urls[idx] = url.value || "";
+          while(p.urls.length <= idx) p.urls.push({ label:"", url:"" });
+          const entry = urlEntry(p.urls[idx]);
+          entry[field] = url.value || "";
+          p.urls[idx] = entry;
         });
         return;
       }
@@ -2265,12 +2751,7 @@
       if(todoInp && e.key === "Enter"){
         e.preventDefault();
         const text = (todoInp.value||"").trim();
-        if(!text) return;
-        updateProject(openProjectId, p => {
-          p.todos = Array.isArray(p.todos) ? p.todos : [];
-          p.todos.unshift({ id: uid(), text, done:false, prio:1, subOpen:false, subs:[] });
-        });
-        renderProjectModal(openProjectId);
+        addTodo(openProjectId, text);
         return;
       }
 
@@ -2289,6 +2770,7 @@
           });
         });
         renderProjectModal(openProjectId);
+        focusSubInput(tid);
         return;
       }
     });
@@ -2301,9 +2783,12 @@
       const s = String(q||"").trim().toLowerCase();
       if(!s) return true;
       const parts = [
-        p.name, p.startDate, p.feedback,
+        p.name, p.startDate, p.endDate, p.objective, projectNotes(p), p.feedback,
         ...(p.tags||[]),
-        ...((p.urls||[]).map(u => u || "")),
+        ...((p.urls||[]).flatMap(u => {
+          const entry = urlEntry(u);
+          return [entry.label, entry.url];
+        })),
         ...((p.todos||[]).map(t => t.text)),
         ...((p.todos||[]).flatMap(t => (t.subs||[]).map(su => su.text)))
       ].join(" ").toLowerCase();
@@ -2337,7 +2822,7 @@
         return `
           <div style="display:grid; grid-template-columns: 18px 1fr; gap:10px; align-items:start; margin-bottom:10px;">
             <div class="tChk ${checked ? "on":""}" data-arch-sel="${p.id}" style="margin-top:4px;">${svgCheck()}</div>
-            <button class="miniBtn" data-arch-pick="${p.id}" style="text-align:left; border-radius:14px; width:100%; justify-content:flex-start; ${active ? "border-color: rgba(140,190,232,0.75); box-shadow: 0 0 0 3px rgba(165,206,240,0.16);" : ""}">
+            <button class="miniBtn" data-arch-pick="${p.id}" style="text-align:left; border-radius:14px; width:100%; justify-content:flex-start; ${active ? "border-color: rgba(190,200,212,0.75); box-shadow: 0 0 0 3px rgba(210,218,228,0.16);" : ""}">
               ${escapeHtml(p.name||"Project")}
             </button>
           </div>
