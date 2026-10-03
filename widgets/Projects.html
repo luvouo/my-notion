@@ -675,7 +675,8 @@
     .tRow.todoDragging{ opacity: 0.5; }
     .tRow.todoDropBefore{ box-shadow: 0 3px 0 rgba(190,200,212,0.85) inset; }
     .tRow.todoDropAfter{ box-shadow: 0 -3px 0 rgba(190,200,212,0.85) inset; }
-    .todoDragHandle{
+    .todoDragHandle,
+    .subDragHandle{
       width: 18px;
       min-height: 20px;
       display:grid;
@@ -687,7 +688,8 @@
       font-size: 15px;
       line-height: 1;
     }
-    .todoDragHandle:active{ cursor: grabbing; }
+    .todoDragHandle:active,
+    .subDragHandle:active{ cursor: grabbing; }
 
     .tChk{
       width: 18px;
@@ -782,6 +784,9 @@
       min-width: 0;
       box-sizing: border-box;
     }
+    .sRow.subDragging{ opacity: 0.5; }
+    .sRow.subDropBefore{ box-shadow: 0 3px 0 rgba(190,200,212,0.85) inset; }
+    .sRow.subDropAfter{ box-shadow: 0 -3px 0 rgba(190,200,212,0.85) inset; }
     .sRow .sText{
       flex:1 1 auto;
       min-width: 0;
@@ -1884,7 +1889,8 @@
         const subOpen = !!t.subOpen;
 
         const subsHtml = (t.subs||[]).map(su => `
-          <div class="sRow">
+          <div class="sRow" data-sub-row data-sub-parent="${t.id}" data-sub-id="${su.id}">
+            <div class="subDragHandle" draggable="true" title="Drag to reorder" aria-label="Substep 순서 변경">⋮⋮</div>
             <div class="tChk ${su.done ? "on" : ""}" role="checkbox" aria-checked="${su.done}"
               data-sub-tog="${t.id}" data-sub-id="${su.id}">${svgCheck()}</div>
             <div class="sText ${su.done ? "done" : ""}" title="${escapeHtml(su.text)}">${escapeHtml(su.text)}</div>
@@ -2403,6 +2409,76 @@
     projectModalOverlay.addEventListener("dragend", ()=>{
       draggedTodoId = null;
       clearTodoDragStyles();
+    });
+
+    let draggedSubId = null;
+    let draggedSubTodoId = null;
+    function reorderSubList(subs, sourceId, targetId, after){
+      const reordered = Array.isArray(subs) ? subs.slice() : [];
+      const from = reordered.findIndex(sub => sub.id === sourceId);
+      if(from < 0 || sourceId === targetId) return reordered;
+      const [moved] = reordered.splice(from, 1);
+      let target = reordered.findIndex(sub => sub.id === targetId);
+      if(target < 0) return Array.isArray(subs) ? subs.slice() : [];
+      if(after) target += 1;
+      reordered.splice(target, 0, moved);
+      return reordered;
+    }
+    function clearSubDragStyles(){
+      projectModalOverlay.querySelectorAll("[data-sub-row]").forEach(row => {
+        row.classList.remove("subDragging", "subDropBefore", "subDropAfter");
+      });
+    }
+
+    projectModalOverlay.addEventListener("dragstart", (e)=>{
+      const handle = e.target.closest(".subDragHandle");
+      const row = handle && handle.closest("[data-sub-row]");
+      if(!row || !openProjectId) return;
+      draggedSubId = row.dataset.subId;
+      draggedSubTodoId = row.dataset.subParent;
+      row.classList.add("subDragging");
+      e.dataTransfer.effectAllowed = "move";
+      try{ e.dataTransfer.setData("text/plain", `sub:${draggedSubTodoId}:${draggedSubId}`); }catch(_){}
+    });
+
+    projectModalOverlay.addEventListener("dragover", (e)=>{
+      const row = e.target.closest("[data-sub-row]");
+      if(!draggedSubId || !draggedSubTodoId || !row) return;
+      if(row.dataset.subParent !== draggedSubTodoId || row.dataset.subId === draggedSubId) return;
+      e.preventDefault();
+      const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
+      projectModalOverlay.querySelectorAll("[data-sub-row]").forEach(item => {
+        item.classList.remove("subDropBefore", "subDropAfter");
+      });
+      row.classList.add(after ? "subDropAfter" : "subDropBefore");
+      e.dataTransfer.dropEffect = "move";
+    });
+
+    projectModalOverlay.addEventListener("drop", (e)=>{
+      const row = e.target.closest("[data-sub-row]");
+      if(!openProjectId || !draggedSubId || !draggedSubTodoId || !row) return;
+      const targetTodoId = row.dataset.subParent;
+      if(targetTodoId !== draggedSubTodoId || row.dataset.subId === draggedSubId) return;
+      e.preventDefault();
+      const sourceId = draggedSubId;
+      const targetId = row.dataset.subId;
+      const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
+      const pid = openProjectId;
+      updateProject(pid, p => {
+        p.todos = (p.todos||[]).map(todo => todo.id === targetTodoId
+          ? { ...todo, subs: reorderSubList(todo.subs, sourceId, targetId, after) }
+          : todo
+        );
+      });
+      draggedSubId = null;
+      draggedSubTodoId = null;
+      renderProjectModal(pid);
+    });
+
+    projectModalOverlay.addEventListener("dragend", ()=>{
+      draggedSubId = null;
+      draggedSubTodoId = null;
+      clearSubDragStyles();
     });
 
     projectModalOverlay.addEventListener("input", (e)=>{
