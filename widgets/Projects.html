@@ -430,6 +430,37 @@
     }
     .modalOverlay.open{ display:flex; }
 
+    .confirmOverlay{ z-index: 7000; }
+    .confirmModal{
+      width: min(420px, 100%);
+      border-radius: 18px;
+      border: 1px solid rgba(190,200,212,0.55);
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      padding: 16px;
+      box-sizing: border-box;
+      display:grid;
+      gap: 14px;
+    }
+    .confirmTitle{
+      font: 600 14px "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+      color: rgba(28,30,33,0.88);
+    }
+    .confirmMessage{
+      font-size: 13px;
+      line-height: 1.5;
+      color: rgba(28,30,33,0.65);
+      white-space: pre-wrap;
+    }
+    .confirmActions{
+      display:flex;
+      justify-content:flex-end;
+      gap: 8px;
+      flex-wrap:wrap;
+    }
+
     .modal{
       width: min(920px, 100%);
       max-height: calc(100vh - 20px);
@@ -1245,6 +1276,18 @@
     </div>
   </div>
 
+  <!-- Shared delete confirmation modal (embed-safe; no native confirm) -->
+  <div class="modalOverlay confirmOverlay" id="confirmOverlay" aria-hidden="true">
+    <div class="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+      <div class="confirmTitle" id="confirmTitle">삭제 확인</div>
+      <div class="confirmMessage" id="confirmMessage"></div>
+      <div class="confirmActions">
+        <button class="btn secondary" id="confirmCancelBtn" type="button">Cancel</button>
+        <button class="btn secondary dangerBtn" id="confirmDeleteBtn" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script src="../env.js"></script>
   <script type="module">
   (async function main(){
@@ -1539,6 +1582,12 @@
     const bulkExportBtn = document.getElementById("bulkExportBtn");
     const bulkRestoreBtn = document.getElementById("bulkRestoreBtn");
     const bulkDeleteBtn = document.getElementById("bulkDeleteBtn");
+    const confirmOverlay = document.getElementById("confirmOverlay");
+    const confirmMessage = document.getElementById("confirmMessage");
+    const confirmCancelBtn = document.getElementById("confirmCancelBtn");
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    let confirmAction = null;
+    let confirmReturnFocus = null;
 
     function showToast(msg){
       toast.textContent = msg;
@@ -1550,6 +1599,35 @@
       clearTimeout(showArchiveToast._t);
       showArchiveToast._t = setTimeout(()=> archiveToast.textContent = "", 1600);
     }
+
+    function openDeleteConfirm(message, action){
+      confirmMessage.textContent = message;
+      confirmAction = typeof action === "function" ? action : null;
+      confirmReturnFocus = document.activeElement;
+      confirmOverlay.classList.add("open");
+      confirmOverlay.setAttribute("aria-hidden", "false");
+      requestAnimationFrame(()=> confirmDeleteBtn.focus());
+    }
+    function closeDeleteConfirm(){
+      confirmOverlay.classList.remove("open");
+      confirmOverlay.setAttribute("aria-hidden", "true");
+      confirmAction = null;
+      const returnFocus = confirmReturnFocus;
+      confirmReturnFocus = null;
+      if(returnFocus && document.contains(returnFocus)) returnFocus.focus();
+    }
+    confirmCancelBtn.addEventListener("click", closeDeleteConfirm);
+    confirmOverlay.addEventListener("click", e => {
+      if(e.target === confirmOverlay) closeDeleteConfirm();
+    });
+    confirmDeleteBtn.addEventListener("click", ()=>{
+      const action = confirmAction;
+      confirmAction = null;
+      confirmOverlay.classList.remove("open");
+      confirmOverlay.setAttribute("aria-hidden", "true");
+      confirmReturnFocus = null;
+      if(action) action();
+    });
 
     function persistLocal(){
       saveProjects(projects);
@@ -2435,12 +2513,12 @@
     });
     pmDeleteBtn.addEventListener("click", ()=>{
       if(!openProjectId) return;
-      const ok = confirm("이 프로젝트를 삭제할까? (되돌리기 불가)");
-      if(!ok) return;
       const id = openProjectId;
-      closeProjectModal();
-      deleteProject(id);
-      showToast("삭제했어.");
+      openDeleteConfirm("이 프로젝트를 삭제할까?\n삭제 후에는 되돌릴 수 없어.", ()=>{
+        closeProjectModal();
+        deleteProject(id);
+        showToast("삭제했어.");
+      });
     });
 
     /* ✅ dp open/close is now stable:
@@ -3087,13 +3165,13 @@
     bulkDeleteBtn.addEventListener("click", ()=>{
       const ids = getArchiveSelectedIds();
       if(!ids.length){ showArchiveToast("선택된 항목이 없어."); return; }
-      const ok = confirm(`선택한 ${ids.length}개를 삭제할까? (되돌리기 불가)`);
-      if(!ok) return;
-      archived = archived.filter(p => !ids.includes(p.id));
-      archiveSelected.clear();
-      persist();
-      buildArchive();
-      showArchiveToast("삭제 완료.");
+      openDeleteConfirm(`선택한 ${ids.length}개 프로젝트를 삭제할까?\n삭제 후에는 되돌릴 수 없어.`, ()=>{
+        archived = archived.filter(p => !ids.includes(p.id));
+        archiveSelected.clear();
+        persist();
+        buildArchive();
+        showArchiveToast("삭제 완료.");
+      });
     });
 
     /* ========= top controls ========= */
@@ -3138,6 +3216,7 @@
     /* ========= escape key ========= */
     document.addEventListener("keydown", (e) => {
       if(e.key === "Escape"){
+        if(confirmOverlay.classList.contains("open")){ closeDeleteConfirm(); return; }
         if(pmDpPop.classList.contains("open")){ closeDP(); return; }
         if(projectModalOverlay.classList.contains("open")){ closeProjectModal(); return; }
         if(archiveOverlay.classList.contains("open")){ closeArchive(); return; }
