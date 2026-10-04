@@ -97,7 +97,12 @@
       cursor: pointer;
       transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
     }
-    .btn:hover, .iconBtn:hover{ background: var(--lavender-soft); border-color: rgba(174,156,214,.76); }
+    .btn:hover, .iconBtn:hover{
+      border-color: rgba(174,156,214,.78);
+      color: rgba(126,99,181,.90);
+      text-shadow: 0 0 7px rgba(174,156,214,.28);
+      box-shadow: 0 0 0 3px rgba(194,181,226,.16);
+    }
     .btn:focus-visible, .iconBtn:focus-visible, .day:focus-visible, .eventChip:focus-visible{
       outline: none;
       box-shadow: 0 0 0 3px rgba(194,181,226,.30);
@@ -106,7 +111,15 @@
     .btn{ min-height: 34px; padding: 7px 12px; border-radius: 12px; font: 12px var(--display); }
     .btn.primary{ background: rgba(210,198,237,.42); }
     .btn.danger{ border-color: rgba(210,150,164,.46); color: rgba(135,65,82,.78); }
-    .iconBtn{ width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 18px; line-height: 1; }
+    .iconBtn{
+      display: inline-grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border-radius: 50%;
+    }
+    .iconBtn svg{ display: block; width: 13px; height: 13px; }
 
     .calendarScroller{
       overflow-x: auto;
@@ -143,7 +156,8 @@
     .day:nth-last-child(-n+7){ border-bottom: 0; }
     .day:hover{ background: rgba(230,223,244,.27); }
     .day.other{ background: rgba(255,255,255,.018); color: rgba(30,28,34,.25); }
-    .day.selected{ background: rgba(218,208,239,.32); box-shadow: inset 0 0 0 2px rgba(174,156,214,.56); }
+    .day.selected{ background: rgba(218,208,239,.23); box-shadow: inset 0 0 0 1px rgba(174,156,214,.38); }
+    .day.selected:hover{ background: rgba(225,217,242,.30); }
     .day.today .dayNumber{
       color: rgba(68,51,105,.86);
       background: rgba(194,181,226,.48);
@@ -169,10 +183,10 @@
       padding: 3px 5px;
       overflow: hidden;
       border: 0;
-      border-left: 2px solid rgba(174,156,214,.70);
+      border-left: 2px solid var(--event-accent, rgba(174,156,214,.70));
       border-radius: 4px;
       color: rgba(39,35,45,.76);
-      background: rgba(255,255,255,.40);
+      background: var(--event-tint, rgba(242,238,249,.40));
       text-align: left;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -181,7 +195,7 @@
       cursor: pointer;
     }
     .other .eventChip{ opacity: .42; }
-    .eventTime{ color: rgba(115,92,158,.76); font-variant-numeric: tabular-nums; margin-right: 4px; }
+    .eventTime{ color: var(--event-text, rgba(115,92,158,.76)); font-variant-numeric: tabular-nums; margin-right: 4px; }
     .more{ padding-left: 6px; color: rgba(99,76,141,.66); font: 10px var(--display); }
 
     .detail{
@@ -209,11 +223,12 @@
     .eventCard{
       padding: 9px 10px;
       border: 1px solid var(--border-soft);
+      border-left: 2px solid var(--event-accent, rgba(174,156,214,.70));
       border-radius: 12px;
       background: rgba(255,255,255,.18);
     }
     .eventTop{ display: flex; align-items: flex-start; gap: 8px; }
-    .detailTime{ min-width: 39px; color: rgba(107,82,153,.75); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .detailTime{ min-width: 39px; color: var(--event-text, rgba(107,82,153,.75)); font-size: 11px; font-variant-numeric: tabular-nums; }
     .eventTitle{ flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 13px; }
     .eventMemo{ margin: 6px 0 0 47px; color: var(--muted); font-size: 11.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
     .eventActions{ justify-content: flex-end; gap: 5px; margin-top: 7px; }
@@ -224,6 +239,24 @@
     .form{ display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 9px; }
     .field{ display: grid; gap: 5px; }
     .field.full{ grid-column: 1 / -1; }
+    .colorPicker{ display: flex; align-items: center; gap: 8px; min-height: 32px; }
+    .colorSwatch{
+      position: relative;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border: 1px solid rgba(48,42,56,.10);
+      border-radius: 50%;
+      background: var(--swatch);
+      cursor: pointer;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+    .colorSwatch:hover{ border-color: rgba(87,73,105,.30); transform: scale(1.05); }
+    .colorSwatch[aria-pressed="true"]{
+      border-color: rgba(99,80,137,.48);
+      box-shadow: 0 0 0 3px rgba(194,181,226,.22), 0 0 8px rgba(174,156,214,.18);
+    }
+    .colorSwatch:focus-visible{ outline: none; box-shadow: 0 0 0 3px rgba(194,181,226,.34); }
     label{ color: var(--muted); font: 11px var(--display); }
     input, textarea{
       width: 100%;
@@ -292,9 +325,13 @@
             <h1>Monthly</h1>
           </div>
           <nav class="monthNav" aria-label="월 이동">
-            <button class="iconBtn" id="prevMonth" type="button" aria-label="이전 달">‹</button>
+            <button class="iconBtn" id="prevMonth" type="button" aria-label="이전 달">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
             <div class="monthLabel" id="monthLabel" aria-live="polite"></div>
-            <button class="iconBtn" id="nextMonth" type="button" aria-label="다음 달">›</button>
+            <button class="iconBtn" id="nextMonth" type="button" aria-label="다음 달">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
             <button class="btn" id="todayBtn" type="button">Today</button>
           </nav>
         </header>
@@ -333,11 +370,21 @@
                 <input id="eventTitle" type="text" maxlength="100" placeholder="일정 제목" required />
               </div>
               <div class="field full">
+                <label id="colorLabel">Color</label>
+                <div class="colorPicker" id="colorPicker" role="group" aria-labelledby="colorLabel">
+                  <button class="colorSwatch" type="button" data-color="lavender" style="--swatch: rgba(194,181,226,.88)" aria-label="Lavender" aria-pressed="true"></button>
+                  <button class="colorSwatch" type="button" data-color="pink" style="--swatch: rgba(235,183,201,.88)" aria-label="Soft Pink" aria-pressed="false"></button>
+                  <button class="colorSwatch" type="button" data-color="sky" style="--swatch: rgba(174,207,230,.90)" aria-label="Sky Blue" aria-pressed="false"></button>
+                  <button class="colorSwatch" type="button" data-color="mint" style="--swatch: rgba(174,215,198,.90)" aria-label="Mint" aria-pressed="false"></button>
+                  <button class="colorSwatch" type="button" data-color="peach" style="--swatch: rgba(239,196,166,.90)" aria-label="Peach" aria-pressed="false"></button>
+                </div>
+              </div>
+              <div class="field full">
                 <label for="eventMemo">메모 (선택)</label>
                 <textarea id="eventMemo" maxlength="500" placeholder="기억해 둘 내용을 적어보세요"></textarea>
               </div>
               <div class="formActions">
-                <button class="btn cancelBtn" id="cancelEdit" type="button" hidden>취소</button>
+                <button class="btn cancelBtn" id="cancelEdit" type="button" hidden>Cancel</button>
                 <button class="btn primary" id="saveEvent" type="submit">Add</button>
               </div>
             </form>
@@ -353,10 +400,19 @@
       "use strict";
 
       const STORAGE_KEY = "my-notion.monthly.events.v1";
+      const DEFAULT_COLOR = "lavender";
+      const PALETTE = {
+        lavender: { accent: "rgba(174,156,214,.72)", text: "rgba(115,92,158,.78)", tint: "rgba(242,238,249,.46)" },
+        pink: { accent: "rgba(222,157,179,.72)", text: "rgba(166,93,118,.78)", tint: "rgba(252,238,243,.46)" },
+        sky: { accent: "rgba(142,190,222,.74)", text: "rgba(79,131,168,.80)", tint: "rgba(237,247,252,.48)" },
+        mint: { accent: "rgba(137,194,174,.74)", text: "rgba(72,139,116,.80)", tint: "rgba(237,249,245,.48)" },
+        peach: { accent: "rgba(225,169,132,.74)", text: "rgba(166,105,68,.80)", tint: "rgba(253,244,237,.48)" }
+      };
       const today = startOfDay(new Date());
       let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       let selectedDate = toDateKey(today);
       let editingId = null;
+      let selectedColor = DEFAULT_COLOR;
       let events = loadEvents();
       let toastTimer;
 
@@ -370,6 +426,7 @@
       const timeInput = document.getElementById("eventTime");
       const titleInput = document.getElementById("eventTitle");
       const memoInput = document.getElementById("eventMemo");
+      const colorSwatches = [...document.querySelectorAll(".colorSwatch")];
       const saveButton = document.getElementById("saveEvent");
       const cancelButton = document.getElementById("cancelEdit");
       const toast = document.getElementById("toast");
@@ -384,6 +441,7 @@
       });
       cancelButton.addEventListener("click", resetForm);
       eventForm.addEventListener("submit", saveEvent);
+      colorSwatches.forEach(swatch => swatch.addEventListener("click", () => selectColor(swatch.dataset.color)));
 
       function startOfDay(date){ return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
       function toDateKey(date){
@@ -404,17 +462,30 @@
         try {
           const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
           return Array.isArray(saved) ? saved.filter(isValidEvent).map(item => ({
+            ...item,
             id: item.id,
             date: item.date,
             title: item.title.trim().slice(0, 100),
             time: typeof item.time === "string" ? item.time : "",
-            memo: typeof item.memo === "string" ? item.memo.slice(0, 500) : ""
+            memo: typeof item.memo === "string" ? item.memo.slice(0, 500) : "",
+            color: normalizeColor(item.color)
           })) : [];
         } catch (error) {
           return [];
         }
       }
       function persist(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); }
+      function normalizeColor(color){ return Object.prototype.hasOwnProperty.call(PALETTE, color) ? color : DEFAULT_COLOR; }
+      function applyEventColor(element, color){
+        const palette = PALETTE[normalizeColor(color)];
+        element.style.setProperty("--event-accent", palette.accent);
+        element.style.setProperty("--event-text", palette.text);
+        element.style.setProperty("--event-tint", palette.tint);
+      }
+      function selectColor(color){
+        selectedColor = normalizeColor(color);
+        colorSwatches.forEach(swatch => swatch.setAttribute("aria-pressed", String(swatch.dataset.color === selectedColor)));
+      }
       function eventsFor(dateKey){
         return events.filter(event => event.date === dateKey).sort((a, b) => {
           if (!a.time && b.time) return 1;
@@ -473,6 +544,7 @@
             const chip = document.createElement("button");
             chip.type = "button";
             chip.className = "eventChip";
+            applyEventColor(chip, item.color);
             chip.title = `${item.time ? `${item.time} ` : ""}${item.title}`;
             chip.addEventListener("click", event => {
               event.stopPropagation();
@@ -517,6 +589,7 @@
         selectedEvents.forEach(item => {
           const card = document.createElement("article");
           card.className = "eventCard";
+          applyEventColor(card, item.color);
           const top = document.createElement("div");
           top.className = "eventTop";
           const time = document.createElement("span");
@@ -555,7 +628,7 @@
         event.preventDefault();
         const title = titleInput.value.trim();
         if (!title) { titleInput.focus(); return; }
-        const values = { date: selectedDate, title, time: timeInput.value, memo: memoInput.value.trim() };
+        const values = { date: selectedDate, title, time: timeInput.value, memo: memoInput.value.trim(), color: selectedColor };
         if (editingId) {
           events = events.map(item => item.id === editingId ? { ...item, ...values } : item);
           showToast(`“${title}” 일정을 수정했어요.`);
@@ -577,6 +650,7 @@
         timeInput.value = item.time;
         titleInput.value = item.title;
         memoInput.value = item.memo;
+        selectColor(item.color);
         formTitle.textContent = "일정 수정";
         saveButton.textContent = "Save";
         cancelButton.hidden = false;
@@ -585,6 +659,7 @@
       function resetForm(){
         editingId = null;
         eventForm.reset();
+        selectColor(DEFAULT_COLOR);
         formTitle.textContent = "새 일정";
         saveButton.textContent = "Add";
         cancelButton.hidden = true;
