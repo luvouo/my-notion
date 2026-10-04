@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monthly — Soft Schedule</title>
+
+  <style>
+    :root{
+      --lavender: rgba(194, 181, 226, 0.92);
+      --lavender-soft: rgba(218, 208, 239, 0.46);
+      --lavender-pale: rgba(235, 229, 247, 0.54);
+      --border: rgba(184, 169, 218, 0.56);
+      --border-soft: rgba(184, 169, 218, 0.30);
+      --text: rgba(30, 28, 34, 0.91);
+      --muted: rgba(30, 28, 34, 0.46);
+      --glass: rgba(255, 255, 255, 0.12);
+      --shadow: 0 10px 30px rgba(64, 52, 86, 0.06);
+      --display: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+
+    @font-face{
+      font-family: "EnterSanChaek";
+      src: url("../fonts/엔터산책10.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    *{ box-sizing: border-box; }
+    html, body{
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+    button, input, textarea{ font: inherit; }
+
+    .wrap{
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2vw, 18px);
+    }
+    .card{
+      position: relative;
+      overflow: hidden;
+      padding: clamp(14px, 2vw, 20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .card::before{
+      content: "";
+      position: absolute;
+      inset: -2px;
+      pointer-events: none;
+      background:
+        radial-gradient(90% 60% at 0% 0%, rgba(218,208,239,.32), transparent 62%),
+        radial-gradient(70% 60% at 100% 12%, rgba(194,181,226,.17), transparent 62%);
+    }
+    .inner{ position: relative; z-index: 1; display: grid; gap: 14px; }
+    .top, .monthNav, .detailHead, .formActions, .eventActions{
+      display: flex;
+      align-items: center;
+    }
+    .top{ justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .title{ display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .pearl{
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 0 0 2px rgba(194,181,226,.24);
+    }
+    h1{
+      margin: 0;
+      font: 400 clamp(16px, 2.4vw, 19px)/1 var(--display);
+      letter-spacing: -.2px;
+    }
+    .monthNav{ gap: 8px; }
+    .monthLabel{
+      min-width: 94px;
+      text-align: center;
+      font: 400 15px/1 var(--display);
+      font-variant-numeric: tabular-nums;
+    }
+    .btn, .iconBtn{
+      border: 1px solid var(--border);
+      color: rgba(40, 35, 48, .78);
+      background: rgba(255,255,255,.18);
+      cursor: pointer;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+    .btn:hover, .iconBtn:hover{ background: var(--lavender-soft); border-color: rgba(174,156,214,.76); }
+    .btn:focus-visible, .iconBtn:focus-visible, .day:focus-visible, .eventChip:focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(194,181,226,.30);
+    }
+    .btn:active, .iconBtn:active{ transform: scale(.97); }
+    .btn{ min-height: 34px; padding: 7px 12px; border-radius: 12px; font: 12px var(--display); }
+    .btn.primary{ background: rgba(210,198,237,.42); }
+    .btn.danger{ border-color: rgba(210,150,164,.46); color: rgba(135,65,82,.78); }
+    .iconBtn{ width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 18px; line-height: 1; }
+
+    .calendarScroller{
+      overflow-x: auto;
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      background: rgba(255,255,255,.07);
+      scrollbar-color: rgba(184,169,218,.46) transparent;
+    }
+    .calendar{ min-width: 650px; }
+    .weekdays, .monthGrid{ display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .weekday{
+      padding: 9px 6px 8px;
+      text-align: center;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border-soft);
+      font: 11px var(--display);
+      letter-spacing: .04em;
+    }
+    .weekday:first-child{ color: rgba(183,106,128,.66); }
+    .weekday:last-child{ color: rgba(100,119,174,.67); }
+    .day{
+      position: relative;
+      min-width: 0;
+      height: clamp(102px, 11vw, 132px);
+      padding: 8px;
+      border: 0;
+      border-right: 1px solid var(--border-soft);
+      border-bottom: 1px solid var(--border-soft);
+      background: rgba(255,255,255,.035);
+      cursor: pointer;
+      transition: background .16s ease, box-shadow .16s ease;
+    }
+    .day:nth-child(7n){ border-right: 0; }
+    .day:nth-last-child(-n+7){ border-bottom: 0; }
+    .day:hover{ background: rgba(230,223,244,.27); }
+    .day.other{ background: rgba(255,255,255,.018); color: rgba(30,28,34,.25); }
+    .day.selected{ background: rgba(218,208,239,.32); box-shadow: inset 0 0 0 2px rgba(174,156,214,.56); }
+    .day.today .dayNumber{
+      color: rgba(68,51,105,.86);
+      background: rgba(194,181,226,.48);
+      box-shadow: 0 0 0 3px rgba(218,208,239,.25);
+    }
+    .dayNumber{
+      display: grid;
+      place-items: center;
+      width: 23px;
+      height: 23px;
+      margin-bottom: 5px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .day:nth-child(7n+1):not(.other) .dayNumber{ color: rgba(174,83,111,.76); }
+    .day:nth-child(7n):not(.other) .dayNumber{ color: rgba(76,99,164,.78); }
+    .events{ display: grid; gap: 3px; }
+    .eventChip{
+      display: block;
+      width: 100%;
+      min-width: 0;
+      padding: 3px 5px;
+      overflow: hidden;
+      border: 0;
+      border-left: 2px solid rgba(174,156,214,.70);
+      border-radius: 4px;
+      color: rgba(39,35,45,.76);
+      background: rgba(255,255,255,.40);
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 10.5px;
+      line-height: 1.25;
+      cursor: pointer;
+    }
+    .other .eventChip{ opacity: .42; }
+    .eventTime{ color: rgba(115,92,158,.76); font-variant-numeric: tabular-nums; margin-right: 4px; }
+    .more{ padding-left: 6px; color: rgba(99,76,141,.66); font: 10px var(--display); }
+
+    .detail{
+      display: grid;
+      grid-template-columns: minmax(250px, .85fr) minmax(320px, 1.15fr);
+      gap: 14px;
+      padding: clamp(12px, 2vw, 16px);
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      background: rgba(255,255,255,.08);
+    }
+    .detailColumn{ min-width: 0; }
+    .detailHead{ justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .detailTitle{ margin: 0; font: 14px var(--display); }
+    .eventCount{ color: var(--muted); font-size: 11px; }
+    .detailList{ display: grid; gap: 7px; }
+    .empty{
+      padding: 20px 10px;
+      border: 1px dashed var(--border-soft);
+      border-radius: 12px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+    }
+    .eventCard{
+      padding: 9px 10px;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      background: rgba(255,255,255,.18);
+    }
+    .eventTop{ display: flex; align-items: flex-start; gap: 8px; }
+    .detailTime{ min-width: 39px; color: rgba(107,82,153,.75); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .eventTitle{ flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 13px; }
+    .eventMemo{ margin: 6px 0 0 47px; color: var(--muted); font-size: 11.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .eventActions{ justify-content: flex-end; gap: 5px; margin-top: 7px; }
+    .miniBtn{ padding: 3px 7px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 10.5px; cursor: pointer; }
+    .miniBtn:hover{ background: var(--lavender-pale); color: var(--text); }
+    .miniBtn.delete:hover{ background: rgba(246,218,224,.45); color: rgba(140,65,82,.84); }
+
+    .form{ display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 9px; }
+    .field{ display: grid; gap: 5px; }
+    .field.full{ grid-column: 1 / -1; }
+    label{ color: var(--muted); font: 11px var(--display); }
+    input, textarea{
+      width: 100%;
+      border: 1px solid var(--border-soft);
+      border-radius: 11px;
+      outline: 0;
+      color: var(--text);
+      background: rgba(255,255,255,.18);
+      padding: 9px 10px;
+      font-size: 13px;
+    }
+    textarea{ min-height: 72px; resize: vertical; line-height: 1.45; }
+    input:focus, textarea:focus{ border-color: rgba(174,156,214,.78); box-shadow: 0 0 0 3px rgba(194,181,226,.20); }
+    .formActions{ grid-column: 1 / -1; justify-content: flex-end; gap: 7px; }
+    .cancelBtn[hidden]{ display: none; }
+    .toast{
+      position: fixed;
+      z-index: 20;
+      left: 50%;
+      bottom: 18px;
+      translate: -50% 12px;
+      max-width: min(360px, calc(100vw - 32px));
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(250,248,253,.94);
+      box-shadow: 0 8px 24px rgba(48,38,66,.12);
+      opacity: 0;
+      pointer-events: none;
+      color: rgba(45,38,54,.76);
+      text-align: center;
+      font-size: 12px;
+      transition: opacity .18s ease, translate .18s ease;
+    }
+    .toast.show{ opacity: 1; translate: -50% 0; }
+
+    @media (max-width: 720px){
+      .detail{ grid-template-columns: 1fr; }
+      .calendar{ min-width: 560px; }
+      .day{ height: 92px; padding: 6px; }
+      .eventChip{ font-size: 9.5px; padding-inline: 4px; }
+    }
+    @media (max-width: 480px){
+      .wrap{ padding: 8px; }
+      .card{ padding: 12px; border-radius: 17px; }
+      .top{ align-items: flex-start; }
+      .monthNav{ width: 100%; justify-content: space-between; }
+      .calendar{ min-width: 490px; }
+      .day{ height: 82px; padding: 5px; }
+      .dayNumber{ width: 20px; height: 20px; margin-bottom: 3px; font-size: 10px; }
+      .eventChip:nth-child(n+3){ display: none; }
+      .form{ grid-template-columns: 1fr; }
+      .field, .field.full, .formActions{ grid-column: 1; }
+    }
+    @media (prefers-reduced-motion: reduce){ *{ scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <section class="card" aria-label="Monthly planner">
+      <div class="inner">
+        <header class="top">
+          <div class="title">
+            <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+            <h1>Monthly</h1>
+          </div>
+          <nav class="monthNav" aria-label="월 이동">
+            <button class="iconBtn" id="prevMonth" type="button" aria-label="이전 달">‹</button>
+            <div class="monthLabel" id="monthLabel" aria-live="polite"></div>
+            <button class="iconBtn" id="nextMonth" type="button" aria-label="다음 달">›</button>
+            <button class="btn" id="todayBtn" type="button">Today</button>
+          </nav>
+        </header>
+
+        <div class="calendarScroller" aria-label="월간 달력">
+          <div class="calendar">
+            <div class="weekdays" aria-hidden="true">
+              <div class="weekday">SUN</div><div class="weekday">MON</div><div class="weekday">TUE</div>
+              <div class="weekday">WED</div><div class="weekday">THU</div><div class="weekday">FRI</div>
+              <div class="weekday">SAT</div>
+            </div>
+            <div class="monthGrid" id="monthGrid" role="grid"></div>
+          </div>
+        </div>
+
+        <section class="detail" aria-labelledby="detailTitle">
+          <div class="detailColumn">
+            <div class="detailHead">
+              <h2 class="detailTitle" id="detailTitle"></h2>
+              <span class="eventCount" id="eventCount"></span>
+            </div>
+            <div class="detailList" id="detailList"></div>
+          </div>
+
+          <div class="detailColumn">
+            <div class="detailHead">
+              <h2 class="detailTitle" id="formTitle">새 일정</h2>
+            </div>
+            <form class="form" id="eventForm">
+              <div class="field">
+                <label for="eventTime">시간 (선택)</label>
+                <input id="eventTime" type="time" />
+              </div>
+              <div class="field">
+                <label for="eventTitle">제목</label>
+                <input id="eventTitle" type="text" maxlength="100" placeholder="일정 제목" required />
+              </div>
+              <div class="field full">
+                <label for="eventMemo">메모 (선택)</label>
+                <textarea id="eventMemo" maxlength="500" placeholder="기억해 둘 내용을 적어보세요"></textarea>
+              </div>
+              <div class="formActions">
+                <button class="btn cancelBtn" id="cancelEdit" type="button" hidden>취소</button>
+                <button class="btn primary" id="saveEvent" type="submit">Add</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "my-notion.monthly.events.v1";
+      const today = startOfDay(new Date());
+      let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      let selectedDate = toDateKey(today);
+      let editingId = null;
+      let events = loadEvents();
+      let toastTimer;
+
+      const monthGrid = document.getElementById("monthGrid");
+      const monthLabel = document.getElementById("monthLabel");
+      const detailTitle = document.getElementById("detailTitle");
+      const eventCount = document.getElementById("eventCount");
+      const detailList = document.getElementById("detailList");
+      const eventForm = document.getElementById("eventForm");
+      const formTitle = document.getElementById("formTitle");
+      const timeInput = document.getElementById("eventTime");
+      const titleInput = document.getElementById("eventTitle");
+      const memoInput = document.getElementById("eventMemo");
+      const saveButton = document.getElementById("saveEvent");
+      const cancelButton = document.getElementById("cancelEdit");
+      const toast = document.getElementById("toast");
+
+      document.getElementById("prevMonth").addEventListener("click", () => moveMonth(-1));
+      document.getElementById("nextMonth").addEventListener("click", () => moveMonth(1));
+      document.getElementById("todayBtn").addEventListener("click", () => {
+        visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        selectedDate = toDateKey(today);
+        resetForm();
+        render();
+      });
+      cancelButton.addEventListener("click", resetForm);
+      eventForm.addEventListener("submit", saveEvent);
+
+      function startOfDay(date){ return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
+      function toDateKey(date){
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+      function parseDateKey(key){
+        const [year, month, day] = key.split("-").map(Number);
+        return new Date(year, month - 1, day);
+      }
+      function isValidEvent(item){
+        return item && typeof item.id === "string" && /^\d{4}-\d{2}-\d{2}$/.test(item.date)
+          && typeof item.title === "string" && item.title.trim();
+      }
+      function loadEvents(){
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          return Array.isArray(saved) ? saved.filter(isValidEvent).map(item => ({
+            id: item.id,
+            date: item.date,
+            title: item.title.trim().slice(0, 100),
+            time: typeof item.time === "string" ? item.time : "",
+            memo: typeof item.memo === "string" ? item.memo.slice(0, 500) : ""
+          })) : [];
+        } catch (error) {
+          return [];
+        }
+      }
+      function persist(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); }
+      function eventsFor(dateKey){
+        return events.filter(event => event.date === dateKey).sort((a, b) => {
+          if (!a.time && b.time) return 1;
+          if (a.time && !b.time) return -1;
+          return a.time.localeCompare(b.time) || a.title.localeCompare(b.title, "ko");
+        });
+      }
+      function moveMonth(amount){
+        visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + amount, 1);
+        selectedDate = toDateKey(visibleMonth);
+        resetForm();
+        render();
+      }
+      function selectDay(dateKey){
+        selectedDate = dateKey;
+        const date = parseDateKey(dateKey);
+        if (date.getMonth() !== visibleMonth.getMonth() || date.getFullYear() !== visibleMonth.getFullYear()) {
+          visibleMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+        }
+        resetForm();
+        render();
+      }
+
+      function render(){ renderCalendar(); renderDetail(); }
+      function renderCalendar(){
+        monthLabel.textContent = `${visibleMonth.getFullYear()}.${String(visibleMonth.getMonth() + 1).padStart(2, "0")}`;
+        monthGrid.replaceChildren();
+        const gridStart = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1 - visibleMonth.getDay());
+
+        for (let index = 0; index < 42; index += 1) {
+          const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + index);
+          const dateKey = toDateKey(date);
+          const dayEvents = eventsFor(dateKey);
+          const cell = document.createElement("div");
+          cell.className = "day";
+          if (date.getMonth() !== visibleMonth.getMonth()) cell.classList.add("other");
+          if (dateKey === selectedDate) cell.classList.add("selected");
+          if (dateKey === toDateKey(today)) cell.classList.add("today");
+          cell.tabIndex = 0;
+          cell.setAttribute("role", "gridcell");
+          cell.setAttribute("aria-selected", String(dateKey === selectedDate));
+          cell.setAttribute("aria-label", `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일, 일정 ${dayEvents.length}개`);
+          cell.addEventListener("click", () => selectDay(dateKey));
+          cell.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectDay(dateKey); }
+          });
+
+          const number = document.createElement("span");
+          number.className = "dayNumber";
+          number.textContent = date.getDate();
+          cell.append(number);
+
+          const list = document.createElement("div");
+          list.className = "events";
+          dayEvents.slice(0, 3).forEach(item => {
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "eventChip";
+            chip.title = `${item.time ? `${item.time} ` : ""}${item.title}`;
+            chip.addEventListener("click", event => {
+              event.stopPropagation();
+              selectedDate = dateKey;
+              if (date.getMonth() !== visibleMonth.getMonth()) visibleMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+              render();
+              beginEdit(item.id);
+            });
+            if (item.time) {
+              const time = document.createElement("span");
+              time.className = "eventTime";
+              time.textContent = item.time;
+              chip.append(time);
+            }
+            chip.append(document.createTextNode(item.title));
+            list.append(chip);
+          });
+          if (dayEvents.length > 3) {
+            const more = document.createElement("div");
+            more.className = "more";
+            more.textContent = `+${dayEvents.length - 3} more`;
+            list.append(more);
+          }
+          cell.append(list);
+          monthGrid.append(cell);
+        }
+      }
+
+      function renderDetail(){
+        const date = parseDateKey(selectedDate);
+        const selectedEvents = eventsFor(selectedDate);
+        detailTitle.textContent = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")} ${["일", "월", "화", "수", "목", "금", "토"][date.getDay()]}요일`;
+        eventCount.textContent = `${selectedEvents.length} schedules`;
+        detailList.replaceChildren();
+        if (!selectedEvents.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty";
+          empty.textContent = "아직 등록된 일정이 없어요.";
+          detailList.append(empty);
+          return;
+        }
+        selectedEvents.forEach(item => {
+          const card = document.createElement("article");
+          card.className = "eventCard";
+          const top = document.createElement("div");
+          top.className = "eventTop";
+          const time = document.createElement("span");
+          time.className = "detailTime";
+          time.textContent = item.time || "—";
+          const title = document.createElement("strong");
+          title.className = "eventTitle";
+          title.textContent = item.title;
+          top.append(time, title);
+          card.append(top);
+          if (item.memo) {
+            const memo = document.createElement("p");
+            memo.className = "eventMemo";
+            memo.textContent = item.memo;
+            card.append(memo);
+          }
+          const actions = document.createElement("div");
+          actions.className = "eventActions";
+          const edit = document.createElement("button");
+          edit.type = "button";
+          edit.className = "miniBtn";
+          edit.textContent = "수정";
+          edit.addEventListener("click", () => beginEdit(item.id));
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "miniBtn delete";
+          remove.textContent = "삭제";
+          remove.addEventListener("click", () => deleteEvent(item.id));
+          actions.append(edit, remove);
+          card.append(actions);
+          detailList.append(card);
+        });
+      }
+
+      function saveEvent(event){
+        event.preventDefault();
+        const title = titleInput.value.trim();
+        if (!title) { titleInput.focus(); return; }
+        const values = { date: selectedDate, title, time: timeInput.value, memo: memoInput.value.trim() };
+        if (editingId) {
+          events = events.map(item => item.id === editingId ? { ...item, ...values } : item);
+          showToast(`“${title}” 일정을 수정했어요.`);
+        } else {
+          events.push({ id: createId(), ...values });
+          showToast(`“${title}” 일정을 추가했어요.`);
+        }
+        persist();
+        resetForm();
+        render();
+      }
+      function createId(){
+        return globalThis.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      }
+      function beginEdit(id){
+        const item = events.find(event => event.id === id);
+        if (!item) return;
+        editingId = id;
+        timeInput.value = item.time;
+        titleInput.value = item.title;
+        memoInput.value = item.memo;
+        formTitle.textContent = "일정 수정";
+        saveButton.textContent = "Save";
+        cancelButton.hidden = false;
+        titleInput.focus();
+      }
+      function resetForm(){
+        editingId = null;
+        eventForm.reset();
+        formTitle.textContent = "새 일정";
+        saveButton.textContent = "Add";
+        cancelButton.hidden = true;
+      }
+      function deleteEvent(id){
+        const item = events.find(event => event.id === id);
+        if (!item) return;
+        events = events.filter(event => event.id !== id);
+        persist();
+        if (editingId === id) resetForm();
+        render();
+        showToast(`“${item.title}” 일정을 삭제했어요.`);
+      }
+      function showToast(message){
+        clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("show");
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+      }
+
+      render();
+    })();
+  </script>
+</body>
+</html>
