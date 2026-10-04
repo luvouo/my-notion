@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calendar — Soft Schedule</title>
+
+  <style>
+    :root{
+      --accent: rgba(205, 190, 232, 0.78);
+      --accent-soft: rgba(222, 211, 242, 0.32);
+      --border: rgba(194, 176, 225, 0.58);
+      --text: rgba(30,30,30,0.92);
+      --muted: rgba(30,30,30,0.38);
+      --glass: rgba(255,255,255,0.10);
+      --shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --radius: 20px;
+    }
+
+    @font-face{
+      font-family: "EnterSanChaek";
+      src: url("../fonts/엔터산책10.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    *{ box-sizing: border-box; }
+
+    html, body{
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+
+    button{ font: inherit; }
+
+    .wrap{
+      width: min(620px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2.6vw, 16px);
+    }
+
+    .card{
+      position: relative;
+      overflow: hidden;
+      padding: clamp(14px, 2.8vw, 18px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .card::before{
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background:
+        radial-gradient(120% 80% at 0% 0%, rgba(218,205,240,0.24), transparent 55%),
+        radial-gradient(80% 80% at 100% 20%, rgba(194,176,225,0.15), transparent 55%);
+      pointer-events: none;
+    }
+
+    .inner{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+    }
+
+    .top{
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .title{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pearl{
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      display: block;
+      border-radius: 999px;
+      object-fit: cover;
+      box-shadow: 0 0 0 2px rgba(205,190,232,0.22);
+    }
+
+    h1{
+      margin: 0;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+      font-size: clamp(15px, 3.8vw, 18px);
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+    }
+
+    .month-label{
+      margin-left: auto;
+      color: var(--muted);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .toolbar{
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .nav-button, .today-button{
+      min-height: 30px;
+      border: 1px solid rgba(194,176,225,0.48);
+      background: rgba(255,255,255,0.09);
+      color: rgba(30,30,30,0.66);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+
+    .nav-button{
+      width: 30px;
+      padding: 0;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    .today-button{
+      padding: 0 12px;
+      border-radius: 12px;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+      font-size: 12px;
+    }
+
+    .nav-button:hover, .today-button:hover{
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .nav-button:active, .today-button:active{ transform: scale(0.97); }
+    .nav-button:focus-visible, .today-button:focus-visible, .date:focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(205,190,232,0.28);
+    }
+
+    .weekdays, .dates{
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    .weekdays{
+      border-bottom: 1px solid rgba(194,176,225,0.24);
+      padding-bottom: 6px;
+    }
+
+    .weekday{
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 20px;
+    }
+
+    .weekday:first-child{ color: rgba(190,112,136,0.62); }
+    .weekday:last-child{ color: rgba(102,126,174,0.62); }
+
+    .dates{ row-gap: 2px; }
+
+    .date{
+      position: relative;
+      width: min(38px, 100%);
+      aspect-ratio: 1;
+      min-width: 26px;
+      min-height: 26px;
+      margin: 0 auto;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: transparent;
+      color: rgba(30,30,30,0.74);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: clamp(11px, 2.8vw, 13px);
+      font-variant-numeric: tabular-nums;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .16s ease, border-color .16s ease, box-shadow .16s ease, color .16s ease;
+    }
+
+    .date:hover{
+      border-color: rgba(194,176,225,0.42);
+      background: rgba(222,211,242,0.18);
+    }
+
+    .date.outside{ color: rgba(30,30,30,0.24); }
+
+    .date.today{
+      border-color: rgba(194,176,225,0.64);
+      background: rgba(222,211,242,0.20);
+      color: rgba(75,58,104,0.86);
+      font-weight: 600;
+    }
+
+    .date.selected{
+      border-color: rgba(176,153,214,0.76);
+      background: rgba(205,190,232,0.38);
+      color: rgba(58,42,84,0.92);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.36);
+    }
+
+    @media (max-width: 360px){
+      .wrap{ padding: 8px; }
+      .card{ padding: 12px 10px; }
+      .inner{ gap: 10px; }
+      .title{ gap: 7px; }
+      .pearl{ width: 16px; height: 16px; }
+      .toolbar{ gap: 6px; }
+      .date{ border-radius: 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .nav-button, .today-button, .date{ transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card" aria-label="Calendar widget">
+      <div class="inner">
+        <header class="top">
+          <div class="title">
+            <img class="pearl" src="./icon/pearl.png" alt="" />
+            <h1>Calendar</h1>
+          </div>
+          <div class="month-label" id="monthLabel" aria-live="polite"></div>
+        </header>
+
+        <nav class="toolbar" aria-label="달력 월 이동">
+          <button class="nav-button" id="previousMonth" type="button" aria-label="이전 달">‹</button>
+          <button class="today-button" id="todayButton" type="button">Today</button>
+          <button class="nav-button" id="nextMonth" type="button" aria-label="다음 달">›</button>
+        </nav>
+
+        <div class="weekdays" aria-hidden="true">
+          <span class="weekday">일</span><span class="weekday">월</span>
+          <span class="weekday">화</span><span class="weekday">수</span>
+          <span class="weekday">목</span><span class="weekday">금</span>
+          <span class="weekday">토</span>
+        </div>
+        <div class="dates" id="calendarDates" role="grid" aria-labelledby="monthLabel"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const monthLabel = document.getElementById("monthLabel");
+      const calendarDates = document.getElementById("calendarDates");
+      const today = startOfDay(new Date());
+      let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      let selectedDate = null;
+
+      function startOfDay(date){
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      }
+
+      function sameDay(a, b){
+        return a && b && a.getFullYear() === b.getFullYear()
+          && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+      }
+
+      function dateKey(date){
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${date.getFullYear()}-${month}-${day}`;
+      }
+
+      function render(){
+        const year = visibleMonth.getFullYear();
+        const month = visibleMonth.getMonth();
+        const firstCell = new Date(year, month, 1 - visibleMonth.getDay());
+        const fragment = document.createDocumentFragment();
+
+        monthLabel.textContent = `${year}년 ${month + 1}월`;
+        calendarDates.replaceChildren();
+
+        for(let index = 0; index < 42; index += 1){
+          const date = new Date(firstCell.getFullYear(), firstCell.getMonth(), firstCell.getDate() + index);
+          const button = document.createElement("button");
+          const isOutside = date.getMonth() !== month;
+          const isToday = sameDay(date, today);
+          const isSelected = sameDay(date, selectedDate);
+
+          button.type = "button";
+          button.className = "date";
+          button.setAttribute("role", "gridcell");
+          button.dataset.date = dateKey(date);
+          button.textContent = date.getDate();
+          button.setAttribute("aria-label", `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`);
+          button.setAttribute("aria-selected", String(isSelected));
+          if(isOutside) button.classList.add("outside");
+          if(isToday){
+            button.classList.add("today");
+            button.setAttribute("aria-current", "date");
+          }
+          if(isSelected) button.classList.add("selected");
+
+          button.addEventListener("click", () => {
+            selectedDate = startOfDay(date);
+            if(isOutside){
+              visibleMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+            }
+            render();
+            requestAnimationFrame(() => {
+              const selected = calendarDates.querySelector(`[data-date="${dateKey(date)}"]`);
+              if(selected) selected.focus();
+            });
+          });
+          fragment.appendChild(button);
+        }
+        calendarDates.appendChild(fragment);
+      }
+
+      document.getElementById("previousMonth").addEventListener("click", () => {
+        visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+        render();
+      });
+
+      document.getElementById("nextMonth").addEventListener("click", () => {
+        visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+        render();
+      });
+
+      document.getElementById("todayButton").addEventListener("click", () => {
+        visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        selectedDate = startOfDay(today);
+        render();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
