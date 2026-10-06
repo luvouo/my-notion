@@ -65,7 +65,7 @@
         radial-gradient(70% 60% at 100% 12%, rgba(194,181,226,.17), transparent 62%);
     }
     .inner{ position: relative; z-index: 1; display: grid; gap: 14px; }
-    .top, .monthNav, .detailHead, .formActions, .eventActions{
+    .top, .monthNav, .formActions, .modalHead, .pickerHead{
       display: flex;
       align-items: center;
     }
@@ -84,12 +84,6 @@
       letter-spacing: -.2px;
     }
     .monthNav{ gap: 8px; }
-    .monthLabel{
-      min-width: 94px;
-      text-align: center;
-      font: 400 15px/1 var(--display);
-      font-variant-numeric: tabular-nums;
-    }
     .btn, .iconBtn{
       border: 1px solid var(--border);
       color: rgba(40, 35, 48, .78);
@@ -156,7 +150,7 @@
     .day:nth-last-child(-n+7){ border-bottom: 0; }
     .day:hover{ background: rgba(230,223,244,.27); }
     .day.other{ background: rgba(255,255,255,.018); color: rgba(30,28,34,.25); }
-    .day.selected{ background: rgba(218,208,239,.23); box-shadow: inset 0 0 0 1px rgba(174,156,214,.38); }
+    .day.selected{ background: rgba(218,208,239,.23); box-shadow: inset 0 0 0 1px #d5c4ff; }
     .day.selected:hover{ background: rgba(225,217,242,.30); }
     .day.today .dayNumber{
       color: rgba(68,51,105,.86);
@@ -198,43 +192,63 @@
     .eventTime{ color: var(--event-text, rgba(115,92,158,.76)); font-variant-numeric: tabular-nums; margin-right: 4px; }
     .more{ padding-left: 6px; color: rgba(99,76,141,.66); font: 10px var(--display); }
 
-    .detail{
-      display: grid;
-      grid-template-columns: minmax(250px, .85fr) minmax(320px, 1.15fr);
-      gap: 14px;
-      padding: clamp(12px, 2vw, 16px);
-      border: 1px solid var(--border-soft);
+    .monthPicker{
+      position: absolute;
+      z-index: 8;
+      top: 45px;
+      right: 0;
+      width: min(270px, calc(100vw - 52px));
+      padding: 12px;
+      border: 1px solid rgba(184,169,218,.46);
       border-radius: 16px;
-      background: rgba(255,255,255,.08);
+      background: rgba(255,255,255,.91);
+      box-shadow: 0 14px 34px rgba(54,42,75,.12);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
-    .detailColumn{ min-width: 0; }
-    .detailHead{ justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-    .detailTitle{ margin: 0; font: 14px var(--display); }
-    .eventCount{ color: var(--muted); font-size: 11px; }
-    .detailList{ display: grid; gap: 7px; }
-    .empty{
-      padding: 20px 10px;
-      border: 1px dashed var(--border-soft);
-      border-radius: 12px;
-      color: var(--muted);
-      text-align: center;
-      font-size: 12px;
+    .monthPicker[hidden], .eventOverlay[hidden], .deleteBtn[hidden]{ display: none; }
+    .pickerHead{ justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .pickerYear{ color: rgba(44,38,52,.76); font: 14px var(--display); font-variant-numeric: tabular-nums; }
+    .pickerGrid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .monthOption{
+      min-height: 34px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      color: rgba(43,38,50,.66);
+      background: transparent;
+      font: 11px var(--display);
+      cursor: pointer;
     }
-    .eventCard{
-      padding: 9px 10px;
-      border: 1px solid var(--border-soft);
-      border-left: 2px solid var(--event-accent, rgba(174,156,214,.70));
-      border-radius: 12px;
-      background: rgba(255,255,255,.18);
+    .monthOption:hover{ border-color: rgba(174,156,214,.45); color: rgba(119,91,174,.88); background: rgba(235,229,247,.30); }
+    .monthOption.selected{ border-color: rgba(174,156,214,.48); background: rgba(218,208,239,.25); color: rgba(92,68,139,.86); }
+    .monthOption.current::after{ content: ""; display: block; width: 3px; height: 3px; margin: 3px auto 0; border-radius: 50%; background: rgba(139,112,190,.68); }
+
+    .eventOverlay{
+      position: absolute;
+      z-index: 12;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(240,235,248,.24);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
     }
-    .eventTop{ display: flex; align-items: flex-start; gap: 8px; }
-    .detailTime{ min-width: 39px; color: var(--event-text, rgba(107,82,153,.75)); font-size: 11px; font-variant-numeric: tabular-nums; }
-    .eventTitle{ flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 13px; }
-    .eventMemo{ margin: 6px 0 0 47px; color: var(--muted); font-size: 11.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .eventActions{ justify-content: flex-end; gap: 5px; margin-top: 7px; }
-    .miniBtn{ padding: 3px 7px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 10.5px; cursor: pointer; }
-    .miniBtn:hover{ background: var(--lavender-pale); color: var(--text); }
-    .miniBtn.delete:hover{ background: rgba(246,218,224,.45); color: rgba(140,65,82,.84); }
+    .eventModal{
+      width: min(430px, 100%);
+      max-height: calc(100% - 12px);
+      overflow-y: auto;
+      padding: 16px;
+      border: 1px solid rgba(184,169,218,.52);
+      border-radius: 18px;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 18px 44px rgba(54,42,75,.14);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .modalHead{ justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+    .modalMode{ margin: 0 0 3px; font: 14px var(--display); }
+    .modalDate{ color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 
     .form{ display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 9px; }
     .field{ display: grid; gap: 5px; }
@@ -271,7 +285,7 @@
     textarea{ min-height: 72px; resize: vertical; line-height: 1.45; }
     input:focus, textarea:focus{ border-color: rgba(174,156,214,.78); box-shadow: 0 0 0 3px rgba(194,181,226,.20); }
     .formActions{ grid-column: 1 / -1; justify-content: flex-end; gap: 7px; }
-    .cancelBtn[hidden]{ display: none; }
+    .deleteBtn{ margin-right: auto; }
     .toast{
       position: fixed;
       z-index: 20;
@@ -294,7 +308,6 @@
     .toast.show{ opacity: 1; translate: -50% 0; }
 
     @media (max-width: 720px){
-      .detail{ grid-template-columns: 1fr; }
       .calendar{ min-width: 560px; }
       .day{ height: 92px; padding: 6px; }
       .eventChip{ font-size: 9.5px; padding-inline: 4px; }
@@ -304,12 +317,14 @@
       .card{ padding: 12px; border-radius: 17px; }
       .top{ align-items: flex-start; }
       .monthNav{ width: 100%; justify-content: space-between; }
+      .monthPicker{ top: 84px; right: 0; }
       .calendar{ min-width: 490px; }
       .day{ height: 82px; padding: 5px; }
       .dayNumber{ width: 20px; height: 20px; margin-bottom: 3px; font-size: 10px; }
       .eventChip:nth-child(n+3){ display: none; }
       .form{ grid-template-columns: 1fr; }
       .field, .field.full, .formActions{ grid-column: 1; }
+      .eventOverlay{ padding: 10px; }
     }
     @media (prefers-reduced-motion: reduce){ *{ scroll-behavior: auto !important; transition: none !important; } }
   </style>
@@ -328,7 +343,7 @@
             <button class="iconBtn" id="prevMonth" type="button" aria-label="이전 달">
               <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </button>
-            <div class="monthLabel" id="monthLabel" aria-live="polite"></div>
+            <button class="btn" id="monthTrigger" type="button" aria-haspopup="dialog" aria-expanded="false">Month</button>
             <button class="iconBtn" id="nextMonth" type="button" aria-label="다음 달">
               <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </button>
@@ -347,48 +362,58 @@
           </div>
         </div>
 
-        <section class="detail" aria-labelledby="detailTitle">
-          <div class="detailColumn">
-            <div class="detailHead">
-              <h2 class="detailTitle" id="detailTitle"></h2>
-              <span class="eventCount" id="eventCount"></span>
-            </div>
-            <div class="detailList" id="detailList"></div>
-          </div>
+      </div>
 
-          <div class="detailColumn">
-            <div class="detailHead">
-              <h2 class="detailTitle" id="formTitle">새 일정</h2>
+      <div class="monthPicker" id="monthPicker" role="dialog" aria-label="Month picker" hidden>
+        <div class="pickerHead">
+          <button class="iconBtn" id="pickerPrevYear" type="button" aria-label="이전 연도">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+          <div class="pickerYear" id="pickerYear"></div>
+          <button class="iconBtn" id="pickerNextYear" type="button" aria-label="다음 연도">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+        </div>
+        <div class="pickerGrid" id="pickerGrid"></div>
+      </div>
+
+      <div class="eventOverlay" id="eventOverlay" hidden>
+        <section class="eventModal" role="dialog" aria-modal="true" aria-labelledby="modalMode">
+          <div class="modalHead">
+            <div>
+              <h2 class="modalMode" id="modalMode">Add Event</h2>
+              <div class="modalDate" id="modalDate"></div>
             </div>
-            <form class="form" id="eventForm">
-              <div class="field">
-                <label for="eventTime">시간 (선택)</label>
-                <input id="eventTime" type="time" />
-              </div>
-              <div class="field">
-                <label for="eventTitle">제목</label>
-                <input id="eventTitle" type="text" maxlength="100" placeholder="일정 제목" required />
-              </div>
-              <div class="field full">
-                <label id="colorLabel">Color</label>
-                <div class="colorPicker" id="colorPicker" role="group" aria-labelledby="colorLabel">
-                  <button class="colorSwatch" type="button" data-color="lavender" style="--swatch: rgba(194,181,226,.88)" aria-label="Lavender" aria-pressed="true"></button>
-                  <button class="colorSwatch" type="button" data-color="pink" style="--swatch: rgba(235,183,201,.88)" aria-label="Soft Pink" aria-pressed="false"></button>
-                  <button class="colorSwatch" type="button" data-color="sky" style="--swatch: rgba(174,207,230,.90)" aria-label="Sky Blue" aria-pressed="false"></button>
-                  <button class="colorSwatch" type="button" data-color="mint" style="--swatch: rgba(174,215,198,.90)" aria-label="Mint" aria-pressed="false"></button>
-                  <button class="colorSwatch" type="button" data-color="peach" style="--swatch: rgba(239,196,166,.90)" aria-label="Peach" aria-pressed="false"></button>
-                </div>
-              </div>
-              <div class="field full">
-                <label for="eventMemo">메모 (선택)</label>
-                <textarea id="eventMemo" maxlength="500" placeholder="기억해 둘 내용을 적어보세요"></textarea>
-              </div>
-              <div class="formActions">
-                <button class="btn cancelBtn" id="cancelEdit" type="button" hidden>Cancel</button>
-                <button class="btn primary" id="saveEvent" type="submit">Add</button>
-              </div>
-            </form>
           </div>
+          <form class="form" id="eventForm">
+            <div class="field">
+              <label for="eventTime">Time</label>
+              <input id="eventTime" type="time" />
+            </div>
+            <div class="field">
+              <label for="eventTitle">Title</label>
+              <input id="eventTitle" type="text" maxlength="100" placeholder="Event title" required />
+            </div>
+            <div class="field full">
+              <label id="colorLabel">Color</label>
+              <div class="colorPicker" id="colorPicker" role="group" aria-labelledby="colorLabel">
+                <button class="colorSwatch" type="button" data-color="lavender" style="--swatch: #ddd0f7" aria-label="Lavender" aria-pressed="true"></button>
+                <button class="colorSwatch" type="button" data-color="pink" style="--swatch: #ffc8d8" aria-label="Baby pink" aria-pressed="false"></button>
+                <button class="colorSwatch" type="button" data-color="sky" style="--swatch: #c5e2ff" aria-label="Sky blue" aria-pressed="false"></button>
+                <button class="colorSwatch" type="button" data-color="mint" style="--swatch: #a0e4cd" aria-label="Mint blue" aria-pressed="false"></button>
+                <button class="colorSwatch" type="button" data-color="peach" style="--swatch: #ffcece" aria-label="Peach" aria-pressed="false"></button>
+              </div>
+            </div>
+            <div class="field full">
+              <label for="eventMemo">Memo</label>
+              <textarea id="eventMemo" maxlength="500" placeholder="Add a note"></textarea>
+            </div>
+            <div class="formActions">
+              <button class="btn danger deleteBtn" id="deleteEvent" type="button" hidden>Delete</button>
+              <button class="btn" id="cancelEdit" type="button">Cancel</button>
+              <button class="btn primary" id="saveEvent" type="submit">Add</button>
+            </div>
+          </form>
         </section>
       </div>
     </section>
@@ -405,30 +430,35 @@
         lavender: { accent: "rgba(174,156,214,.72)", text: "rgba(115,92,158,.78)", tint: "rgba(242,238,249,.46)" },
         pink: { accent: "rgba(222,157,179,.72)", text: "rgba(166,93,118,.78)", tint: "rgba(252,238,243,.46)" },
         sky: { accent: "rgba(142,190,222,.74)", text: "rgba(79,131,168,.80)", tint: "rgba(237,247,252,.48)" },
-        mint: { accent: "rgba(137,194,174,.74)", text: "rgba(72,139,116,.80)", tint: "rgba(237,249,245,.48)" },
-        peach: { accent: "rgba(225,169,132,.74)", text: "rgba(166,105,68,.80)", tint: "rgba(253,244,237,.48)" }
+        mint: { accent: "rgba(102,183,156,.82)", text: "rgba(62,135,111,.86)", tint: "#c5e9dd" },
+        peach: { accent: "rgba(218,151,151,.82)", text: "rgba(161,92,92,.86)", tint: "#f3cece" }
       };
+      const MONTH_NAMES = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
       const today = startOfDay(new Date());
       let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       let selectedDate = toDateKey(today);
       let editingId = null;
       let selectedColor = DEFAULT_COLOR;
+      let pickerYearValue = visibleMonth.getFullYear();
       let events = loadEvents();
       let toastTimer;
 
       const monthGrid = document.getElementById("monthGrid");
-      const monthLabel = document.getElementById("monthLabel");
-      const detailTitle = document.getElementById("detailTitle");
-      const eventCount = document.getElementById("eventCount");
-      const detailList = document.getElementById("detailList");
+      const monthTrigger = document.getElementById("monthTrigger");
+      const monthPicker = document.getElementById("monthPicker");
+      const pickerYear = document.getElementById("pickerYear");
+      const pickerGrid = document.getElementById("pickerGrid");
+      const eventOverlay = document.getElementById("eventOverlay");
       const eventForm = document.getElementById("eventForm");
-      const formTitle = document.getElementById("formTitle");
+      const modalMode = document.getElementById("modalMode");
+      const modalDate = document.getElementById("modalDate");
       const timeInput = document.getElementById("eventTime");
       const titleInput = document.getElementById("eventTitle");
       const memoInput = document.getElementById("eventMemo");
       const colorSwatches = [...document.querySelectorAll(".colorSwatch")];
       const saveButton = document.getElementById("saveEvent");
       const cancelButton = document.getElementById("cancelEdit");
+      const deleteButton = document.getElementById("deleteEvent");
       const toast = document.getElementById("toast");
 
       document.getElementById("prevMonth").addEventListener("click", () => moveMonth(-1));
@@ -436,12 +466,37 @@
       document.getElementById("todayBtn").addEventListener("click", () => {
         visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         selectedDate = toDateKey(today);
-        resetForm();
+        closeMonthPicker();
         render();
       });
-      cancelButton.addEventListener("click", resetForm);
+      monthTrigger.addEventListener("click", event => {
+        event.stopPropagation();
+        monthPicker.hidden ? openMonthPicker() : closeMonthPicker();
+      });
+      document.getElementById("pickerPrevYear").addEventListener("click", event => {
+        event.stopPropagation();
+        pickerYearValue -= 1;
+        renderMonthPicker();
+      });
+      document.getElementById("pickerNextYear").addEventListener("click", event => {
+        event.stopPropagation();
+        pickerYearValue += 1;
+        renderMonthPicker();
+      });
+      monthPicker.addEventListener("click", event => event.stopPropagation());
+      cancelButton.addEventListener("click", closeEventModal);
+      deleteButton.addEventListener("click", deleteEditingEvent);
       eventForm.addEventListener("submit", saveEvent);
       colorSwatches.forEach(swatch => swatch.addEventListener("click", () => selectColor(swatch.dataset.color)));
+      eventOverlay.addEventListener("click", event => {
+        if (event.target === eventOverlay) closeEventModal();
+      });
+      document.addEventListener("click", closeMonthPicker);
+      document.addEventListener("keydown", event => {
+        if (event.key !== "Escape") return;
+        if (!eventOverlay.hidden) closeEventModal();
+        else closeMonthPicker();
+      });
 
       function startOfDay(date){ return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
       function toDateKey(date){
@@ -496,10 +551,10 @@
       function moveMonth(amount){
         visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + amount, 1);
         selectedDate = toDateKey(visibleMonth);
-        resetForm();
+        closeMonthPicker();
         render();
       }
-      function selectDay(dateKey){
+      function openAddModal(dateKey){
         selectedDate = dateKey;
         const date = parseDateKey(dateKey);
         if (date.getMonth() !== visibleMonth.getMonth() || date.getFullYear() !== visibleMonth.getFullYear()) {
@@ -507,11 +562,14 @@
         }
         resetForm();
         render();
+        modalMode.textContent = "Add Event";
+        modalDate.textContent = formatDate(selectedDate);
+        eventOverlay.hidden = false;
+        titleInput.focus();
       }
 
-      function render(){ renderCalendar(); renderDetail(); }
+      function render(){ renderCalendar(); }
       function renderCalendar(){
-        monthLabel.textContent = `${visibleMonth.getFullYear()}.${String(visibleMonth.getMonth() + 1).padStart(2, "0")}`;
         monthGrid.replaceChildren();
         const gridStart = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1 - visibleMonth.getDay());
 
@@ -528,9 +586,9 @@
           cell.setAttribute("role", "gridcell");
           cell.setAttribute("aria-selected", String(dateKey === selectedDate));
           cell.setAttribute("aria-label", `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일, 일정 ${dayEvents.length}개`);
-          cell.addEventListener("click", () => selectDay(dateKey));
+          cell.addEventListener("click", () => openAddModal(dateKey));
           cell.addEventListener("keydown", event => {
-            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectDay(dateKey); }
+            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openAddModal(dateKey); }
           });
 
           const number = document.createElement("span");
@@ -551,7 +609,7 @@
               selectedDate = dateKey;
               if (date.getMonth() !== visibleMonth.getMonth()) visibleMonth = new Date(date.getFullYear(), date.getMonth(), 1);
               render();
-              beginEdit(item.id);
+              openEditModal(item.id);
             });
             if (item.time) {
               const time = document.createElement("span");
@@ -573,55 +631,9 @@
         }
       }
 
-      function renderDetail(){
-        const date = parseDateKey(selectedDate);
-        const selectedEvents = eventsFor(selectedDate);
-        detailTitle.textContent = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")} ${["일", "월", "화", "수", "목", "금", "토"][date.getDay()]}요일`;
-        eventCount.textContent = `${selectedEvents.length} schedules`;
-        detailList.replaceChildren();
-        if (!selectedEvents.length) {
-          const empty = document.createElement("div");
-          empty.className = "empty";
-          empty.textContent = "아직 등록된 일정이 없어요.";
-          detailList.append(empty);
-          return;
-        }
-        selectedEvents.forEach(item => {
-          const card = document.createElement("article");
-          card.className = "eventCard";
-          applyEventColor(card, item.color);
-          const top = document.createElement("div");
-          top.className = "eventTop";
-          const time = document.createElement("span");
-          time.className = "detailTime";
-          time.textContent = item.time || "—";
-          const title = document.createElement("strong");
-          title.className = "eventTitle";
-          title.textContent = item.title;
-          top.append(time, title);
-          card.append(top);
-          if (item.memo) {
-            const memo = document.createElement("p");
-            memo.className = "eventMemo";
-            memo.textContent = item.memo;
-            card.append(memo);
-          }
-          const actions = document.createElement("div");
-          actions.className = "eventActions";
-          const edit = document.createElement("button");
-          edit.type = "button";
-          edit.className = "miniBtn";
-          edit.textContent = "수정";
-          edit.addEventListener("click", () => beginEdit(item.id));
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.className = "miniBtn delete";
-          remove.textContent = "삭제";
-          remove.addEventListener("click", () => deleteEvent(item.id));
-          actions.append(edit, remove);
-          card.append(actions);
-          detailList.append(card);
-        });
+      function formatDate(dateKey){
+        const date = parseDateKey(dateKey);
+        return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
       }
 
       function saveEvent(event){
@@ -637,41 +649,78 @@
           showToast(`“${title}” 일정을 추가했어요.`);
         }
         persist();
-        resetForm();
+        closeEventModal();
         render();
       }
       function createId(){
         return globalThis.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
       }
-      function beginEdit(id){
+      function openEditModal(id){
         const item = events.find(event => event.id === id);
         if (!item) return;
         editingId = id;
+        selectedDate = item.date;
         timeInput.value = item.time;
         titleInput.value = item.title;
         memoInput.value = item.memo;
         selectColor(item.color);
-        formTitle.textContent = "일정 수정";
+        modalMode.textContent = "Edit Event";
+        modalDate.textContent = formatDate(item.date);
         saveButton.textContent = "Save";
-        cancelButton.hidden = false;
+        deleteButton.hidden = false;
+        eventOverlay.hidden = false;
         titleInput.focus();
       }
       function resetForm(){
         editingId = null;
         eventForm.reset();
         selectColor(DEFAULT_COLOR);
-        formTitle.textContent = "새 일정";
+        modalMode.textContent = "Add Event";
         saveButton.textContent = "Add";
-        cancelButton.hidden = true;
+        deleteButton.hidden = true;
       }
-      function deleteEvent(id){
-        const item = events.find(event => event.id === id);
+      function closeEventModal(){
+        eventOverlay.hidden = true;
+        resetForm();
+      }
+      function deleteEditingEvent(){
+        const item = events.find(event => event.id === editingId);
         if (!item) return;
-        events = events.filter(event => event.id !== id);
+        events = events.filter(event => event.id !== editingId);
         persist();
-        if (editingId === id) resetForm();
+        closeEventModal();
         render();
         showToast(`“${item.title}” 일정을 삭제했어요.`);
+      }
+      function openMonthPicker(){
+        pickerYearValue = visibleMonth.getFullYear();
+        monthPicker.hidden = false;
+        monthTrigger.setAttribute("aria-expanded", "true");
+        renderMonthPicker();
+        document.getElementById("pickerPrevYear").focus();
+      }
+      function closeMonthPicker(){
+        monthPicker.hidden = true;
+        monthTrigger.setAttribute("aria-expanded", "false");
+      }
+      function renderMonthPicker(){
+        pickerYear.textContent = pickerYearValue;
+        pickerGrid.replaceChildren();
+        MONTH_NAMES.forEach((name, month) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "monthOption";
+          button.textContent = name;
+          if (pickerYearValue === visibleMonth.getFullYear() && month === visibleMonth.getMonth()) button.classList.add("selected");
+          if (pickerYearValue === today.getFullYear() && month === today.getMonth()) button.classList.add("current");
+          button.addEventListener("click", () => {
+            visibleMonth = new Date(pickerYearValue, month, 1);
+            selectedDate = toDateKey(visibleMonth);
+            closeMonthPicker();
+            render();
+          });
+          pickerGrid.append(button);
+        });
       }
       function showToast(message){
         clearTimeout(toastTimer);
