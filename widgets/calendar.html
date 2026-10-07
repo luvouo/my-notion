@@ -88,6 +88,12 @@
       min-width: 0;
     }
 
+    .title-copy{
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
     .pearl{
       width: 18px;
       height: 18px;
@@ -103,6 +109,19 @@
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
       font-size: clamp(15px, 3.8vw, 18px);
       letter-spacing: -0.2px;
+      white-space: nowrap;
+    }
+
+    .today-subtitle{
+      width: max-content;
+      max-width: 100%;
+      padding: 2px 6px;
+      color: rgba(30,30,30,0.48);
+      background: rgba(243,182,198,0.22);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+      font-size: 10px;
+      line-height: 1.1;
+      letter-spacing: .15px;
       white-space: nowrap;
     }
 
@@ -129,7 +148,8 @@
       color: rgba(30,30,30,0.66);
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease,
+        color .18s ease, text-shadow .18s ease, transform .08s ease;
     }
 
     .nav-button{
@@ -150,8 +170,11 @@
     }
 
     .nav-button:hover, .today-button:hover{
-      border-color: var(--accent);
-      background: var(--accent-soft);
+      border-color: rgba(185,158,219,0.80);
+      background: rgba(222,211,242,0.26);
+      color: rgba(145,105,172,0.90);
+      text-shadow: 0 0 7px rgba(174,156,214,0.26);
+      box-shadow: 0 0 0 3px rgba(205,190,232,0.18);
     }
 
     .nav-button:active, .today-button:active{ transform: scale(0.97); }
@@ -190,8 +213,8 @@
       min-height: 26px;
       margin: 0 auto;
       padding: 0;
-      border: 1px solid transparent;
-      border-radius: 12px;
+      border: 0;
+      border-radius: 0;
       background: transparent;
       color: rgba(30,30,30,0.74);
       cursor: pointer;
@@ -200,28 +223,71 @@
       font-size: clamp(11px, 2.8vw, 13px);
       font-variant-numeric: tabular-nums;
       -webkit-tap-highlight-color: transparent;
-      transition: background .16s ease, border-color .16s ease, box-shadow .16s ease, color .16s ease;
+      transition: color .16s ease;
     }
 
-    .date:hover{
-      border-color: rgba(194,176,225,0.42);
-      background: rgba(222,211,242,0.18);
+    .date-number{
+      position: relative;
+      z-index: 1;
+      line-height: 1;
+    }
+
+    .date::before{
+      content: "";
+      position: absolute;
+      z-index: 0;
+      width: 28px;
+      height: 28px;
+      border: 1px solid transparent;
+      border-radius: 50%;
+      background: transparent;
+      transition: background .16s ease, border-color .16s ease, box-shadow .16s ease;
+    }
+
+    .date:hover::before{
+      border-color: rgba(218,174,215,0.34);
+      background: rgba(244,218,235,0.12);
     }
 
     .date.outside{ color: rgba(30,30,30,0.24); }
 
-    .date.today{
-      border-color: rgba(194,176,225,0.64);
-      background: rgba(222,211,242,0.20);
+    .date.today:not(.selected){
       color: rgba(75,58,104,0.86);
       font-weight: 600;
     }
 
+    .date.today:not(.selected)::before{
+      border-color: rgba(193,158,207,0.64);
+      background: transparent;
+      box-shadow: none;
+    }
+
     .date.selected{
-      border-color: rgba(176,153,214,0.76);
-      background: rgba(205,190,232,0.38);
       color: rgba(58,42,84,0.92);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.36);
+      font-weight: 600;
+    }
+
+    .date.selected::before{
+      border-color: rgba(207,156,205,0.62);
+      background: linear-gradient(145deg, rgba(250,211,226,0.72), rgba(218,205,241,0.40));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.58),
+        0 2px 7px rgba(193,158,207,0.13);
+    }
+
+    .date:focus-visible{
+      outline: none;
+      box-shadow: none;
+    }
+
+    .date:focus-visible::before{
+      box-shadow: 0 0 0 3px rgba(205,190,232,0.27);
+    }
+
+    .date.selected:focus-visible::before{
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.58),
+        0 0 0 3px rgba(205,190,232,0.27);
     }
 
     @media (max-width: 360px){
@@ -231,11 +297,11 @@
       .title{ gap: 7px; }
       .pearl{ width: 16px; height: 16px; }
       .toolbar{ gap: 6px; }
-      .date{ border-radius: 10px; }
+      .date::before{ width: 28px; height: 28px; }
     }
 
     @media (prefers-reduced-motion: reduce){
-      .nav-button, .today-button, .date{ transition: none; }
+      .nav-button, .today-button, .date, .date::before{ transition: none; }
     }
   </style>
 </head>
@@ -246,22 +312,25 @@
         <header class="top">
           <div class="title">
             <img class="pearl" src="./icon/pearl.png" alt="" />
-            <h1>Calendar</h1>
+            <div class="title-copy">
+              <h1>Calendar</h1>
+              <div class="today-subtitle" id="todaySubtitle"></div>
+            </div>
           </div>
           <div class="month-label" id="monthLabel" aria-live="polite"></div>
         </header>
 
         <nav class="toolbar" aria-label="달력 월 이동">
           <button class="nav-button" id="previousMonth" type="button" aria-label="이전 달">‹</button>
-          <button class="today-button" id="todayButton" type="button">Today</button>
+          <button class="today-button" id="todayButton" type="button" aria-label="오늘로 이동" title="Go to today"></button>
           <button class="nav-button" id="nextMonth" type="button" aria-label="다음 달">›</button>
         </nav>
 
         <div class="weekdays" aria-hidden="true">
-          <span class="weekday">일</span><span class="weekday">월</span>
-          <span class="weekday">화</span><span class="weekday">수</span>
-          <span class="weekday">목</span><span class="weekday">금</span>
-          <span class="weekday">토</span>
+          <span class="weekday">Sun</span><span class="weekday">Mon</span>
+          <span class="weekday">Tue</span><span class="weekday">Wed</span>
+          <span class="weekday">Thu</span><span class="weekday">Fri</span>
+          <span class="weekday">Sat</span>
         </div>
         <div class="dates" id="calendarDates" role="grid" aria-labelledby="monthLabel"></div>
       </div>
@@ -271,8 +340,11 @@
   <script>
     (() => {
       const monthLabel = document.getElementById("monthLabel");
+      const todaySubtitle = document.getElementById("todaySubtitle");
+      const todayButton = document.getElementById("todayButton");
       const calendarDates = document.getElementById("calendarDates");
       const today = startOfDay(new Date());
+      const weekdayNames = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
       let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       let selectedDate = null;
 
@@ -291,6 +363,12 @@
         return `${date.getFullYear()}-${month}-${day}`;
       }
 
+      function todayText(){
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const day = String(today.getDate()).padStart(2, "0");
+        return `Today is ${month}/${day}/${weekdayNames[today.getDay()]}`;
+      }
+
       function render(){
         const year = visibleMonth.getFullYear();
         const month = visibleMonth.getMonth();
@@ -298,6 +376,7 @@
         const fragment = document.createDocumentFragment();
 
         monthLabel.textContent = `${year}년 ${month + 1}월`;
+        todayButton.textContent = `${month + 1}월`;
         calendarDates.replaceChildren();
 
         for(let index = 0; index < 42; index += 1){
@@ -311,7 +390,10 @@
           button.className = "date";
           button.setAttribute("role", "gridcell");
           button.dataset.date = dateKey(date);
-          button.textContent = date.getDate();
+          const number = document.createElement("span");
+          number.className = "date-number";
+          number.textContent = date.getDate();
+          button.appendChild(number);
           button.setAttribute("aria-label", `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`);
           button.setAttribute("aria-selected", String(isSelected));
           if(isOutside) button.classList.add("outside");
@@ -347,12 +429,13 @@
         render();
       });
 
-      document.getElementById("todayButton").addEventListener("click", () => {
+      todayButton.addEventListener("click", () => {
         visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         selectedDate = startOfDay(today);
         render();
       });
 
+      todaySubtitle.textContent = todayText();
       render();
     })();
   </script>
