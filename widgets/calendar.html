@@ -115,11 +115,9 @@
     .today-subtitle{
       width: max-content;
       max-width: 100%;
-      padding: 2px 6px;
-      color: rgba(30,30,30,0.48);
-      background: rgba(243,182,198,0.22);
+      color: var(--muted);
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
-      font-size: 10px;
+      font-size: clamp(14px, 3.4vw, 16px);
       line-height: 1.1;
       letter-spacing: .15px;
       white-space: nowrap;
@@ -158,8 +156,13 @@
       border-radius: 999px;
       display: grid;
       place-items: center;
-      font-size: 17px;
       line-height: 1;
+    }
+
+    .nav-button svg{
+      display: block;
+      width: 13px;
+      height: 13px;
     }
 
     .today-button{
@@ -170,11 +173,9 @@
     }
 
     .nav-button:hover, .today-button:hover{
-      border-color: rgba(185,158,219,0.80);
-      background: rgba(222,211,242,0.26);
-      color: rgba(145,105,172,0.90);
-      text-shadow: 0 0 7px rgba(174,156,214,0.26);
-      box-shadow: 0 0 0 3px rgba(205,190,232,0.18);
+      border-color: rgba(194,176,225,0.70);
+      color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(205,190,232,0.22);
     }
 
     .nav-button:active, .today-button:active{ transform: scale(0.97); }
@@ -196,12 +197,13 @@
     .weekday{
       text-align: center;
       color: var(--muted);
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
       font-size: 11px;
       line-height: 20px;
     }
 
-    .weekday:first-child{ color: rgba(190,112,136,0.62); }
-    .weekday:last-child{ color: rgba(102,126,174,0.62); }
+    .weekday:first-child,
+    .weekday:last-child{ color: var(--accent); }
 
     .dates{ row-gap: 2px; }
 
@@ -220,6 +222,7 @@
       cursor: pointer;
       display: grid;
       place-items: center;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
       font-size: clamp(11px, 2.8vw, 13px);
       font-variant-numeric: tabular-nums;
       -webkit-tap-highlight-color: transparent;
@@ -268,11 +271,11 @@
     }
 
     .date.selected::before{
-      border-color: rgba(207,156,205,0.62);
-      background: linear-gradient(145deg, rgba(250,211,226,0.72), rgba(218,205,241,0.40));
+      border-color: rgba(243,182,198,0.58);
+      background: linear-gradient(180deg, rgba(255,215,226,0.82) 0%, rgba(255,255,255,0) 100%);
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.58),
-        0 2px 7px rgba(193,158,207,0.13);
+        0 2px 7px rgba(243,182,198,0.12);
     }
 
     .date:focus-visible{
@@ -321,9 +324,17 @@
         </header>
 
         <nav class="toolbar" aria-label="달력 월 이동">
-          <button class="nav-button" id="previousMonth" type="button" aria-label="이전 달">‹</button>
+          <button class="nav-button" id="previousMonth" type="button" aria-label="이전 달">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
           <button class="today-button" id="todayButton" type="button" aria-label="오늘로 이동" title="Go to today"></button>
-          <button class="nav-button" id="nextMonth" type="button" aria-label="다음 달">›</button>
+          <button class="nav-button" id="nextMonth" type="button" aria-label="다음 달">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
         </nav>
 
         <div class="weekdays" aria-hidden="true">
@@ -375,7 +386,7 @@
         const firstCell = new Date(year, month, 1 - visibleMonth.getDay());
         const fragment = document.createDocumentFragment();
 
-        monthLabel.textContent = `${year}년 ${month + 1}월`;
+        monthLabel.textContent = String(year);
         todayButton.textContent = `${month + 1}월`;
         calendarDates.replaceChildren();
 
