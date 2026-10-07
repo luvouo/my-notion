@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monthly — Soft Schedule</title>
+
+  <style>
+    :root{
+      --lavender: rgba(194, 181, 226, 0.92);
+      --lavender-soft: rgba(218, 208, 239, 0.46);
+      --lavender-pale: rgba(235, 229, 247, 0.54);
+      --border: rgba(184, 169, 218, 0.56);
+      --border-soft: rgba(184, 169, 218, 0.30);
+      --text: rgba(30, 28, 34, 0.91);
+      --muted: rgba(30, 28, 34, 0.46);
+      --glass: rgba(255, 255, 255, 0.12);
+      --shadow: 0 10px 30px rgba(64, 52, 86, 0.06);
+      --display: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+
+    @font-face{
+      font-family: "EnterSanChaek";
+      src: url("../fonts/엔터산책10.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    *{ box-sizing: border-box; }
+    html, body{
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+    button, input, textarea{ font: inherit; }
+
+    .wrap{
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(10px, 2vw, 18px);
+    }
+    .card{
+      position: relative;
+      overflow: hidden;
+      padding: clamp(14px, 2vw, 20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--glass);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .card::before{
+      content: "";
+      position: absolute;
+      inset: -2px;
+      pointer-events: none;
+      background:
+        radial-gradient(90% 60% at 0% 0%, rgba(218,208,239,.32), transparent 62%),
+        radial-gradient(70% 60% at 100% 12%, rgba(194,181,226,.17), transparent 62%);
+    }
+    .inner{ position: relative; z-index: 1; display: grid; gap: 14px; }
+    .top, .monthNav, .formActions, .modalHead, .pickerHead{
+      display: flex;
+      align-items: center;
+    }
+    .top{ justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .title{ display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .pearl{
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 0 0 2px rgba(194,181,226,.24);
+    }
+    h1{
+      margin: 0;
+      font: 400 clamp(16px, 2.4vw, 19px)/1 var(--display);
+      letter-spacing: -.2px;
+    }
+    .monthNav{ gap: 8px; }
+    .btn, .iconBtn{
+      border: 1px solid var(--border);
+      color: rgba(40, 35, 48, .78);
+      background: rgba(255,255,255,.18);
+      cursor: pointer;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+    .btn:hover, .iconBtn:hover{
+      border-color: rgba(174,156,214,.78);
+      color: rgba(126,99,181,.90);
+      text-shadow: 0 0 7px rgba(174,156,214,.28);
+      box-shadow: 0 0 0 3px rgba(194,181,226,.16);
+    }
+    .btn:focus-visible, .iconBtn:focus-visible, .day:focus-visible, .eventChip:focus-visible{
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(194,181,226,.30);
+    }
+    .btn:active, .iconBtn:active{ transform: scale(.97); }
+    .btn{ min-height: 34px; padding: 7px 12px; border-radius: 12px; font: 12px var(--display); }
+    .btn.primary{ background: rgba(210,198,237,.42); }
+    .btn.danger{ border-color: rgba(210,150,164,.46); color: rgba(135,65,82,.78); }
+    .iconBtn{
+      display: inline-grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border-radius: 50%;
+    }
+    .iconBtn svg{ display: block; width: 13px; height: 13px; }
+
+    .calendarScroller{
+      overflow-x: auto;
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      background: rgba(255,255,255,.07);
+      scrollbar-color: rgba(184,169,218,.46) transparent;
+    }
+    .calendar{ min-width: 650px; }
+    .weekdays, .monthGrid{ display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .weekday{
+      padding: 9px 6px 8px;
+      text-align: center;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border-soft);
+      font: 11px var(--display);
+      letter-spacing: .04em;
+    }
+    .weekday:first-child{ color: rgba(183,106,128,.66); }
+    .weekday:last-child{ color: rgba(100,119,174,.67); }
+    .day{
+      position: relative;
+      min-width: 0;
+      height: clamp(102px, 11vw, 132px);
+      padding: 8px;
+      border: 0;
+      border-right: 1px solid var(--border-soft);
+      border-bottom: 1px solid var(--border-soft);
+      background: rgba(255,255,255,.035);
+      cursor: pointer;
+      transition: background .16s ease, box-shadow .16s ease;
+    }
+    .day:nth-child(7n){ border-right: 0; }
+    .day:nth-last-child(-n+7){ border-bottom: 0; }
+    .day:hover{ background: rgba(230,223,244,.27); }
+    .day.other{ background: rgba(255,255,255,.018); color: rgba(30,28,34,.25); }
+    .day.selected{ background: rgba(218,208,239,.23); box-shadow: inset 0 0 0 1px #d5c4ff; }
+    .day.selected:hover{ background: rgba(225,217,242,.30); }
+    .day.today .dayNumber{
+      color: rgba(68,51,105,.86);
+      background: rgba(194,181,226,.48);
+      box-shadow: 0 0 0 3px rgba(218,208,239,.25);
+    }
+    .dayNumber{
+      display: grid;
+      place-items: center;
+      width: 23px;
+      height: 23px;
+      margin-bottom: 5px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .day:nth-child(7n+1):not(.other) .dayNumber{ color: rgba(174,83,111,.76); }
+    .day:nth-child(7n):not(.other) .dayNumber{ color: rgba(76,99,164,.78); }
+    .events{ display: grid; gap: 3px; }
+    .eventChip{
+      display: block;
+      width: 100%;
+      min-width: 0;
+      padding: 3px 5px;
+      overflow: hidden;
+      border: 0;
+      border-left: 2px solid var(--event-accent, rgba(174,156,214,.70));
+      border-radius: 4px;
+      color: rgba(39,35,45,.76);
+      background: var(--event-tint, rgba(242,238,249,.40));
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 10.5px;
+      line-height: 1.25;
+      cursor: pointer;
+    }
+    .other .eventChip{ opacity: .42; }
+    .eventTime{ color: var(--event-text, rgba(115,92,158,.76)); font-variant-numeric: tabular-nums; margin-right: 4px; }
+    .more{ padding-left: 6px; color: rgba(99,76,141,.66); font: 10px var(--display); }
+
+    .monthPicker{
+      position: absolute;
+      z-index: 8;
+      top: 45px;
+      right: 0;
+      width: min(270px, calc(100vw - 52px));
+      padding: 12px;
+      border: 1px solid rgba(184,169,218,.46);
+      border-radius: 16px;
+      background: rgba(255,255,255,.91);
+      box-shadow: 0 14px 34px rgba(54,42,75,.12);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .monthPicker[hidden], .eventOverlay[hidden], .deleteBtn[hidden]{ display: none; }
+    .pickerHead{ justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .pickerYear{ color: rgba(44,38,52,.76); font: 14px var(--display); font-variant-numeric: tabular-nums; }
+    .pickerGrid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .monthOption{
+      min-height: 34px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      color: rgba(43,38,50,.66);
+      background: transparent;
+      font: 11px var(--display);
+      cursor: pointer;
+    }
+    .monthOption:hover{ border-color: rgba(174,156,214,.45); color: rgba(119,91,174,.88); background: rgba(235,229,247,.30); }
+    .monthOption.selected{ border-color: rgba(174,156,214,.48); background: rgba(218,208,239,.25); color: rgba(92,68,139,.86); }
+    .monthOption.current::after{ content: ""; display: block; width: 3px; height: 3px; margin: 3px auto 0; border-radius: 50%; background: rgba(139,112,190,.68); }
+
+    .eventOverlay{
+      position: absolute;
+      z-index: 12;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(240,235,248,.24);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    .eventModal{
+      width: min(430px, 100%);
+      max-height: calc(100% - 12px);
+      overflow-y: auto;
+      padding: 16px;
+      border: 1px solid rgba(184,169,218,.52);
+      border-radius: 18px;
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 18px 44px rgba(54,42,75,.14);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .modalHead{ justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+    .modalMode{ margin: 0 0 3px; font: 14px var(--display); }
+    .modalDate{ color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+    .form{ display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 9px; }
+    .field{ display: grid; gap: 5px; }
+    .field.full{ grid-column: 1 / -1; }
+    .colorPicker{ display: flex; align-items: center; gap: 8px; min-height: 32px; }
+    .colorSwatch{
+      position: relative;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border: 1px solid rgba(48,42,56,.10);
+      border-radius: 50%;
+      background: var(--swatch);
+      cursor: pointer;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+    .colorSwatch:hover{ border-color: rgba(87,73,105,.30); transform: scale(1.05); }
+    .colorSwatch[aria-pressed="true"]{
+      border-color: rgba(99,80,137,.48);
+      box-shadow: 0 0 0 3px rgba(194,181,226,.22), 0 0 8px rgba(174,156,214,.18);
+    }
+    .colorSwatch:focus-visible{ outline: none; box-shadow: 0 0 0 3px rgba(194,181,226,.34); }
+    label{ color: var(--muted); font: 11px var(--display); }
+    input, textarea{
+      width: 100%;
+      border: 1px solid var(--border-soft);
+      border-radius: 11px;
+      outline: 0;
+      color: var(--text);
+      background: rgba(255,255,255,.18);
+      padding: 9px 10px;
+      font-size: 13px;
+    }
+    textarea{ min-height: 72px; resize: vertical; line-height: 1.45; }
+    input:focus, textarea:focus{ border-color: rgba(174,156,214,.78); box-shadow: 0 0 0 3px rgba(194,181,226,.20); }
+    .formActions{ grid-column: 1 / -1; justify-content: flex-end; gap: 7px; }
+    .deleteBtn{ margin-right: auto; }
+    .toast{
+      position: fixed;
+      z-index: 20;
+      left: 50%;
+      bottom: 18px;
+      translate: -50% 12px;
+      max-width: min(360px, calc(100vw - 32px));
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(250,248,253,.94);
+      box-shadow: 0 8px 24px rgba(48,38,66,.12);
+      opacity: 0;
+      pointer-events: none;
+      color: rgba(45,38,54,.76);
+      text-align: center;
+      font-size: 12px;
+      transition: opacity .18s ease, translate .18s ease;
+    }
+    .toast.show{ opacity: 1; translate: -50% 0; }
+
+    @media (max-width: 720px){
+      .calendar{ min-width: 560px; }
+      .day{ height: 92px; padding: 6px; }
+      .eventChip{ font-size: 9.5px; padding-inline: 4px; }
+    }
+    @media (max-width: 480px){
+      .wrap{ padding: 8px; }
+      .card{ padding: 12px; border-radius: 17px; }
+      .top{ align-items: flex-start; }
+      .monthNav{ width: 100%; justify-content: space-between; }
+      .monthPicker{ top: 84px; right: 0; }
+      .calendar{ min-width: 490px; }
+      .day{ height: 82px; padding: 5px; }
+      .dayNumber{ width: 20px; height: 20px; margin-bottom: 3px; font-size: 10px; }
+      .eventChip:nth-child(n+3){ display: none; }
+      .form{ grid-template-columns: 1fr; }
+      .field, .field.full, .formActions{ grid-column: 1; }
+      .eventOverlay{ padding: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce){ *{ scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <section class="card" aria-label="Monthly planner">
+      <div class="inner">
+        <header class="top">
+          <div class="title">
+            <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+            <h1>Monthly</h1>
+          </div>
+          <nav class="monthNav" aria-label="월 이동">
+            <button class="iconBtn" id="prevMonth" type="button" aria-label="이전 달">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
+            <button class="btn" id="monthTrigger" type="button" aria-haspopup="dialog" aria-expanded="false">Month</button>
+            <button class="iconBtn" id="nextMonth" type="button" aria-label="다음 달">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
+            <button class="btn" id="todayBtn" type="button">Today</button>
+          </nav>
+        </header>
+
+        <div class="calendarScroller" aria-label="월간 달력">
+          <div class="calendar">
+            <div class="weekdays" aria-hidden="true">
+              <div class="weekday">SUN</div><div class="weekday">MON</div><div class="weekday">TUE</div>
+              <div class="weekday">WED</div><div class="weekday">THU</div><div class="weekday">FRI</div>
+              <div class="weekday">SAT</div>
+            </div>
+            <div class="monthGrid" id="monthGrid" role="grid"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="monthPicker" id="monthPicker" role="dialog" aria-label="Month picker" hidden>
+        <div class="pickerHead">
+          <button class="iconBtn" id="pickerPrevYear" type="button" aria-label="이전 연도">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+          <div class="pickerYear" id="pickerYear"></div>
+          <button class="iconBtn" id="pickerNextYear" type="button" aria-label="다음 연도">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+        </div>
+        <div class="pickerGrid" id="pickerGrid"></div>
+      </div>
+
+      <div class="eventOverlay" id="eventOverlay" hidden>
+        <section class="eventModal" role="dialog" aria-modal="true" aria-labelledby="modalMode">
+          <div class="modalHead">
+            <div>
+              <h2 class="modalMode" id="modalMode">Add Event</h2>
+              <div class="modalDate" id="modalDate"></div>
+            </div>
+          </div>
+          <form class="form" id="eventForm">
+            <div class="field">
+              <label for="eventTime">Time</label>
+              <input id="eventTime" type="time" />
+            </div>
+            <div class="field">
+              <label for="eventTitle">Title</label>
+              <input id="eventTitle" type="text" maxlength="100" placeholder="Event title" required />
+            </div>
+            <div class="field full">
+              <label id="colorLabel">Color</label>
+              <div class="colorPicker" id="colorPicker" role="group" aria-labelledby="colorLabel">
+                <button class="colorSwatch" type="button" data-color="lavender" style="--swatch: #ddd0f7" aria-label="Lavender" aria-pressed="true"></button>
+                <button class="colorSwatch" type="button" data-color="pink" style="--swatch: #ffc8d8" aria-label="Baby pink" aria-pressed="false"></button>
+                <button class="colorSwatch" type="button" data-color="sky" style="--swatch: #c5e2ff" aria-label="Sky blue" aria-pressed="false"></button>
+                <button class="colorSwatch" type="button" data-color="mint" style="--swatch: #a0e4cd" aria-label="Mint blue" aria-pressed="false"></button>
+                <button class="colorSwatch" type="button" data-color="peach" style="--swatch: #ffcece" aria-label="Peach" aria-pressed="false"></button>
+              </div>
+            </div>
+            <div class="field full">
+              <label for="eventMemo">Memo</label>
+              <textarea id="eventMemo" maxlength="500" placeholder="Add a note"></textarea>
+            </div>
+            <div class="formActions">
+              <button class="btn danger deleteBtn" id="deleteEvent" type="button" hidden>Delete</button>
+              <button class="btn" id="cancelEdit" type="button">Cancel</button>
+              <button class="btn primary" id="saveEvent" type="submit">Add</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "my-notion.monthly.events.v1";
+      const DEFAULT_COLOR = "lavender";
+      const PALETTE = {
+        lavender: { accent: "rgba(174,156,214,.72)", text: "rgba(115,92,158,.78)", tint: "rgba(242,238,249,.46)" },
+        pink: { accent: "rgba(222,157,179,.72)", text: "rgba(166,93,118,.78)", tint: "rgba(252,238,243,.46)" },
+        sky: { accent: "rgba(142,190,222,.74)", text: "rgba(79,131,168,.80)", tint: "rgba(237,247,252,.48)" },
+        mint: { accent: "rgba(102,183,156,.82)", text: "rgba(62,135,111,.86)", tint: "#c5e9dd" },
+        peach: { accent: "rgba(218,151,151,.82)", text: "rgba(161,92,92,.86)", tint: "#f3cece" }
+      };
+      const MONTH_NAMES = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      const today = startOfDay(new Date());
+      let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      let selectedDate = toDateKey(today);
+      let editingId = null;
+      let selectedColor = DEFAULT_COLOR;
+      let pickerYearValue = visibleMonth.getFullYear();
+      let events = loadEvents();
+      let toastTimer;
+
+      const monthGrid = document.getElementById("monthGrid");
+      const monthTrigger = document.getElementById("monthTrigger");
+      const monthPicker = document.getElementById("monthPicker");
+      const pickerYear = document.getElementById("pickerYear");
+      const pickerGrid = document.getElementById("pickerGrid");
+      const eventOverlay = document.getElementById("eventOverlay");
+      const eventForm = document.getElementById("eventForm");
+      const modalMode = document.getElementById("modalMode");
+      const modalDate = document.getElementById("modalDate");
+      const timeInput = document.getElementById("eventTime");
+      const titleInput = document.getElementById("eventTitle");
+      const memoInput = document.getElementById("eventMemo");
+      const colorSwatches = [...document.querySelectorAll(".colorSwatch")];
+      const saveButton = document.getElementById("saveEvent");
+      const cancelButton = document.getElementById("cancelEdit");
+      const deleteButton = document.getElementById("deleteEvent");
+      const toast = document.getElementById("toast");
+
+      document.getElementById("prevMonth").addEventListener("click", () => moveMonth(-1));
+      document.getElementById("nextMonth").addEventListener("click", () => moveMonth(1));
+      document.getElementById("todayBtn").addEventListener("click", () => {
+        visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        selectedDate = toDateKey(today);
+        closeMonthPicker();
+        render();
+      });
+      monthTrigger.addEventListener("click", event => {
+        event.stopPropagation();
+        monthPicker.hidden ? openMonthPicker() : closeMonthPicker();
+      });
+      document.getElementById("pickerPrevYear").addEventListener("click", event => {
+        event.stopPropagation();
+        pickerYearValue -= 1;
+        renderMonthPicker();
+      });
+      document.getElementById("pickerNextYear").addEventListener("click", event => {
+        event.stopPropagation();
+        pickerYearValue += 1;
+        renderMonthPicker();
+      });
+      monthPicker.addEventListener("click", event => event.stopPropagation());
+      cancelButton.addEventListener("click", closeEventModal);
+      deleteButton.addEventListener("click", deleteEditingEvent);
+      eventForm.addEventListener("submit", saveEvent);
+      colorSwatches.forEach(swatch => swatch.addEventListener("click", () => selectColor(swatch.dataset.color)));
+      eventOverlay.addEventListener("click", event => {
+        if (event.target === eventOverlay) closeEventModal();
+      });
+      document.addEventListener("click", closeMonthPicker);
+      document.addEventListener("keydown", event => {
+        if (event.key !== "Escape") return;
+        if (!eventOverlay.hidden) closeEventModal();
+        else closeMonthPicker();
+      });
+
+      function startOfDay(date){ return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
+      function toDateKey(date){
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+      function parseDateKey(key){
+        const [year, month, day] = key.split("-").map(Number);
+        return new Date(year, month - 1, day);
+      }
+      function isValidEvent(item){
+        return item && typeof item.id === "string" && /^\d{4}-\d{2}-\d{2}$/.test(item.date)
+          && typeof item.title === "string" && item.title.trim();
+      }
+      function loadEvents(){
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          return Array.isArray(saved) ? saved.filter(isValidEvent).map(item => ({
+            ...item,
+            id: item.id,
+            date: item.date,
+            title: item.title.trim().slice(0, 100),
+            time: typeof item.time === "string" ? item.time : "",
+            memo: typeof item.memo === "string" ? item.memo.slice(0, 500) : "",
+            color: normalizeColor(item.color)
+          })) : [];
+        } catch (error) {
+          return [];
+        }
+      }
+      function persist(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); }
+      function normalizeColor(color){ return Object.prototype.hasOwnProperty.call(PALETTE, color) ? color : DEFAULT_COLOR; }
+      function applyEventColor(element, color){
+        const palette = PALETTE[normalizeColor(color)];
+        element.style.setProperty("--event-accent", palette.accent);
+        element.style.setProperty("--event-text", palette.text);
+        element.style.setProperty("--event-tint", palette.tint);
+      }
+      function selectColor(color){
+        selectedColor = normalizeColor(color);
+        colorSwatches.forEach(swatch => swatch.setAttribute("aria-pressed", String(swatch.dataset.color === selectedColor)));
+      }
+      function eventsFor(dateKey){
+        return events.filter(event => event.date === dateKey).sort((a, b) => {
+          if (!a.time && b.time) return 1;
+          if (a.time && !b.time) return -1;
+          return a.time.localeCompare(b.time) || a.title.localeCompare(b.title, "ko");
+        });
+      }
+      function moveMonth(amount){
+        visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + amount, 1);
+        selectedDate = toDateKey(visibleMonth);
+        closeMonthPicker();
+        render();
+      }
+      function openAddModal(dateKey){
+        selectedDate = dateKey;
+        const date = parseDateKey(dateKey);
+        if (date.getMonth() !== visibleMonth.getMonth() || date.getFullYear() !== visibleMonth.getFullYear()) {
+          visibleMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+        }
+        resetForm();
+        render();
+        modalMode.textContent = "Add Event";
+        modalDate.textContent = formatDate(selectedDate);
+        eventOverlay.hidden = false;
+        titleInput.focus();
+      }
+
+      function render(){ renderCalendar(); }
+      function renderCalendar(){
+        monthGrid.replaceChildren();
+        const gridStart = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1 - visibleMonth.getDay());
+
+        for (let index = 0; index < 42; index += 1) {
+          const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + index);
+          const dateKey = toDateKey(date);
+          const dayEvents = eventsFor(dateKey);
+          const cell = document.createElement("div");
+          cell.className = "day";
+          if (date.getMonth() !== visibleMonth.getMonth()) cell.classList.add("other");
+          if (dateKey === selectedDate) cell.classList.add("selected");
+          if (dateKey === toDateKey(today)) cell.classList.add("today");
+          cell.tabIndex = 0;
+          cell.setAttribute("role", "gridcell");
+          cell.setAttribute("aria-selected", String(dateKey === selectedDate));
+          cell.setAttribute("aria-label", `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일, 일정 ${dayEvents.length}개`);
+          cell.addEventListener("click", () => openAddModal(dateKey));
+          cell.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openAddModal(dateKey); }
+          });
+
+          const number = document.createElement("span");
+          number.className = "dayNumber";
+          number.textContent = date.getDate();
+          cell.append(number);
+
+          const list = document.createElement("div");
+          list.className = "events";
+          dayEvents.slice(0, 3).forEach(item => {
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "eventChip";
+            applyEventColor(chip, item.color);
+            chip.title = `${item.time ? `${item.time} ` : ""}${item.title}`;
+            chip.addEventListener("click", event => {
+              event.stopPropagation();
+              selectedDate = dateKey;
+              if (date.getMonth() !== visibleMonth.getMonth()) visibleMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+              render();
+              openEditModal(item.id);
+            });
+            if (item.time) {
+              const time = document.createElement("span");
+              time.className = "eventTime";
+              time.textContent = item.time;
+              chip.append(time);
+            }
+            chip.append(document.createTextNode(item.title));
+            list.append(chip);
+          });
+          if (dayEvents.length > 3) {
+            const more = document.createElement("div");
+            more.className = "more";
+            more.textContent = `+${dayEvents.length - 3} more`;
+            list.append(more);
+          }
+          cell.append(list);
+          monthGrid.append(cell);
+        }
+      }
+
+      function formatDate(dateKey){
+        const date = parseDateKey(dateKey);
+        return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+      }
+
+      function saveEvent(event){
+        event.preventDefault();
+        const title = titleInput.value.trim();
+        if (!title) { titleInput.focus(); return; }
+        const values = { date: selectedDate, title, time: timeInput.value, memo: memoInput.value.trim(), color: selectedColor };
+        if (editingId) {
+          events = events.map(item => item.id === editingId ? { ...item, ...values } : item);
+          showToast(`“${title}” 일정을 수정했어요.`);
+        } else {
+          events.push({ id: createId(), ...values });
+          showToast(`“${title}” 일정을 추가했어요.`);
+        }
+        persist();
+        closeEventModal();
+        render();
+      }
+      function createId(){
+        return globalThis.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      }
+      function openEditModal(id){
+        const item = events.find(event => event.id === id);
+        if (!item) return;
+        editingId = id;
+        selectedDate = item.date;
+        timeInput.value = item.time;
+        titleInput.value = item.title;
+        memoInput.value = item.memo;
+        selectColor(item.color);
+        modalMode.textContent = "Edit Event";
+        modalDate.textContent = formatDate(item.date);
+        saveButton.textContent = "Save";
+        deleteButton.hidden = false;
+        eventOverlay.hidden = false;
+        titleInput.focus();
+      }
+      function resetForm(){
+        editingId = null;
+        eventForm.reset();
+        selectColor(DEFAULT_COLOR);
+        modalMode.textContent = "Add Event";
+        saveButton.textContent = "Add";
+        deleteButton.hidden = true;
+      }
+      function closeEventModal(){
+        eventOverlay.hidden = true;
+        resetForm();
+      }
+      function deleteEditingEvent(){
+        const item = events.find(event => event.id === editingId);
+        if (!item) return;
+        events = events.filter(event => event.id !== editingId);
+        persist();
+        closeEventModal();
+        render();
+        showToast(`“${item.title}” 일정을 삭제했어요.`);
+      }
+      function openMonthPicker(){
+        pickerYearValue = visibleMonth.getFullYear();
+        monthPicker.hidden = false;
+        monthTrigger.setAttribute("aria-expanded", "true");
+        renderMonthPicker();
+        document.getElementById("pickerPrevYear").focus();
+      }
+      function closeMonthPicker(){
+        monthPicker.hidden = true;
+        monthTrigger.setAttribute("aria-expanded", "false");
+      }
+      function renderMonthPicker(){
+        pickerYear.textContent = pickerYearValue;
+        pickerGrid.replaceChildren();
+        MONTH_NAMES.forEach((name, month) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "monthOption";
+          button.textContent = name;
+          if (pickerYearValue === visibleMonth.getFullYear() && month === visibleMonth.getMonth()) button.classList.add("selected");
+          if (pickerYearValue === today.getFullYear() && month === today.getMonth()) button.classList.add("current");
+          button.addEventListener("click", () => {
+            visibleMonth = new Date(pickerYearValue, month, 1);
+            selectedDate = toDateKey(visibleMonth);
+            closeMonthPicker();
+            render();
+          });
+          pickerGrid.append(button);
+        });
+      }
+      function showToast(message){
+        clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.classList.add("show");
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+      }
+
+      render();
+    })();
+  </script>
+</body>
+</html>
