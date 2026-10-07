@@ -1,4 +1,4 @@
-export async function sbFetch(path, { method="GET", query=null, body=null } = {}) {
+export async function sbFetch(path, { method="GET", query=null, body=null, prefer="return=representation" } = {}) {
   const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.__ENV__ || {};
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error("Missing SUPABASE_URL / SUPABASE_ANON_KEY in env.js");
@@ -23,14 +23,22 @@ export async function sbFetch(path, { method="GET", query=null, body=null } = {}
       "apikey": SUPABASE_ANON_KEY,
       "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
       "Content-Type": "application/json",
-      "Prefer": "return=representation"
+      "Prefer": prefer
     },
     body: body ? JSON.stringify(body) : null
   });
 
   if (!res.ok) {
     const t = await res.text().catch(()=> "");
-    throw new Error(`Supabase REST ${res.status}: ${t}`);
+    let payload = null;
+    try { payload = t ? JSON.parse(t) : null; } catch(e) {}
+    const error = new Error(`Supabase REST ${res.status}: ${payload?.message || t}`);
+    error.status = res.status;
+    error.code = payload?.code || null;
+    error.details = payload?.details || null;
+    error.hint = payload?.hint || null;
+    error.responseBody = payload || t;
+    throw error;
   }
 
   // 204 같은 경우 대비

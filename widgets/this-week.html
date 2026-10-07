@@ -1224,6 +1224,17 @@
           </div>
         </div>
 
+        <div class="nextInboxRow" id="thisInboxRow" aria-label="This Week Inbox">
+          <div class="nextInboxLeft">
+            <span class="nextInboxTitle">This Week Inbox</span>
+            <span class="nextInboxCount" id="thisInboxCount">0</span>
+          </div>
+          <div class="nextInboxRight">
+            <button class="btn secondary" id="thisAddBtn" type="button">Add</button>
+            <button class="btn secondary" id="thisShowBtn" type="button">Show</button>
+          </div>
+        </div>
+
         <div class="nextInboxRow" id="nextInboxRow" aria-label="Next Week Inbox">
           <div class="nextInboxLeft">
             <span class="nextInboxTitle">Next Week Inbox</span>
@@ -1322,9 +1333,9 @@
   </div>
 
   <div class="miniOverlay" id="miniOverlay" aria-hidden="true">
-    <div class="miniModal" role="dialog" aria-modal="true" aria-label="Next Week Add">
+    <div class="miniModal" role="dialog" aria-modal="true" aria-label="Inbox Add" id="miniModal">
       <div class="miniHead">
-        <strong>Next Week Inbox에 넣을 한 줄</strong>
+        <strong id="miniTitle">Next Week Inbox에 넣을 한 줄</strong>
         <button class="popClose" id="miniCloseBtn" type="button" aria-label="닫기">✕</button>
       </div>
       <div class="miniBody">
@@ -1337,17 +1348,60 @@
     </div>
   </div>
 
-  <script>
+  <script src="../env.js"></script>
+  <script type="module">
+  (async function main(){
+    /* ========= optional Supabase sync (same passcode/workspace as Today) ========= */
+    let USE_SUPABASE = false;
+    let workspace_id = "local";
+    let sbFetch = null;
+
+    async function renderPasscodeGate(savePasscode){
+      const wrap = document.querySelector(".wrap");
+      if(!wrap) return;
+      wrap.innerHTML = `
+        <div class="card" role="application" aria-label="Passcode Gate">
+          <div class="inner" style="gap:10px;">
+            <div class="top">
+              <div class="title"><img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" /><h1>Passcode</h1></div>
+              <div class="meta">sync</div>
+            </div>
+            <div class="inputRow">
+              <input id="passInput" class="input" type="password" placeholder="패스코드 입력…" />
+              <button class="btn" id="passBtn" type="button" style="min-width:90px;">확인</button>
+            </div>
+            <div style="font-size:12px; color:var(--muted); line-height:1.4;">같은 패스코드를 쓰는 브라우저와 Notion 앱이 같은 데이터를 보게 돼.</div>
+          </div>
+        </div>`;
+      const input = document.getElementById("passInput");
+      const submit = () => {
+        const pass = (input.value || "").trim();
+        if(!pass) return;
+        savePasscode(pass);
+        location.reload();
+      };
+      document.getElementById("passBtn").addEventListener("click", submit);
+      input.addEventListener("keydown", e => { if(e.key === "Enter") submit(); });
+    }
+
+    try{
+      const auth = await import("../core/auth-lite.js");
+      const supa = await import("../core/supabase-rest.js");
+      const ws = await auth.getWorkspaceId();
+      if(!ws){
+        await renderPasscodeGate(auth.savePasscode);
+        return;
+      }
+      workspace_id = ws;
+      sbFetch = supa.sbFetch;
+      USE_SUPABASE = true;
+    }catch(err){
+      console.warn("[This Week Widget] Supabase modules unavailable. Falling back to localStorage.", err);
+    }
+
     /* ========= storage keys ========= */
     const WEEK_PREFIX = "soft_schedule_week_";
     const WEEK_ARCHIVE_KEY = "soft_schedule_week_archive_v2";
-
-    const WORKSPACE_ID_STORAGE_KEY = "soft_schedule_workspace_id_v1";
-    function getWorkspaceIdMaybe(){
-      const v = localStorage.getItem(WORKSPACE_ID_STORAGE_KEY);
-      return (v && String(v).trim()) ? String(v).trim() : "";
-    }
-    const workspace_id = getWorkspaceIdMaybe();
     const TODAY_PREFIX_SCOPED = workspace_id ? `soft_schedule_today_${workspace_id}_` : "soft_schedule_today_";
     const TODAY_PREFIX_FALLBACK = "soft_schedule_today_";
 
@@ -1489,10 +1543,22 @@
       localStorage.setItem(WEEK_ARCHIVE_KEY, JSON.stringify(archive));
     }
 
+    function sortDayItems(items){
+      return [...(items || [])].sort((a, b) => {
+        const ao = a.sort_order == null ? null : Number(a.sort_order);
+        const bo = b.sort_order == null ? null : Number(b.sort_order);
+        if(ao != null || bo != null){
+          if(ao == null) return 1;
+          if(bo == null) return -1;
+          if(bo !== ao) return bo - ao;
+        }
+        return new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime();
+      });
+    }
     function emptyWeekState(){
       const days = {};
       for(let i=0;i<7;i++) days[String(i)] = [];
-      return { days, nextInbox: [] };
+      return { days, thisInbox: [], nextInbox: [] };
     }
     function normalizeWeekState(parsed){
       const base = emptyWeekState();
@@ -1501,11 +1567,345 @@
       if(parsed.days && typeof parsed.days === "object"){
         for(let i=0;i<7;i++){
           const k = String(i);
-          base.days[k] = Array.isArray(parsed.days[k]) ? parsed.days[k] : [];
+          base.days[k] = Array.isArray(parsed.days[k]) ? sortDayItems(parsed.days[k]) : [];
         }
       }
+      base.thisInbox = Array.isArray(parsed.thisInbox) ? parsed.thisInbox : [];
       base.nextInbox = Array.isArray(parsed.nextInbox) ? parsed.nextInbox : [];
       return base;
+    }
+
+    /* ========= Supabase item-per-row sync ========= */
+    const WEEK_SYNC_META_KEY = `soft_schedule_week_row_sync_${workspace_id}_v2`;
+    const syncTimers = new Map();
+    const syncedWeekStates = new Map();
+    const bootstrapStartedAt = new Date().toISOString();
+    let remoteRefreshPromise = null;
+    let localMutationVersion = 0;
+
+    function loadSyncMeta(){
+      try{
+        const parsed = JSON.parse(localStorage.getItem(WEEK_SYNC_META_KEY) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+      }catch(e){ return {}; }
+    }
+    let syncMeta = loadSyncMeta();
+    function saveSyncMeta(){ localStorage.setItem(WEEK_SYNC_META_KEY, JSON.stringify(syncMeta)); }
+    function syncMetaKey(kind, id){ return `${kind}:${String(id)}`; }
+    function getLocalUpdatedAt(kind, id){ return syncMeta[syncMetaKey(kind, id)] || bootstrapStartedAt; }
+    function setLocalUpdatedAt(kind, id, updatedAt){
+      syncMeta[syncMetaKey(kind, id)] = updatedAt || new Date().toISOString();
+    }
+    function cloneWeekState(state){ return normalizeWeekState(JSON.parse(JSON.stringify(state))); }
+    function isoForWeekDay(weekId, dayIndex){
+      const range = parseWeekRangeId(weekId);
+      if(!range) throw new Error(`Invalid week id: ${weekId}`);
+      return addDays(range.start, Number(dayIndex)).toISOString();
+    }
+    function weekIdForDueAt(dueAt){
+      const date = new Date(dueAt);
+      if(Number.isNaN(date.getTime())) return "";
+      return weekIdFromMonday(mondayOfWeek(date));
+    }
+    function dayIndexForDueAt(dueAt){
+      const date = new Date(dueAt);
+      if(Number.isNaN(date.getTime())) return -1;
+      return Math.round((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - mondayOfWeek(date)) / 86400000);
+    }
+    function weekIdForInboxRow(row){
+      const start = ymdToDate(String(row.week_start || "").replaceAll("-", "."));
+      return start ? weekIdFromMonday(start) : "";
+    }
+    function describeSupabaseError(context, err){
+      console.error(`[This Week Widget] ${context}`, {
+        status: err && err.status,
+        code: err && err.code,
+        message: err && err.message,
+        details: err && err.details,
+        hint: err && err.hint,
+        responseBody: err && err.responseBody,
+        error: err
+      });
+    }
+    function itemRow(item, weekId, dayIndex, updatedAt){
+      const row = {
+        id: item.id,
+        workspace_id,
+        title: (item.text || "").trim(),
+        status: item.done ? "done" : "todo",
+        due_at: isoForWeekDay(weekId, dayIndex),
+        deleted: false,
+        updated_at: updatedAt
+      };
+      if(item.details !== undefined) row.details = item.details;
+      if(item.sort_order !== undefined) row.sort_order = item.sort_order;
+      return row;
+    }
+    function inboxRow(item, weekId, bucket, updatedAt){
+      const range = parseWeekRangeId(weekId);
+      if(!range) throw new Error(`Invalid week id: ${weekId}`);
+      return {
+        workspace_id,
+        id: String(item.id),
+        week_start: range.startStr.replaceAll(".", "-"),
+        bucket,
+        title: (item.text || "").trim(),
+        status: item.done ? "done" : "todo",
+        deleted: false,
+        updated_at: updatedAt
+      };
+    }
+    async function loadRemoteRows(){
+      const [items, inboxes] = await Promise.all([
+        sbFetch("items", { query: {
+          select: "id,title,status,details,sort_order,due_at,deleted,updated_at",
+          workspace_id: `eq.${workspace_id}`,
+          due_at: "not.is.null",
+          order: "due_at.asc,sort_order.desc.nullslast,updated_at.desc",
+          limit: "5000"
+        }}),
+        sbFetch("weekly_inbox_items", { query: {
+          select: "workspace_id,id,week_start,bucket,title,status,deleted,updated_at",
+          workspace_id: `eq.${workspace_id}`,
+          order: "updated_at.asc",
+          limit: "5000"
+        }})
+      ]);
+      return { items: items || [], inboxes: inboxes || [] };
+    }
+    async function upsertItem(row){
+      return sbFetch("items?on_conflict=id", {
+        method:"POST",
+        body:[row],
+        prefer:"return=representation,resolution=merge-duplicates"
+      });
+    }
+    async function patchItemDeleted(id, updatedAt){
+      return sbFetch(`items?id=eq.${encodeURIComponent(id)}`, {
+        method:"PATCH", body:{ deleted:true, updated_at:updatedAt }
+      });
+    }
+    async function patchItemFields(id, patch){
+      return sbFetch(`items?id=eq.${encodeURIComponent(id)}`, {
+        method:"PATCH", body:patch
+      });
+    }
+    async function upsertInbox(row){
+      return sbFetch("weekly_inbox_items?on_conflict=workspace_id,id", {
+        method:"POST",
+        body:[row],
+        prefer:"return=representation,resolution=merge-duplicates"
+      });
+    }
+    async function patchInboxDeleted(id, updatedAt){
+      return sbFetch(`weekly_inbox_items?workspace_id=eq.${encodeURIComponent(workspace_id)}&id=eq.${encodeURIComponent(String(id))}`, {
+        method:"PATCH", body:{ deleted:true, updated_at:updatedAt }
+      });
+    }
+    function remoteItemToLocal(row){
+      return {
+        id:row.id,
+        text:row.title || "",
+        done:row.status === "done",
+        details:row.details ?? "",
+        sort_order:row.sort_order ?? null,
+        due_at:row.due_at ?? null,
+        updated_at:row.updated_at ?? null
+      };
+    }
+    function remoteInboxToLocal(row){ return { id:String(row.id), text:row.title || "", done:row.status === "done" }; }
+    function chooseMergedItem(localItem, remoteRow, kind){
+      if(!localItem) return remoteRow.deleted ? null : (kind === "item" ? remoteItemToLocal(remoteRow) : remoteInboxToLocal(remoteRow));
+      const localAt = getLocalUpdatedAt(kind, localItem.id);
+      const remoteAt = remoteRow.updated_at || "";
+      if(remoteAt > localAt) return remoteRow.deleted ? null : (kind === "item" ? remoteItemToLocal(remoteRow) : remoteInboxToLocal(remoteRow));
+      if(kind === "item"){
+        return {
+          ...localItem,
+          details: localItem.details ?? remoteRow.details ?? "",
+          sort_order: localItem.sort_order ?? remoteRow.sort_order ?? null,
+          due_at: localItem.due_at ?? remoteRow.due_at ?? null,
+          updated_at: localItem.updated_at ?? remoteRow.updated_at ?? null
+        };
+      }
+      return localItem;
+    }
+    async function bootstrapWeekSync(expectedMutationVersion = null){
+      const remote = await loadRemoteRows();
+      if(expectedMutationVersion !== null && expectedMutationVersion !== localMutationVersion) return false;
+      const localIds = [];
+      for(let i=0;i<localStorage.length;i++){
+        const key = localStorage.key(i);
+        if(key && key.startsWith(WEEK_PREFIX) && parseWeekRangeId(key.slice(WEEK_PREFIX.length))) localIds.push(key.slice(WEEK_PREFIX.length));
+      }
+      const remoteByWeek = new Map();
+      const ensureRemoteWeek = id => {
+        if(!remoteByWeek.has(id)) remoteByWeek.set(id, { items:[], inboxes:[] });
+        return remoteByWeek.get(id);
+      };
+      for(const row of remote.items){
+        const weekId = weekIdForDueAt(row.due_at);
+        const dayIndex = dayIndexForDueAt(row.due_at);
+        if(weekId && dayIndex >= 0 && dayIndex < 7) ensureRemoteWeek(weekId).items.push({...row, dayIndex});
+      }
+      for(const row of remote.inboxes){
+        const weekId = weekIdForInboxRow(row);
+        if(weekId && (row.bucket === "this_week" || row.bucket === "next_week")) ensureRemoteWeek(weekId).inboxes.push(row);
+      }
+      const remoteItemById = new Map(remote.items.map(row => [String(row.id), row]));
+      const weekIds = new Set([...localIds, ...remoteByWeek.keys()]);
+      for(const weekId of weekIds){
+        if(expectedMutationVersion !== null && expectedMutationVersion !== localMutationVersion) return false;
+        const key = WEEK_PREFIX + weekId;
+        const hasLocal = localStorage.getItem(key) !== null;
+        const resolved = hasLocal ? loadWeek(key) : emptyWeekState();
+        const remoteWeek = remoteByWeek.get(weekId) || { items:[], inboxes:[] };
+        // A Today date edit can move the same row to another day or week. Remove
+        // the stale local placement before merging the authoritative remote row.
+        for(let day=0;day<7;day++){
+          resolved.days[String(day)] = resolved.days[String(day)].filter(item => {
+            const remoteRow = remoteItemById.get(String(item.id));
+            if(!remoteRow) return true;
+            const remoteWeekId = weekIdForDueAt(remoteRow.due_at);
+            const remoteIsNewer = (remoteRow.updated_at || "") > getLocalUpdatedAt("item", item.id);
+            return !(remoteIsNewer && (remoteRow.deleted || remoteWeekId !== weekId));
+          });
+        }
+        for(const row of remoteWeek.items){
+          const day = String(row.dayIndex);
+          let keepNewerLocalPlacement = false;
+          for(let otherDay=0;otherDay<7;otherDay++){
+            if(String(otherDay) === day) continue;
+            const otherItems = resolved.days[String(otherDay)];
+            const otherIndex = otherItems.findIndex(item => String(item.id) === String(row.id));
+            if(otherIndex < 0) continue;
+            const localItem = otherItems[otherIndex];
+            if((row.updated_at || "") <= getLocalUpdatedAt("item", localItem.id)){
+              otherItems[otherIndex] = chooseMergedItem(localItem, row, "item");
+              keepNewerLocalPlacement = true;
+            }else{
+              otherItems.splice(otherIndex, 1);
+            }
+          }
+          if(keepNewerLocalPlacement) continue;
+          const index = resolved.days[day].findIndex(item => String(item.id) === String(row.id));
+          const local = index >= 0 ? resolved.days[day][index] : null;
+          const merged = chooseMergedItem(local, row, "item");
+          if(index >= 0){ if(merged) resolved.days[day][index] = merged; else resolved.days[day].splice(index, 1); }
+          else if(merged) resolved.days[day].push(merged);
+          if((row.updated_at || "") > getLocalUpdatedAt("item", row.id)) setLocalUpdatedAt("item", row.id, row.updated_at);
+        }
+        for(const row of remoteWeek.inboxes){
+          const target = row.bucket === "this_week" ? "thisInbox" : "nextInbox";
+          const index = resolved[target].findIndex(item => String(item.id) === String(row.id));
+          const local = index >= 0 ? resolved[target][index] : null;
+          const merged = chooseMergedItem(local, row, "inbox");
+          if(index >= 0){ if(merged) resolved[target][index] = merged; else resolved[target].splice(index, 1); }
+          else if(merged) resolved[target].push(merged);
+          if((row.updated_at || "") > getLocalUpdatedAt("inbox", row.id)) setLocalUpdatedAt("inbox", row.id, row.updated_at);
+        }
+        for(let day=0;day<7;day++) resolved.days[String(day)] = sortDayItems(resolved.days[String(day)]);
+        saveWeek(key, resolved, false);
+        syncedWeekStates.set(weekId, cloneWeekState(resolved));
+        await syncWeekState(weekId, resolved, remoteWeek);
+        syncedWeekStates.set(weekId, cloneWeekState(resolved));
+      }
+      saveSyncMeta();
+      return true;
+    }
+    async function syncWeekState(weekId, state, knownRemote = null){
+      const current = normalizeWeekState(state);
+      const previous = syncedWeekStates.get(weekId) || emptyWeekState();
+      const remoteItems = new Map((knownRemote ? knownRemote.items : []).map(row => [String(row.id), row]));
+      const remoteInboxes = new Map((knownRemote ? knownRemote.inboxes : []).map(row => [String(row.id), row]));
+      const now = new Date().toISOString();
+
+      const currentItems = new Map();
+      const previousItems = new Map();
+      for(let day=0;day<7;day++){
+        for(const item of (current.days[String(day)] || [])) currentItems.set(String(item.id), { item, day });
+        for(const item of (previous.days[String(day)] || [])) previousItems.set(String(item.id), { item, day });
+      }
+      for(const [id, entry] of currentItems){
+        const old = previousItems.get(id);
+        const remote = remoteItems.get(id);
+        const localChanged = !old || old.day !== entry.day || old.item.text !== entry.item.text || !!old.item.done !== !!entry.item.done;
+        const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.title !== entry.item.text || (remote.status === "done") !== !!entry.item.done || Number(remote.dayIndex) !== entry.day);
+        if(localChanged || remoteDiffers){
+          const updatedAt = localChanged ? now : getLocalUpdatedAt("item", entry.item.id);
+          setLocalUpdatedAt("item", entry.item.id, updatedAt);
+          if(old && localChanged){
+            const patch = { updated_at: updatedAt };
+            if(old.item.text !== entry.item.text) patch.title = (entry.item.text || "").trim();
+            if(!!old.item.done !== !!entry.item.done) patch.status = entry.item.done ? "done" : "todo";
+            if(old.day !== entry.day) patch.due_at = isoForWeekDay(weekId, entry.day);
+            await patchItemFields(entry.item.id, patch);
+          }else{
+            await upsertItem(itemRow(entry.item, weekId, entry.day, updatedAt));
+          }
+        }
+      }
+      for(const [id, old] of previousItems){
+        if(!currentItems.has(id)){ setLocalUpdatedAt("item", old.item.id, now); await patchItemDeleted(old.item.id, now); }
+      }
+
+      const currentInboxes = new Map();
+      const previousInboxes = new Map();
+      for(const [key, bucket] of [["thisInbox","this_week"],["nextInbox","next_week"]]){
+        for(const item of (current[key] || [])) currentInboxes.set(String(item.id), { item, bucket });
+        for(const item of (previous[key] || [])) previousInboxes.set(String(item.id), { item, bucket });
+      }
+      for(const [id, entry] of currentInboxes){
+        const old = previousInboxes.get(id);
+        const remote = remoteInboxes.get(id);
+        const localChanged = !old || old.bucket !== entry.bucket || old.item.text !== entry.item.text || !!old.item.done !== !!entry.item.done;
+        const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.bucket !== entry.bucket || remote.title !== entry.item.text || (remote.status === "done") !== !!entry.item.done);
+        if(localChanged || remoteDiffers){
+          const updatedAt = localChanged ? now : getLocalUpdatedAt("inbox", entry.item.id);
+          setLocalUpdatedAt("inbox", entry.item.id, updatedAt);
+          await upsertInbox(inboxRow(entry.item, weekId, entry.bucket, updatedAt));
+        }
+      }
+      for(const [id, old] of previousInboxes){
+        if(!currentInboxes.has(id)){ setLocalUpdatedAt("inbox", old.item.id, now); await patchInboxDeleted(old.item.id, now); }
+      }
+      syncedWeekStates.set(weekId, cloneWeekState(current));
+      saveSyncMeta();
+    }
+    function queueWeekSync(weekId, state){
+      if(!USE_SUPABASE) return;
+      localMutationVersion += 1;
+      const snapshot = cloneWeekState(state);
+      clearTimeout(syncTimers.get(weekId));
+      syncTimers.set(weekId, setTimeout(async () => {
+        try{ await syncWeekState(weekId, snapshot); }
+        catch(err){ describeSupabaseError("row sync failed", err); showToast("서버 저장 실패. 로컬에는 저장했어."); }
+        finally{ syncTimers.delete(weekId); }
+      }, 250));
+    }
+
+    async function refreshFromRemote(){
+      if(!USE_SUPABASE || syncTimers.size > 0) return;
+      if(remoteRefreshPromise) return remoteRefreshPromise;
+      remoteRefreshPromise = (async () => {
+        try{
+          const expectedMutationVersion = localMutationVersion;
+          const applied = await bootstrapWeekSync(expectedMutationVersion);
+          if(!applied) return;
+          weekState = loadWeek(getWeekKey());
+          renderWeekList();
+          if(nextPopover.classList.contains("open")) renderNextPopover();
+          if(modalOverlay.classList.contains("open")){
+            buildWeeks();
+            if(pickedWeekId) renderWeekPreview(pickedWeekId);
+          }
+        }catch(err){
+          describeSupabaseError("remote refresh failed", err);
+        }finally{
+          remoteRefreshPromise = null;
+        }
+      })();
+      return remoteRefreshPromise;
     }
 
     function loadWeek(key){
@@ -1516,8 +1916,9 @@
         return normalizeWeekState(parsed);
       }catch(e){ return emptyWeekState(); }
     }
-    function saveWeek(key, data){
+    function saveWeek(key, data, sync = true){
       localStorage.setItem(key, JSON.stringify(normalizeWeekState(data)));
+      if(sync) queueWeekSync(key.slice(WEEK_PREFIX.length), data);
     }
 
     // keep older weeks saved to archive store when they pass
@@ -1575,11 +1976,15 @@
 
     const toast = document.getElementById("toast");
 
+    const thisInboxCount = document.getElementById("thisInboxCount");
+    const thisAddBtn = document.getElementById("thisAddBtn");
+    const thisShowBtn = document.getElementById("thisShowBtn");
     const nextInboxCount = document.getElementById("nextInboxCount");
     const nextAddBtn = document.getElementById("nextAddBtn");
     const nextShowBtn = document.getElementById("nextShowBtn");
 
     const nextPopover = document.getElementById("nextPopover");
+    const nextPopTitle = document.getElementById("nextPopTitle");
     const nextPopCloseBtn = document.getElementById("nextPopCloseBtn");
     const nextPopList = document.getElementById("nextPopList");
     const nextCopyBtn = document.getElementById("nextCopyBtn");
@@ -1605,6 +2010,8 @@
     const downloadWeekMdBtn = document.getElementById("downloadWeekMdBtn");
 
     const miniOverlay = document.getElementById("miniOverlay");
+    const miniModal = document.getElementById("miniModal");
+    const miniTitle = document.getElementById("miniTitle");
     const miniCloseBtn = document.getElementById("miniCloseBtn");
     const miniCancelBtn = document.getElementById("miniCancelBtn");
     const miniOkBtn = document.getElementById("miniOkBtn");
@@ -1641,6 +2048,15 @@
 
     function getWeekId(){ return weekIdFromMonday(viewMonday); }
     function getWeekKey(){ return WEEK_PREFIX + getWeekId(); }
+
+    if(USE_SUPABASE){
+      try{ await bootstrapWeekSync(); }
+      catch(err){
+        describeSupabaseError("initial sync failed", err);
+        USE_SUPABASE = false;
+        setTimeout(() => showToast("서버 연결 실패. 로컬 모드로 열었어."), 0);
+      }
+    }
 
     let weekArchive = autoArchivePastWeeks();
     let weekState = loadWeek(getWeekKey());
@@ -1693,13 +2109,20 @@
       return { total, done };
     }
 
-    function renderNextInboxRow(){
-      const arr = weekState.nextInbox || [];
-      nextInboxCount.textContent = String(arr.length);
+    let activeInboxKey = "nextInbox";
+
+    function inboxLabel(key){
+      return key === "thisInbox" ? "This Week Inbox" : "Next Week Inbox";
+    }
+
+    function renderInboxRows(){
+      thisInboxCount.textContent = String((weekState.thisInbox || []).length);
+      nextInboxCount.textContent = String((weekState.nextInbox || []).length);
     }
 
     function renderNextPopover(){
-      const arr = weekState.nextInbox || [];
+      const arr = weekState[activeInboxKey] || [];
+      nextPopTitle.textContent = inboxLabel(activeInboxKey);
       nextPopList.innerHTML = "";
 
       if(arr.length === 0){
@@ -1724,7 +2147,7 @@
     }
 
     function renderWeekList(){
-      rangeText.textContent = getWeekId();
+      updateServerStatus();
       weekList.innerHTML = "";
 
       let allTotal = 0;
@@ -1803,11 +2226,28 @@
       }
 
       countText.textContent = `${allDone}/${allTotal} done`;
-      renderNextInboxRow();
+      renderInboxRows();
+    }
+
+    function updateServerStatus(){
+      rangeText.textContent = `${getWeekId()} · ${USE_SUPABASE ? "서버" : "로컬"} · ${workspace_id.slice(0, 8)}`;
     }
 
     buildWeekdayPills();
     renderWeekList();
+
+    // Today refreshes from Supabase when it is loaded (and its history modal
+    // explicitly reloads). This Week stays open much longer in two clients, so
+    // also re-check remote rows periodically and whenever the page is resumed.
+    const REMOTE_REFRESH_INTERVAL_MS = 15000;
+    setInterval(() => {
+      if(document.visibilityState === "visible") refreshFromRemote();
+    }, REMOTE_REFRESH_INTERVAL_MS);
+    document.addEventListener("visibilitychange", () => {
+      if(document.visibilityState === "visible") refreshFromRemote();
+    });
+    window.addEventListener("focus", refreshFromRemote);
+    window.addEventListener("pageshow", refreshFromRemote);
 
     function addItemToDay(dayIndex, text){
       const t = (text || "").trim();
@@ -1818,7 +2258,11 @@
       arr.unshift({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
-        done: false
+        done: false,
+        details: "",
+        sort_order: Date.now(),
+        due_at: isoForWeekDay(getWeekId(), dayIndex),
+        updated_at: new Date().toISOString()
       });
       persistCurrentWeek();
       renderWeekList();
@@ -1850,57 +2294,58 @@
       showToast("완료를 지웠어.");
     }
 
-    function addNextInbox(text){
+    function addInbox(text){
       const t = (text || "").trim();
       if(!t) return;
 
-      const arr = weekState.nextInbox || (weekState.nextInbox = []);
+      const arr = weekState[activeInboxKey] || (weekState[activeInboxKey] = []);
       arr.unshift({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
         done: false
       });
       persistCurrentWeek();
-      renderNextInboxRow();
+      renderInboxRows();
       if(nextPopover.classList.contains("open")) renderNextPopover();
-      showToast("Next Week Inbox에 추가했어.");
+      showToast(`${inboxLabel(activeInboxKey)}에 추가했어.`);
     }
 
-    function toggleNextInbox(id){
-      const arr = weekState.nextInbox || [];
-      weekState.nextInbox = arr.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+    function toggleInbox(id){
+      const arr = weekState[activeInboxKey] || [];
+      weekState[activeInboxKey] = arr.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
       persistCurrentWeek();
-      renderNextInboxRow();
+      renderInboxRows();
       renderNextPopover();
     }
 
-    function deleteNextInbox(id){
-      const arr = weekState.nextInbox || [];
-      weekState.nextInbox = arr.filter(it => it.id !== id);
+    function deleteInbox(id){
+      const arr = weekState[activeInboxKey] || [];
+      weekState[activeInboxKey] = arr.filter(it => it.id !== id);
       persistCurrentWeek();
-      renderNextInboxRow();
+      renderInboxRows();
       renderNextPopover();
     }
 
-    function clearNextDone(){
-      const arr = weekState.nextInbox || [];
-      weekState.nextInbox = arr.filter(it => !it.done);
+    function clearInboxDone(){
+      const arr = weekState[activeInboxKey] || [];
+      weekState[activeInboxKey] = arr.filter(it => !it.done);
       persistCurrentWeek();
-      renderNextInboxRow();
+      renderInboxRows();
       renderNextPopover();
-      showToast("Next Week 완료를 지웠어.");
+      showToast(`${inboxLabel(activeInboxKey)} 완료를 지웠어.`);
     }
 
-    async function copyNextInbox(){
-      const arr = weekState.nextInbox || [];
+    async function copyInbox(){
+      const arr = weekState[activeInboxKey] || [];
+      const label = inboxLabel(activeInboxKey);
       const lines = [];
-      lines.push(`# Next Week Inbox`);
+      lines.push(`# ${label}`);
       lines.push(`> from ${getWeekId()}`);
       lines.push("");
       if(arr.length === 0) lines.push(`- (empty)`);
       else for(const it of arr) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
       const ok = await copyToClipboard(lines.join("\n"));
-      showToast(ok ? "Next Week Inbox를 복사했어." : "복사 실패 (권한 확인)");
+      showToast(ok ? `${label}를 복사했어.` : "복사 실패 (권한 확인)");
     }
 
     weekList.addEventListener("click", (e) => {
@@ -1949,7 +2394,7 @@
         showToast("현재 보고 있는 주가 이번 주가 아니야.");
         return;
       }
-      const idx = Math.min(6, Math.max(0, Math.round((today - mon)/86400000)));
+      const idx = (today.getDay() + 6) % 7;
       setSelectedDay(idx);
       showToast("Today 기준으로 이동했어.");
     });
@@ -2081,7 +2526,8 @@
       nextPopover.style.top  = `${top}px`;
     }
 
-    function openNextPopover(anchorEl){
+    function openNextPopover(anchorEl, inboxKey){
+      activeInboxKey = inboxKey;
       renderNextPopover();
       nextPopover.classList.add("open");
       nextPopover.setAttribute("aria-hidden", "false");
@@ -2097,7 +2543,11 @@
       nextPopover.setAttribute("aria-hidden", "true");
     }
 
-    function openMiniAdd(){
+    function openMiniAdd(inboxKey){
+      activeInboxKey = inboxKey;
+      const label = inboxLabel(activeInboxKey);
+      miniTitle.textContent = `${label}에 넣을 한 줄`;
+      miniModal.setAttribute("aria-label", `${label} Add`);
       miniOverlay.classList.add("open");
       miniOverlay.setAttribute("aria-hidden","false");
       miniInput.value = "";
@@ -2113,11 +2563,12 @@
         closeMiniAdd();
         return;
       }
-      addNextInbox(text);
+      addInbox(text);
       closeMiniAdd();
     }
 
-    nextAddBtn.addEventListener("click", () => openMiniAdd());
+    thisAddBtn.addEventListener("click", () => openMiniAdd("thisInbox"));
+    nextAddBtn.addEventListener("click", () => openMiniAdd("nextInbox"));
     miniCloseBtn.addEventListener("click", closeMiniAdd);
     miniCancelBtn.addEventListener("click", closeMiniAdd);
     miniOkBtn.addEventListener("click", confirmMiniAdd);
@@ -2127,10 +2578,20 @@
       if(e.key === "Escape"){ closeMiniAdd(); }
     });
 
+    function toggleInboxPopover(anchorEl, inboxKey){
+      const isSameOpen = nextPopover.classList.contains("open") && activeInboxKey === inboxKey;
+      if(isSameOpen) closeNextPopover();
+      else openNextPopover(anchorEl, inboxKey);
+    }
+
+    thisShowBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleInboxPopover(thisShowBtn, "thisInbox");
+    });
+
     nextShowBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      if(nextPopover.classList.contains("open")) closeNextPopover();
-      else openNextPopover(nextShowBtn);
+      toggleInboxPopover(nextShowBtn, "nextInbox");
     });
 
     nextPopCloseBtn.addEventListener("click", closeNextPopover);
@@ -2139,24 +2600,24 @@
       const check = e.target.closest("[data-nx-id]");
       const del = e.target.closest("[data-nx-del]");
       if(check){
-        toggleNextInbox(check.dataset.nxId);
+        toggleInbox(check.dataset.nxId);
         return;
       }
       if(del){
-        deleteNextInbox(del.dataset.nxDel);
+        deleteInbox(del.dataset.nxDel);
         return;
       }
     });
 
-    nextCopyBtn.addEventListener("click", copyNextInbox);
-    nextClearDoneBtn.addEventListener("click", clearNextDone);
+    nextCopyBtn.addEventListener("click", copyInbox);
+    nextClearDoneBtn.addEventListener("click", clearInboxDone);
 
     nextPopover.addEventListener("click", (e)=> e.stopPropagation());
 
     document.addEventListener("click", (e) => {
       if(!nextPopover.classList.contains("open")) return;
       const inside = nextPopover.contains(e.target);
-      const onBtn = nextShowBtn.contains(e.target);
+      const onBtn = nextShowBtn.contains(e.target) || thisShowBtn.contains(e.target);
       if(!inside && !onBtn) closeNextPopover();
     });
 
@@ -2167,10 +2628,14 @@
     });
 
     window.addEventListener("resize", () => {
-      if(nextPopover.classList.contains("open")) placeNextPopover(nextShowBtn);
+      if(nextPopover.classList.contains("open")){
+        placeNextPopover(activeInboxKey === "thisInbox" ? thisShowBtn : nextShowBtn);
+      }
     }, { passive: true });
     window.addEventListener("scroll", () => {
-      if(nextPopover.classList.contains("open")) placeNextPopover(nextShowBtn);
+      if(nextPopover.classList.contains("open")){
+        placeNextPopover(activeInboxKey === "thisInbox" ? thisShowBtn : nextShowBtn);
+      }
     }, { passive: true });
 
     function formatWeekForCopy(weekId, data){
@@ -2192,6 +2657,11 @@
           lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
         }
       }
+
+      const tx = Array.isArray(data.thisInbox) ? data.thisInbox : [];
+      lines.push(`\nThis Week Inbox`);
+      if(tx.length === 0) lines.push(`- (empty)`);
+      else for(const it of tx) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
 
       const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
       lines.push(`\nNext Week Inbox`);
@@ -2222,6 +2692,17 @@
         }
         lines.push("");
       }
+
+      lines.push(`## This Week Inbox`);
+      const tx = Array.isArray(data.thisInbox) ? data.thisInbox : [];
+      if(tx.length === 0){
+        lines.push(`- (empty)`);
+      }else{
+        for(const it of tx){
+          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+        }
+      }
+      lines.push("");
 
       lines.push(`## Next Week Inbox`);
       const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
@@ -2336,8 +2817,11 @@
           if(tx.includes(lowerQ)) return true;
         }
       }
-      const nx = (data && Array.isArray(data.nextInbox)) ? data.nextInbox : [];
-      for(const it of nx){
+      const inboxes = [
+        ...(data && Array.isArray(data.thisInbox) ? data.thisInbox : []),
+        ...(data && Array.isArray(data.nextInbox) ? data.nextInbox : [])
+      ];
+      for(const it of inboxes){
         const tx = String(it.text || "").toLowerCase();
         if(tx.includes(lowerQ)) return true;
       }
@@ -2559,8 +3043,9 @@
     /* ✅ 프리뷰: done 토글 + delete(Undo 3s) */
     function togglePreviewDone(weekId, sec, itemId){
       const data = loadWeekStateById(weekId);
-      if(sec === "nx"){
-        data.nextInbox = (data.nextInbox || []).map(it => it.id === itemId ? ({...it, done: !it.done}) : it);
+      if(sec === "tx" || sec === "nx"){
+        const key = sec === "tx" ? "thisInbox" : "nextInbox";
+        data[key] = (data[key] || []).map(it => it.id === itemId ? ({...it, done: !it.done}) : it);
       }else{
         const day = String(sec);
         const arr = (data.days && data.days[day]) ? data.days[day] : [];
@@ -2577,12 +3062,13 @@
       let removed = null;
       let removedIndex = -1;
 
-      if(sec === "nx"){
-        const arr = data.nextInbox || [];
+      if(sec === "tx" || sec === "nx"){
+        const key = sec === "tx" ? "thisInbox" : "nextInbox";
+        const arr = data[key] || [];
         removedIndex = arr.findIndex(it => it.id === itemId);
         if(removedIndex >= 0){
           removed = arr[removedIndex];
-          data.nextInbox = arr.filter(it => it.id !== itemId);
+          data[key] = arr.filter(it => it.id !== itemId);
         }
       }else{
         const day = String(sec);
@@ -2602,11 +3088,12 @@
 
       showModalToast("삭제했어.", () => {
         const cur = loadWeekStateById(weekId);
-        if(sec === "nx"){
-          const arr = cur.nextInbox || [];
+        if(sec === "tx" || sec === "nx"){
+          const key = sec === "tx" ? "thisInbox" : "nextInbox";
+          const arr = cur[key] || [];
           const idx = Math.min(Math.max(0, removedIndex), arr.length);
           arr.splice(idx, 0, removed);
-          cur.nextInbox = arr;
+          cur[key] = arr;
         }else{
           const day = String(sec);
           const arr = (cur.days && cur.days[day]) ? cur.days[day] : (cur.days[day] = []);
@@ -2691,6 +3178,29 @@
         }
       }
 
+      const tx = Array.isArray(data.thisInbox) ? data.thisInbox : [];
+      rows.push(`<div style="margin-top:10px; color:rgba(30,30,30,0.72); font-size:12.5px; font-family:EnterSanChaek, ui-sans-serif, system-ui;">This Week Inbox</div>`);
+      if(tx.length === 0){
+        rows.push(`<div style="color: rgba(30,30,30,0.45); font-size:12px;">(empty)</div>`);
+      }else{
+        const viewTx = q ? tx.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase())) : tx;
+        for(const it of viewTx){
+          const badgeCls = it.done ? "badge done" : "badge";
+          const badgeText = it.done ? "done" : "todo";
+          const textHtml = highlight(it.text || "", q);
+          rows.push(`
+            <div class="pItem">
+              <span class="${badgeCls}">${badgeText}</span>
+              <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
+                ${textHtml}
+              </span>
+              ${togBtnHtml(id, "tx", it.id, it.done)}
+              ${trashBtnHtml(id, "tx", it.id)}
+            </div>
+          `);
+        }
+      }
+
       const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
       rows.push(`<div style="margin-top:10px; color:rgba(30,30,30,0.72); font-size:12.5px; font-family:EnterSanChaek, ui-sans-serif, system-ui;">Next Week Inbox</div>`);
       if(nx.length === 0){
@@ -2769,7 +3279,13 @@
         const ok = confirm(`이 주차(로컬 데이터)를 삭제할까? (되돌리기 불가)\n\n${id}`);
         if(!ok) return;
 
+        if(USE_SUPABASE){
+          try{ await syncWeekState(id, emptyWeekState()); }
+          catch(err){ describeSupabaseError("week delete sync failed", err); showToast("서버 삭제 실패. 로컬에서는 삭제했어."); }
+        }
         localStorage.removeItem(WEEK_PREFIX + id);
+        try{ await deleteRemoteWeek(id); }
+        catch(err){ console.error("[This Week Widget] remote delete failed:", err); showToast("서버 삭제 실패. 로컬에서는 삭제했어."); }
         selectedWeeks.delete(id);
         if(pickedWeekId === id) pickedWeekId = null;
 
@@ -2888,14 +3404,20 @@
       showToast(ok ? "Export(복사) 완료." : "복사 실패 (권한 확인)");
     });
 
-    bulkDeleteBtn.addEventListener("click", () => {
+    bulkDeleteBtn.addEventListener("click", async () => {
       const ids = getSelectedIds();
       if(ids.length === 0){ showToast("선택된 주차가 없어."); return; }
       const ok = confirm(`선택한 ${ids.length}개 주차(로컬 데이터)를 삭제할까? (되돌리기 불가)`);
       if(!ok) return;
 
       for(const id of ids){
+        if(USE_SUPABASE){
+          try{ await syncWeekState(id, emptyWeekState()); }
+          catch(err){ describeSupabaseError("week delete sync failed", err); }
+        }
         localStorage.removeItem(WEEK_PREFIX + id);
+        try{ await deleteRemoteWeek(id); }
+        catch(err){ console.error("[This Week Widget] remote delete failed:", err); }
         selectedWeeks.delete(id);
         if(pickedWeekId === id) pickedWeekId = null;
       }
@@ -2923,6 +3445,7 @@
         if(modalOverlay.classList.contains("open")) closeModal();
       }
     });
+  })();
   </script>
 </body>
 </html>
