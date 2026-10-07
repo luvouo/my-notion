@@ -156,8 +156,13 @@
       border-radius: 999px;
       display: grid;
       place-items: center;
-      font-size: 17px;
       line-height: 1;
+    }
+
+    .nav-button svg{
+      display: block;
+      width: 13px;
+      height: 13px;
     }
 
     .today-button{
@@ -319,9 +324,17 @@
         </header>
 
         <nav class="toolbar" aria-label="달력 월 이동">
-          <button class="nav-button" id="previousMonth" type="button" aria-label="이전 달">‹</button>
+          <button class="nav-button" id="previousMonth" type="button" aria-label="이전 달">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
           <button class="today-button" id="todayButton" type="button" aria-label="오늘로 이동" title="Go to today"></button>
-          <button class="nav-button" id="nextMonth" type="button" aria-label="다음 달">›</button>
+          <button class="nav-button" id="nextMonth" type="button" aria-label="다음 달">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
         </nav>
 
         <div class="weekdays" aria-hidden="true">
@@ -373,7 +386,7 @@
         const firstCell = new Date(year, month, 1 - visibleMonth.getDay());
         const fragment = document.createDocumentFragment();
 
-        monthLabel.textContent = `${year}년 ${month + 1}월`;
+        monthLabel.textContent = String(year);
         todayButton.textContent = `${month + 1}월`;
         calendarDates.replaceChildren();
 
