@@ -343,11 +343,10 @@
             <button class="iconBtn" id="prevMonth" type="button" aria-label="이전 달">
               <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </button>
-            <button class="btn" id="monthTrigger" type="button" aria-haspopup="dialog" aria-expanded="false">Month</button>
+            <button class="btn" id="monthTrigger" type="button" aria-haspopup="dialog" aria-expanded="false"></button>
             <button class="iconBtn" id="nextMonth" type="button" aria-label="다음 달">
               <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </button>
-            <button class="btn" id="todayBtn" type="button">Today</button>
           </nav>
         </header>
 
@@ -430,8 +429,8 @@
         lavender: { accent: "rgba(174,156,214,.72)", text: "rgba(115,92,158,.78)", tint: "rgba(242,238,249,.46)" },
         pink: { accent: "rgba(222,157,179,.72)", text: "rgba(166,93,118,.78)", tint: "rgba(252,238,243,.46)" },
         sky: { accent: "rgba(142,190,222,.74)", text: "rgba(79,131,168,.80)", tint: "rgba(237,247,252,.48)" },
-        mint: { accent: "rgba(102,183,156,.82)", text: "rgba(62,135,111,.86)", tint: "#c5e9dd" },
-        peach: { accent: "rgba(218,151,151,.82)", text: "rgba(161,92,92,.86)", tint: "#f3cece" }
+        mint: { accent: "rgba(102,183,156,.82)", text: "rgba(62,135,111,.86)", tint: "#e8fdec" },
+        peach: { accent: "rgba(218,151,151,.82)", text: "rgba(161,92,92,.86)", tint: "#ffe4e4" }
       };
       const MONTH_NAMES = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
       const today = startOfDay(new Date());
@@ -463,15 +462,16 @@
 
       document.getElementById("prevMonth").addEventListener("click", () => moveMonth(-1));
       document.getElementById("nextMonth").addEventListener("click", () => moveMonth(1));
-      document.getElementById("todayBtn").addEventListener("click", () => {
+      monthTrigger.addEventListener("click", event => {
+        event.stopPropagation();
+        if (monthPicker.hidden) {
+          openMonthPicker();
+          return;
+        }
         visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         selectedDate = toDateKey(today);
         closeMonthPicker();
         render();
-      });
-      monthTrigger.addEventListener("click", event => {
-        event.stopPropagation();
-        monthPicker.hidden ? openMonthPicker() : closeMonthPicker();
       });
       document.getElementById("pickerPrevYear").addEventListener("click", event => {
         event.stopPropagation();
@@ -568,7 +568,10 @@
         titleInput.focus();
       }
 
-      function render(){ renderCalendar(); }
+      function render(){
+        monthTrigger.textContent = `${String(visibleMonth.getMonth() + 1).padStart(2, "0")}월`;
+        renderCalendar();
+      }
       function renderCalendar(){
         monthGrid.replaceChildren();
         const gridStart = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1 - visibleMonth.getDay());
