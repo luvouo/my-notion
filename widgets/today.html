@@ -1575,7 +1575,8 @@
       async function sbUpsertRow(row){
         await sbFetch("items?on_conflict=id", {
           method: "POST",
-          body: [row]
+          body: [row],
+          prefer: "return=representation,resolution=merge-duplicates"
         });
       }
 
