@@ -292,8 +292,10 @@
     .pName{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      font-size: 13.5px;
-      color: rgba(30,30,30,0.88);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.15px;
+      color: rgba(28,30,33,0.92);
       min-width: 0;
       flex: 1 1 auto;
       white-space: nowrap;
@@ -301,6 +303,16 @@
       text-overflow: ellipsis;
       margin: 0;
       padding: 0;
+    }
+
+    .boardTagSummary{
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font: 10.5px "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+      color: rgba(28,30,33,0.46);
+      letter-spacing: -0.05px;
     }
 
     /* ✅ todo stats badge */
@@ -408,6 +420,175 @@
     }
     .footer-actions::-webkit-scrollbar{ display:none; }
     .footer-actions > .btn{ flex: 0 0 auto; }
+
+    .projectCreateRow{ flex: 0 1 auto; }
+    #quickProjectName{
+      flex: 0 1 240px;
+      width: 240px;
+      max-width: 100%;
+    }
+
+    .footerSearch{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      flex:0 0 auto;
+    }
+    .footerIconBtn,
+    .footerClearBtn{
+      border:0;
+      background:transparent;
+      color:rgba(28,30,33,0.58);
+      padding:6px;
+      cursor:pointer;
+      line-height:1;
+      border-radius:8px;
+      display:inline-grid;
+      place-items:center;
+    }
+    .footerIconBtn:hover,
+    .footerClearBtn:hover{
+      color:rgba(28,30,33,0.84);
+      background:rgba(210,218,228,0.16);
+    }
+    .footerIconBtn.hasQuery{ color:rgba(28,30,33,0.86); }
+    .footerSearchPanel{
+      display:none;
+      align-items:center;
+      gap:4px;
+      border-bottom:1px solid rgba(190,200,212,0.58);
+      padding:0 2px 2px;
+    }
+    .footerSearchPanel.open{ display:inline-flex; }
+    .footerSearchInput{
+      width:180px;
+      max-width:42vw;
+      border:0;
+      outline:0;
+      background:transparent;
+      padding:5px 3px;
+      color:rgba(28,30,33,0.82);
+      font:12px "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+    }
+    .footerSearchInput::placeholder{ color:rgba(28,30,33,0.38); }
+
+    /* ===== Project Report ===== */
+    .sectionHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      min-width:0;
+    }
+    .textAction{
+      border:0;
+      background:transparent;
+      padding:2px 0;
+      color:rgba(28,30,33,0.56);
+      cursor:pointer;
+      font:12px "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+    }
+    .textAction:hover{ color:rgba(28,30,33,0.88); }
+    .reportInlineActions{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .reportPreview{
+      display:-webkit-box;
+      -webkit-box-orient:vertical;
+      -webkit-line-clamp:4;
+      overflow:hidden;
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+      font-size:12px;
+      line-height:1.6;
+      color:rgba(28,30,33,0.66);
+    }
+    .reportOverlay{ z-index:6800; }
+    .reportModal{ width:min(820px, 100%); }
+    .reportBody{
+      min-height:min(520px, calc(100vh - 130px));
+      align-content:start;
+    }
+    .reportViewer{
+      font-size:12px;
+      line-height:1.7;
+      color:rgba(28,30,33,0.80);
+      overflow-wrap:anywhere;
+      min-height:180px;
+      padding:4px 2px;
+    }
+    .reportViewer ul,
+    .reportViewer ol,
+    .reportEditor ul,
+    .reportEditor ol{ margin:6px 0; padding-left:22px; }
+    .reportViewer li,
+    .reportEditor li{ margin:2px 0; }
+    .reportEditorWrap{ display:grid; gap:10px; }
+    .reportEditorShell{
+      border:1px solid rgba(190,200,212,0.38);
+      background:rgba(255,255,255,0.62);
+      border-radius:14px;
+      overflow:hidden;
+      min-width:0;
+    }
+    .reportToolbar{
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:4px 10px;
+      padding:8px 10px 2px;
+      color:rgba(28,30,33,0.60);
+    }
+    .reportToolBtn,
+    .reportSelect{
+      border:0;
+      background:transparent;
+      color:inherit;
+      padding:3px 1px;
+      min-height:24px;
+      font:12px "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+      outline:none;
+      box-shadow:none;
+    }
+    .reportToolBtn{ cursor:pointer; }
+    .reportToolBtn:hover,
+    .reportSelect:hover{ color:rgba(28,30,33,0.90); }
+    .reportToolBtn.active{
+      color:rgba(28,30,33,0.94);
+      font-weight:700;
+      text-decoration:underline;
+      text-underline-offset:3px;
+      text-decoration-color:rgba(190,200,212,0.95);
+    }
+    .reportSelect{ cursor:pointer; max-width:128px; }
+    .reportEditor{
+      min-height:320px;
+      padding:8px 10px 12px;
+      outline:none;
+      font-size:12px;
+      line-height:1.65;
+      color:rgba(28,30,33,0.86);
+      overflow-wrap:anywhere;
+    }
+    .reportEditor:empty::before{
+      content:attr(data-placeholder);
+      color:rgba(28,30,33,0.36);
+      pointer-events:none;
+    }
+    .reportEditFooter{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .reportStatus{
+      font:11.5px "EnterSanChaek", ui-sans-serif, system-ui, sans-serif;
+      color:rgba(28,30,33,0.44);
+    }
 
     /* ===== Drag styles ===== */
     .pCompact.dragging{ opacity: 0.55; }
@@ -607,6 +788,10 @@
     .richSelect{ max-width: 150px; min-width:0; }
     .richBtn:hover,
     .richSelect:hover{ border-color: rgba(190,200,212,0.70); }
+    .richBtn.active{
+      background: rgba(210,218,228,0.28);
+      border-color: rgba(190,200,212,0.72);
+    }
     .richEditor{
       min-height: 100px;
       border: 1px solid rgba(190,200,212,0.18);
@@ -1175,15 +1360,9 @@
         </div>
 
         <div class="controls">
-          <div class="inputRow">
+          <div class="inputRow projectCreateRow">
             <input id="quickProjectName" class="input" type="text" placeholder="새 프로젝트 이름…" maxlength="60" />
             <button class="btn secondary" id="addProjectBtn" type="button">Add Project</button>
-            <input id="boardSearch" class="input" type="text" placeholder="보드 검색: 프로젝트명 / 태그 / todo…" maxlength="80" />
-          </div>
-
-          <div style="display:flex; gap:8px; flex-wrap:nowrap;">
-            <button class="btn secondary" id="clearSearchBtn" type="button">Clear Search</button>
-            <button class="btn secondary" id="exportAllBtn" type="button">Export</button>
           </div>
         </div>
 
@@ -1196,6 +1375,19 @@
           </div>
 
           <div class="footer-actions">
+            <div class="footerSearch">
+              <button class="footerIconBtn" id="searchToggleBtn" type="button" aria-label="Search projects" aria-expanded="false">
+                <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+                  <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+                  <path d="M16 16l4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                </svg>
+              </button>
+              <div class="footerSearchPanel" id="footerSearchPanel">
+                <input id="boardSearch" class="footerSearchInput" type="text" placeholder="Project / Tags" maxlength="80" />
+                <button class="footerClearBtn" id="clearSearchBtn" type="button" aria-label="Clear search">×</button>
+              </div>
+            </div>
+            <button class="btn secondary" id="exportAllBtn" type="button">Export</button>
             <button class="btn secondary" id="archiveBtn" type="button">History / Archive</button>
           </div>
         </div>
@@ -1241,6 +1433,63 @@
           <div class="dpFooter">
             <button type="button" class="dpAction" id="pmDpBack">Back</button>
             <button type="button" class="dpAction primary" id="pmDpToday">Today</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Report Modal -->
+  <div class="modalOverlay reportOverlay" id="reportOverlay" aria-hidden="true">
+    <div class="modal reportModal" role="dialog" aria-modal="true" aria-label="Project Report">
+      <div class="modalHeader">
+        <div class="mhLeft">
+          <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+          <strong id="reportTitle">Project Report</strong>
+        </div>
+        <div class="mhRight">
+          <button class="btn secondary" id="reportEditBtn" type="button">Edit</button>
+          <button class="btn secondary" id="reportCloseBtn" type="button">닫기</button>
+        </div>
+      </div>
+      <div class="modalBody reportBody">
+        <div class="reportViewer" id="reportViewer"></div>
+        <div class="reportEditorWrap" id="reportEditorWrap" hidden>
+          <div class="reportEditorShell" data-report-rich-wrap>
+            <div class="reportToolbar" id="reportToolbar">
+              <button class="reportToolBtn" type="button" data-report-command="bold" aria-label="Bold"><strong>B</strong></button>
+              <button class="reportToolBtn" type="button" data-report-command="italic" aria-label="Italic"><em>I</em></button>
+              <button class="reportToolBtn" type="button" data-report-command="underline" aria-label="Underline"><u>U</u></button>
+              <button class="reportToolBtn" type="button" data-report-command="strikeThrough" aria-label="Strikethrough"><s>S</s></button>
+              <select class="reportSelect" id="reportFontSelect" data-report-font aria-label="Font family">
+                <option value="inherit">Font</option>
+                <option value='"EnterSanChaek", ui-sans-serif, system-ui, sans-serif'>EnterSanChaek</option>
+                <option value="Georgia, 'Times New Roman', serif">Serif</option>
+                <option value="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Monospace</option>
+              </select>
+              <select class="reportSelect" id="reportSizeSelect" data-report-size aria-label="Font size">
+                <option value="10px">10px</option>
+                <option value="12px">12px</option>
+                <option value="14px">14px</option>
+                <option value="16px">16px</option>
+                <option value="18px">18px</option>
+                <option value="20px">20px</option>
+              </select>
+              <button class="reportToolBtn" type="button" data-report-command="insertUnorderedList" aria-label="Bulleted list">•</button>
+              <button class="reportToolBtn" type="button" data-report-command="insertOrderedList" aria-label="Numbered list">1.</button>
+              <button class="reportToolBtn" type="button" data-report-command="undo" aria-label="Undo">↶</button>
+              <button class="reportToolBtn" type="button" data-report-command="redo" aria-label="Redo">↷</button>
+              <button class="reportToolBtn" type="button" data-report-command="removeFormat">Reset</button>
+            </div>
+            <div class="reportEditor" id="reportEditor" contenteditable="true" role="textbox" aria-multiline="true"
+              data-placeholder="프로젝트 결과, 과정, 회고, 수정점 등을 자유롭게 기록…"></div>
+          </div>
+          <div class="reportEditFooter">
+            <span class="reportStatus" id="reportStatus"></span>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn secondary" id="reportCancelBtn" type="button">Cancel</button>
+              <button class="btn secondary" id="reportSaveBtn" type="button">Save</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1360,7 +1609,7 @@
 
     /* ========= model ========= */
     const STAGES = ["backlog","progress","done"];
-    const STAGE_LABEL = { backlog:"Backlog", progress:"In Progress", done:"Done" };
+    const STAGE_LABEL = { backlog:"Planned", progress:"In Progress", done:"Done" };
 
     function uid(){
       return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()));
@@ -1380,102 +1629,187 @@
       }[m]));
     }
     function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
-    const RICH_TAGS = new Set(["STRONG","B","EM","I","U","S","SPAN","BR","DIV"]);
-    const RICH_FONTS = new Set([
-      "inherit",
-      '"EnterSanChaek", ui-sans-serif, system-ui, sans-serif',
-      "Georgia, 'Times New Roman', serif",
-      "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-    ]);
-    const RICH_SIZES = new Set(["12px","14px","16px","18px","20px"]);
+    const RICH_FONTS = {
+      system: "inherit",
+      walk: '"EnterSanChaek", ui-sans-serif, system-ui, sans-serif',
+      serif: "Georgia, 'Times New Roman', serif",
+      mono: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    };
+    const RICH_SIZES = new Set(["10px","12px","14px","16px","18px","20px"]);
     const richRanges = new WeakMap();
 
-    function sanitizeRichHtml(html){
+    function canonicalFont(value){
+      const lower = String(value || "").replace(/["']/g, "").toLowerCase();
+      if(lower.includes("entersanchaek")) return RICH_FONTS.walk;
+      if(lower.includes("ui-monospace") || lower.includes("sfmono") || lower.includes("menlo") || lower.includes("consolas") || lower === "monospace") return RICH_FONTS.mono;
+      if(lower.includes("georgia") || lower.includes("times new roman") || lower === "serif") return RICH_FONTS.serif;
+      return "";
+    }
+    function canonicalSize(value){
+      const match = String(value || "").match(/(10|12|14|16|18|20)px/i);
+      return match && RICH_SIZES.has(`${match[1]}px`) ? `${match[1]}px` : "";
+    }
+    function legacyFontSize(value){
+      return ({"1":"10px","2":"12px","3":"14px","4":"16px","5":"18px","6":"20px","7":"20px"})[String(value || "")] || "";
+    }
+    function normalizeRichHtml(html){
       const template = document.createElement("template");
       template.innerHTML = String(html || "");
-      const cleanNode = node => {
-        if(node.nodeType === Node.TEXT_NODE){
-          return document.createTextNode(node.nodeValue.replace(/\u200B/g, ""));
-        }
-        if(node.nodeType !== Node.ELEMENT_NODE) return document.createDocumentFragment();
-        const tag = node.tagName.toUpperCase();
-        if(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","LINK","META"].includes(tag)){
-          return document.createDocumentFragment();
-        }
-        if(!RICH_TAGS.has(tag)){
-          const fragment = document.createDocumentFragment();
-          [...node.childNodes].forEach(child => fragment.appendChild(cleanNode(child)));
-          return fragment;
-        }
-        const clean = document.createElement(tag.toLowerCase());
-        if(tag === "SPAN"){
-          const family = node.style.fontFamily;
-          const size = node.style.fontSize;
-          const weight = node.style.fontWeight;
-          const style = node.style.fontStyle;
-          const decoration = node.style.textDecoration;
-          if(RICH_FONTS.has(family)) clean.style.fontFamily = family;
-          if(RICH_SIZES.has(size)) clean.style.fontSize = size;
-          if(["bold","700"].includes(weight)) clean.style.fontWeight = "bold";
-          if(style === "italic") clean.style.fontStyle = "italic";
-          if(["underline","line-through"].includes(decoration)) clean.style.textDecoration = decoration;
-        }
-        [...node.childNodes].forEach(child => clean.appendChild(cleanNode(child)));
-        return clean;
-      };
       const output = document.createElement("div");
-      [...template.content.childNodes].forEach(node => output.appendChild(cleanNode(node)));
+      const baseState = { bold:false, italic:false, underline:false, strike:false, font:"", size:"" };
+      const dangerous = new Set(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","LINK","META","IMG","SVG","MATH"]);
+
+      const appendTextRun = (parent, text, state) => {
+        const value = String(text || "").replace(/\u200B/g, "");
+        if(!value) return;
+        let node = document.createTextNode(value);
+        if(state.font || state.size){
+          const span = document.createElement("span");
+          if(state.font) span.style.fontFamily = state.font;
+          if(state.size) span.style.fontSize = state.size;
+          span.appendChild(node);
+          node = span;
+        }
+        if(state.strike){ const el=document.createElement("s"); el.appendChild(node); node=el; }
+        if(state.underline){ const el=document.createElement("u"); el.appendChild(node); node=el; }
+        if(state.italic){ const el=document.createElement("em"); el.appendChild(node); node=el; }
+        if(state.bold){ const el=document.createElement("strong"); el.appendChild(node); node=el; }
+        parent.appendChild(node);
+      };
+
+      const visit = (node, parent, inherited) => {
+        if(node.nodeType === Node.TEXT_NODE){ appendTextRun(parent, node.nodeValue, inherited); return; }
+        if(node.nodeType !== Node.ELEMENT_NODE) return;
+        const tag = node.tagName.toUpperCase();
+        if(dangerous.has(tag)) return;
+        if(tag === "BR"){ parent.appendChild(document.createElement("br")); return; }
+        if(["DIV","P","UL","OL","LI"].includes(tag)){
+          const canonicalTag = tag === "P" ? "div" : tag.toLowerCase();
+          const block = document.createElement(canonicalTag);
+          [...node.childNodes].forEach(child => visit(child, block, {...inherited}));
+          parent.appendChild(block);
+          return;
+        }
+        const state = {...inherited};
+        if(tag === "STRONG" || tag === "B") state.bold = true;
+        if(tag === "EM" || tag === "I") state.italic = true;
+        if(tag === "U") state.underline = true;
+        if(tag === "S" || tag === "STRIKE" || tag === "DEL") state.strike = true;
+        if(tag === "FONT"){
+          if(node.hasAttribute("face")) state.font = canonicalFont(node.getAttribute("face"));
+          state.size = canonicalSize(node.style.fontSize) || legacyFontSize(node.getAttribute("size")) || state.size;
+        }
+        if(tag === "SPAN" || tag === "FONT"){
+          if(node.style.fontFamily) state.font = canonicalFont(node.style.fontFamily);
+          state.size = canonicalSize(node.style.fontSize) || state.size;
+          const weight = node.style.fontWeight;
+          const decoration = `${node.style.textDecoration} ${node.style.textDecorationLine}`;
+          if(weight === "bold" || Number(weight) >= 600) state.bold = true;
+          if(weight === "normal" || weight === "400") state.bold = false;
+          if(node.style.fontStyle === "italic") state.italic = true;
+          if(node.style.fontStyle === "normal") state.italic = false;
+          if(decoration.includes("none")){ state.underline = false; state.strike = false; }
+          if(decoration.includes("underline")) state.underline = true;
+          if(decoration.includes("line-through")) state.strike = true;
+        }
+        [...node.childNodes].forEach(child => visit(child, parent, state));
+      };
+      [...template.content.childNodes].forEach(node => visit(node, output, {...baseState}));
       return output.innerHTML;
     }
+    function sanitizeRichHtml(html){ return normalizeRichHtml(html); }
     function plainTextToRichHtml(text){
       const div = document.createElement("div");
       div.textContent = String(text || "");
-      return div.innerHTML.replace(/\r?\n/g, "<br>");
+      return normalizeRichHtml(div.innerHTML.replace(/\r?\n/g, "<br>"));
     }
     function richPlainText(editor){
       return String(editor.innerText || "").replace(/\u200B/g, "").replace(/\n+$/, "");
+    }
+    function richSelectionInsideEditor(editor, range){
+      return !!editor && !!range && editor.contains(range.commonAncestorContainer);
     }
     function saveRichRange(editor){
       const selection = window.getSelection();
       if(!selection || !selection.rangeCount) return;
       const range = selection.getRangeAt(0);
-      if(editor.contains(range.commonAncestorContainer)) richRanges.set(editor, range.cloneRange());
+      if(richSelectionInsideEditor(editor, range)) richRanges.set(editor, range.cloneRange());
     }
     function restoreRichRange(editor){
       const range = richRanges.get(editor);
-      if(!range) return false;
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-      return true;
+      if(!range || !richSelectionInsideEditor(editor, range)) return false;
+      try{
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        return true;
+      }catch(_){
+        richRanges.delete(editor);
+        return false;
+      }
     }
-    function applyRichStyle(editor, property, value){
+    function richSelectionElement(editor){
+      const selection = window.getSelection();
+      if(!selection || !selection.rangeCount) return editor;
+      let node = selection.anchorNode;
+      if(node && node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+      return node && editor.contains(node) ? node : editor;
+    }
+    function richFontSelectValue(value){ return canonicalFont(value) || RICH_FONTS.system; }
+    function richSizeSelectValue(value){
+      const px = `${Math.round(parseFloat(value) || 12)}px`;
+      return RICH_SIZES.has(px) ? px : "12px";
+    }
+    function updateRichToolbarState(editor, toolbar){
+      if(!editor || !toolbar) return;
+      const selection = window.getSelection();
+      if(!selection || !selection.rangeCount || !richSelectionInsideEditor(editor, selection.getRangeAt(0))) return;
+      const states = {
+        bold: document.queryCommandState("bold"),
+        italic: document.queryCommandState("italic"),
+        underline: document.queryCommandState("underline"),
+        strikeThrough: document.queryCommandState("strikeThrough"),
+        insertUnorderedList: document.queryCommandState("insertUnorderedList"),
+        insertOrderedList: document.queryCommandState("insertOrderedList")
+      };
+      toolbar.querySelectorAll("[data-rich-command],[data-report-command]").forEach(button => {
+        const command = button.dataset.richCommand || button.dataset.reportCommand;
+        button.classList.toggle("active", !!states[command]);
+        button.setAttribute("aria-pressed", states[command] ? "true" : "false");
+      });
+      const computed = getComputedStyle(richSelectionElement(editor));
+      const font = toolbar.querySelector("[data-rich-font],[data-report-font]");
+      const size = toolbar.querySelector("[data-rich-size],[data-report-size]");
+      if(font) font.value = richFontSelectValue(computed.fontFamily);
+      if(size) size.value = richSizeSelectValue(computed.fontSize);
+    }
+    function notifyRichFormattingChange(editor, toolbar){
+      saveRichRange(editor);
+      updateRichToolbarState(editor, toolbar);
+      editor.dispatchEvent(new Event("input", { bubbles:true }));
+    }
+    function runRichCommand(editor, command, toolbar=null){
       editor.focus();
       if(!restoreRichRange(editor)) return;
-      const selection = window.getSelection();
-      const range = selection.getRangeAt(0);
-      const span = document.createElement("span");
-      span.style[property] = value;
-      if(range.collapsed){
-        span.textContent = "\u200B";
-        range.insertNode(span);
-        range.setStart(span.firstChild, 1);
-        range.collapse(true);
-      }else{
-        span.appendChild(range.extractContents());
-        range.insertNode(span);
-        range.selectNodeContents(span);
-      }
-      selection.removeAllRanges();
-      selection.addRange(range);
-      richRanges.set(editor, range.cloneRange());
-    }
-    function runRichCommand(editor, command){
-      editor.focus();
-      restoreRichRange(editor);
+      document.execCommand("styleWithCSS", false, false);
       document.execCommand(command, false, null);
-      saveRichRange(editor);
-      editor.dispatchEvent(new Event("input", { bubbles:true }));
+      notifyRichFormattingChange(editor, toolbar);
+    }
+    function applyRichFont(editor, font, toolbar=null){
+      editor.focus();
+      if(!restoreRichRange(editor)) return;
+      document.execCommand("fontName", false, font === RICH_FONTS.system ? "inherit" : font);
+      notifyRichFormattingChange(editor, toolbar);
+    }
+    function applyRichSize(editor, size, toolbar=null){
+      editor.focus();
+      if(!restoreRichRange(editor)) return;
+      document.execCommand("fontSize", false, "7");
+      editor.querySelectorAll('font[size="7"]').forEach(font => {
+        font.removeAttribute("size");
+        font.style.fontSize = size;
+      });
+      notifyRichFormattingChange(editor, toolbar);
     }
     function urlEntry(value){
       if(typeof value === "string") return { label: "", url: value };
@@ -1491,9 +1825,25 @@
     }
     function projectNotesRichHtml(p){
       if(Object.prototype.hasOwnProperty.call(p || {}, "notesHtml")){
-        return sanitizeRichHtml(p.notesHtml || "");
+        return sanitizeRichHtml(normalizeRichHtml(p.notesHtml || ""));
       }
       return plainTextToRichHtml(projectNotes(p));
+    }
+    function projectReport(p){
+      const value = p && p.report;
+      if(value && typeof value === "object"){
+        const text = String(value.text || "");
+        const htmlSource = typeof value.html === "string" ? value.html : plainTextToRichHtml(text);
+        return {
+          text,
+          html: sanitizeRichHtml(normalizeRichHtml(htmlSource)),
+          updatedAt: String(value.updatedAt || "")
+        };
+      }
+      if(typeof value === "string"){
+        return { text:value, html:plainTextToRichHtml(value), updatedAt:"" };
+      }
+      return { text:"", html:"", updatedAt:"" };
     }
 
     function emptyProject(name="New Project"){
@@ -1505,11 +1855,12 @@
         stage: "backlog",
         pinned: false,
         tags: [],
-        urls: [{ label: "", url: "" }],
+        urls: [],
         objective: "",
         notes: "",
         notesHtml: "",
         todos: [],
+        report: { text:"", html:"", updatedAt:"" },
       };
     }
 
@@ -1554,6 +1905,8 @@
     const quickProjectName = document.getElementById("quickProjectName");
     const addProjectBtn = document.getElementById("addProjectBtn");
     const boardSearch = document.getElementById("boardSearch");
+    const searchToggleBtn = document.getElementById("searchToggleBtn");
+    const footerSearchPanel = document.getElementById("footerSearchPanel");
     const archiveBtn = document.getElementById("archiveBtn");
     const exportAllBtn = document.getElementById("exportAllBtn");
     const clearSearchBtn = document.getElementById("clearSearchBtn");
@@ -1568,6 +1921,20 @@
     const pmPinBtn = document.getElementById("pmPinBtn");
     const pmArchiveBtn = document.getElementById("pmArchiveBtn");
     const pmDeleteBtn = document.getElementById("pmDeleteBtn");
+
+    const reportOverlay = document.getElementById("reportOverlay");
+    const reportTitle = document.getElementById("reportTitle");
+    const reportEditBtn = document.getElementById("reportEditBtn");
+    const reportCloseBtn = document.getElementById("reportCloseBtn");
+    const reportViewer = document.getElementById("reportViewer");
+    const reportEditorWrap = document.getElementById("reportEditorWrap");
+    const reportToolbar = document.getElementById("reportToolbar");
+    const reportEditor = document.getElementById("reportEditor");
+    const reportFontSelect = document.getElementById("reportFontSelect");
+    const reportSizeSelect = document.getElementById("reportSizeSelect");
+    const reportStatus = document.getElementById("reportStatus");
+    const reportCancelBtn = document.getElementById("reportCancelBtn");
+    const reportSaveBtn = document.getElementById("reportSaveBtn");
 
     // archive modal
     const archiveOverlay = document.getElementById("archiveOverlay");
@@ -1697,7 +2064,7 @@
     }
 
     function canApplyRemote(){
-      const modalOpen = projectModalOverlay.classList.contains("open") || archiveOverlay.classList.contains("open");
+      const modalOpen = projectModalOverlay.classList.contains("open") || archiveOverlay.classList.contains("open") || reportOverlay.classList.contains("open");
       return !pendingSave && !remoteSaveInFlight && localMutationVersion === syncedMutationVersion && !modalOpen;
     }
 
@@ -1754,21 +2121,7 @@
     function matchesProject(p, q){
       const s = String(q||"").trim().toLowerCase();
       if(!s) return true;
-      const parts = [
-        p.name,
-        p.startDate,
-        p.endDate,
-        p.objective,
-        projectNotes(p),
-        p.feedback,
-        ...(p.tags||[]),
-        ...((p.urls||[]).flatMap(u => {
-          const entry = urlEntry(u);
-          return [entry.label, entry.url];
-        })),
-        ...((p.todos||[]).map(t => t.text)),
-        ...((p.todos||[]).flatMap(t => (t.subs||[]).map(su => su.text)))
-      ].join(" ").toLowerCase();
+      const parts = [p.name, ...(p.tags||[])].join(" ").toLowerCase();
       return parts.includes(s);
     }
 
@@ -1805,16 +2158,12 @@
       countText.textContent = `${total} projects`;
     }
 
-    function compactCardHtml(p, {summaryMode=false} = {}){
-      const tags = (p.tags||[]).slice(0, 6).map(t => `
-        <div class="tagChip" title="${escapeHtml(t)}"><span>${escapeHtml(t)}</span></div>
-      `).join("");
-
+    function compactCardHtml(p){
+      const tags = (p.tags||[]).filter(Boolean);
+      const visibleTags = tags.slice(0, 2);
+      const tagSummary = visibleTags.map(t => escapeHtml(t)).join(" · ") + (tags.length > 2 ? ` +${tags.length - 2}` : "");
       const st = computeTodoStats(p);
-
-      // ✅ Done column default summary = tags + stats only (name still shown)
-      const showTags = true;
-      const showStats = true;
+      const showStats = p.stage === "progress";
 
       return `
         <button class="pCompact ${p.pinned ? "pinned" : ""}"
@@ -1830,11 +2179,7 @@
             ${showStats ? `<div class="statBadge" title="todos done/total">${st.done}/${st.total}</div>` : ``}
           </div>
 
-          ${showTags ? `
-            <div class="tags">
-              ${tags || `<span style="font-size:12px; color:rgba(30,30,30,0.45); font-family:EnterSanChaek, ui-sans-serif;">(no tags)</span>`}
-            </div>
-          ` : ``}
+          ${tagSummary ? `<div class="boardTagSummary" title="${escapeHtml(tags.join(", "))}">${tagSummary}</div>` : ``}
         </button>
       `;
     }
@@ -1846,8 +2191,7 @@
         const list = stageProjects(stage);
         const count = list.length;
 
-        // ✅ Done column: summary mode ON (still clickable)
-        const body = list.map(p => compactCardHtml(p, {summaryMode: stage==="done"})).join("");
+        const body = list.map(p => compactCardHtml(p)).join("");
 
         return `
           <div class="col" data-col="${stage}">
@@ -1882,33 +2226,23 @@
       if((p.tags||[]).length) lines.push(`- Tags: ${p.tags.join(", ")}`);
       lines.push("");
 
-      const urls = (p.urls||[]).map(urlEntry).filter(entry => entry.url.trim());
-      if(urls.length){
-        lines.push(`## URLs`);
-        for(const entry of urls){
-          const url = normalizeUrl(entry.url);
-          lines.push(entry.label.trim() ? `- [${entry.label.trim()}](${url})` : `- ${url}`);
-        }
-        lines.push("");
-      }
-
       if((p.objective||"").trim()){
-        lines.push(`## Objective`);
+        lines.push("## Objective");
         lines.push(p.objective.trim());
         lines.push("");
       }
 
       const notes = projectNotes(p).trim();
       if(notes){
-        lines.push(`## Notes`);
+        lines.push("## Notes");
         lines.push(notes);
         lines.push("");
       }
 
-      lines.push(`## To-do`);
+      lines.push("## To-do");
       const todos = (p.todos||[]);
       if(!todos.length){
-        lines.push(`- (empty)`);
+        lines.push("- (empty)");
       }else{
         for(const t of todos){
           const pr = Math.max(1, Math.min(3, t.prio||1));
@@ -1920,6 +2254,25 @@
           }
         }
       }
+      lines.push("");
+
+      const report = projectReport(p);
+      if(report.text.trim()){
+        lines.push("## Report");
+        lines.push(report.text.trim());
+        lines.push("");
+      }
+
+      const urls = (p.urls||[]).map(urlEntry).filter(entry => entry.url.trim());
+      if(urls.length){
+        lines.push("## URLs");
+        for(const entry of urls){
+          const url = normalizeUrl(entry.url);
+          lines.push(entry.label.trim() ? `- [${entry.label.trim()}](${url})` : `- ${url}`);
+        }
+        lines.push("");
+      }
+
       return lines.join("\n");
     }
     function formatAllAsMarkdown(){
@@ -2056,6 +2409,7 @@
 
     /* ========= Project Detail Modal ========= */
     let openProjectId = null;
+    let urlDraftProjectId = null;
 
     function starsHtml(level){
       const n = Math.max(1, Math.min(3, Number(level)||1));
@@ -2323,8 +2677,12 @@
         `;
       }).join("");
 
-      // ✅ URLs dynamic list (position at bottom)
-      const urls = Array.isArray(p.urls) && p.urls.length ? p.urls.map(urlEntry) : [urlEntry(null)];
+      const storedUrls = (Array.isArray(p.urls) ? p.urls : [])
+        .map(urlEntry)
+        .filter(entry => entry.label.trim() || entry.url.trim());
+      const urls = urlDraftProjectId === pid
+        ? [...storedUrls, { label:"", url:"" }]
+        : storedUrls;
       const urlRows = urls.map((entry, i) => `
         <div class="urlRow">
           <input class="urlText" type="text" placeholder="Name" value="${escapeHtml(entry.label)}" data-url-idx="${i}" data-url-field="label" />
@@ -2332,6 +2690,9 @@
           <button class="miniBtn dangerBtn" type="button" data-url-del="${i}">Delete</button>
         </div>
       `).join("");
+
+      const report = projectReport(p);
+      const reportHasContent = !!report.text.trim();
 
       pmBody.innerHTML = `
         <div class="section">
@@ -2441,16 +2802,27 @@
           </div>
         </div>
 
-        <!-- ✅ URL section moved to bottom + dynamic add -->
         <div class="section">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div class="fieldLabel">URL</div>
-            <button class="miniBtn" type="button" data-url-add>＋</button>
+          <div class="sectionHead">
+            <div class="fieldLabel">Report</div>
+            <div class="reportInlineActions">
+              ${reportHasContent ? `
+                <button class="textAction" type="button" data-report-view>View report</button>
+                <button class="textAction" type="button" data-report-edit>Edit</button>
+              ` : `
+                <button class="textAction" type="button" data-report-edit>+ Add</button>
+              `}
+            </div>
           </div>
+          ${reportHasContent ? `<div class="reportPreview">${escapeHtml(report.text)}</div>` : ``}
+        </div>
 
-          <div class="urlList">
-            ${urlRows}
+        <div class="section">
+          <div class="sectionHead">
+            <div class="fieldLabel">URL</div>
+            <button class="textAction" type="button" data-url-add aria-label="Add URL">＋</button>
           </div>
+          ${urlRows ? `<div class="urlList">${urlRows}</div>` : ``}
         </div>
       `;
       // innerHTML로 덮어쓰면 pmDpPop이 DOM에서 제거되므로 다시 붙여 줌
@@ -2474,6 +2846,7 @@
       closeDP();
       projectModalOverlay.classList.remove("open");
       projectModalOverlay.setAttribute("aria-hidden","true");
+      urlDraftProjectId = null;
       openProjectId = null;
     }
 
@@ -2529,6 +2902,21 @@
       // click anywhere in body closes dp if open
       if(pmDpPop.classList.contains("open")) closeDP();
     });
+
+    function focusTagInput(){
+      requestAnimationFrame(()=>{
+        const input = projectModalOverlay.querySelector("[data-tag-input]");
+        if(input) input.focus();
+      });
+    }
+
+    function focusUrlInput(){
+      requestAnimationFrame(()=>{
+        const inputs = projectModalOverlay.querySelectorAll("[data-url-field='label']");
+        const input = inputs.length ? inputs[inputs.length - 1] : null;
+        if(input) input.focus();
+      });
+    }
 
     function focusTodoInput(){
       requestAnimationFrame(()=>{
@@ -2614,6 +3002,7 @@
           if(!p.tags.includes(val)) p.tags.unshift(val);
         });
         renderProjectModal(pid);
+        focusTagInput();
         return;
       }
 
@@ -2731,14 +3120,23 @@
         return;
       }
 
-      // ✅ URL add/remove
+      const reportView = e.target.closest("[data-report-view]");
+      if(reportView){
+        openReport(pid, "view");
+        return;
+      }
+      const reportEdit = e.target.closest("[data-report-edit]");
+      if(reportEdit){
+        openReport(pid, "edit");
+        return;
+      }
+
+      // URL add/remove: empty projects show only the + control.
       const urlAdd = e.target.closest("[data-url-add]");
       if(urlAdd){
-        updateProject(pid, p => {
-          p.urls = Array.isArray(p.urls) ? p.urls : [];
-          p.urls.push({ label:"", url:"" });
-        });
+        urlDraftProjectId = pid;
         renderProjectModal(pid);
+        focusUrlInput();
         return;
       }
 
@@ -2746,10 +3144,13 @@
       if(urlDel){
         const idx = Number(urlDel.dataset.urlDel);
         updateProject(pid, p => {
-          p.urls = Array.isArray(p.urls) ? p.urls : [];
-          if(Number.isFinite(idx) && idx >= 0) p.urls.splice(idx, 1);
-          if(!p.urls.length) p.urls = [{ label:"", url:"" }];
+          const entries = (Array.isArray(p.urls) ? p.urls : [])
+            .map(urlEntry)
+            .filter(entry => entry.label.trim() || entry.url.trim());
+          if(Number.isFinite(idx) && idx >= 0 && idx < entries.length) entries.splice(idx, 1);
+          p.urls = entries;
         });
+        urlDraftProjectId = null;
         renderProjectModal(pid);
         return;
       }
@@ -2890,7 +3291,15 @@
     }
     document.addEventListener("selectionchange", ()=>{
       const editor = projectModalOverlay.querySelector("[data-rich-editor]");
-      if(editor) saveRichRange(editor);
+      if(editor){
+        saveRichRange(editor);
+        const toolbar = editor.closest("[data-rich-wrap]")?.querySelector("[data-rich-toolbar]");
+        updateRichToolbarState(editor, toolbar);
+      }
+      if(reportOverlay.classList.contains("open") && !reportEditorWrap.hidden){
+        saveRichRange(reportEditor);
+        updateRichToolbarState(reportEditor, reportToolbar);
+      }
     });
     projectModalOverlay.addEventListener("pointerdown", (e)=>{
       const control = e.target.closest("[data-rich-toolbar] button, [data-rich-toolbar] select");
@@ -2903,7 +3312,8 @@
       const button = e.target.closest("[data-rich-command]");
       if(!button) return;
       const editor = richEditorForControl(button);
-      if(editor) runRichCommand(editor, button.dataset.richCommand);
+      const toolbar = button.closest("[data-rich-toolbar]");
+      if(editor) runRichCommand(editor, button.dataset.richCommand, toolbar);
     });
     projectModalOverlay.addEventListener("change", (e)=>{
       const font = e.target.closest("[data-rich-font]");
@@ -2911,10 +3321,10 @@
       const control = font || size;
       if(!control || !control.value) return;
       const editor = richEditorForControl(control);
+      const toolbar = control.closest("[data-rich-toolbar]");
       if(!editor) return;
-      applyRichStyle(editor, font ? "fontFamily" : "fontSize", control.value);
-      editor.dispatchEvent(new Event("input", { bubbles:true }));
-      if(size) size.value = "";
+      if(font) applyRichFont(editor, control.value, toolbar);
+      if(size) applyRichSize(editor, control.value, toolbar);
     });
     projectModalOverlay.addEventListener("paste", (e)=>{
       const editor = e.target.closest("[data-rich-editor]");
@@ -2924,11 +3334,17 @@
     });
     projectModalOverlay.addEventListener("mouseup", (e)=>{
       const editor = e.target.closest("[data-rich-editor]");
-      if(editor) saveRichRange(editor);
+      if(editor){
+        saveRichRange(editor);
+        updateRichToolbarState(editor, editor.closest("[data-rich-wrap]")?.querySelector("[data-rich-toolbar]"));
+      }
     });
     projectModalOverlay.addEventListener("keyup", (e)=>{
       const editor = e.target.closest("[data-rich-editor]");
-      if(editor) saveRichRange(editor);
+      if(editor){
+        saveRichRange(editor);
+        updateRichToolbarState(editor, editor.closest("[data-rich-wrap]")?.querySelector("[data-rich-toolbar]"));
+      }
     });
 
     projectModalOverlay.addEventListener("input", (e)=>{
@@ -2952,7 +3368,7 @@
       const notes = e.target.closest("[data-notes-rich]");
       if(notes){
         updateProject(pid, p => {
-          p.notesHtml = sanitizeRichHtml(notes.innerHTML);
+          p.notesHtml = sanitizeRichHtml(normalizeRichHtml(notes.innerHTML));
           p.notes = richPlainText(notes);
         });
         return;
@@ -2963,12 +3379,16 @@
         const idx = Number(url.dataset.urlIdx);
         const field = url.dataset.urlField === "label" ? "label" : "url";
         updateProject(pid, p => {
-          p.urls = Array.isArray(p.urls) ? p.urls : [];
-          while(p.urls.length <= idx) p.urls.push({ label:"", url:"" });
-          const entry = urlEntry(p.urls[idx]);
+          const entries = (Array.isArray(p.urls) ? p.urls : [])
+            .map(urlEntry)
+            .filter(entry => entry.label.trim() || entry.url.trim());
+          while(entries.length <= idx) entries.push({ label:"", url:"" });
+          const entry = urlEntry(entries[idx]);
           entry[field] = url.value || "";
-          p.urls[idx] = entry;
+          entries[idx] = entry;
+          p.urls = entries;
         });
+        if((url.value || "").trim()) urlDraftProjectId = null;
         return;
       }
     });
@@ -2986,6 +3406,7 @@
           if(!p.tags.includes(val)) p.tags.unshift(val);
         });
         renderProjectModal(openProjectId);
+        focusTagInput();
         return;
       }
 
@@ -3017,6 +3438,170 @@
       }
     });
 
+    /* ========= Project Report ========= */
+    let reportProjectId = null;
+    let reportMode = "view";
+    let reportDraftTimer = null;
+
+    function reportDraftKey(pid){
+      return `soft_schedule_project_report_draft_${workspace_id}_${pid}_v1`;
+    }
+    function loadReportDraft(pid){
+      try{
+        const raw = localStorage.getItem(reportDraftKey(pid));
+        if(!raw) return null;
+        const parsed = JSON.parse(raw);
+        if(!parsed || typeof parsed !== "object") return null;
+        return {
+          html: sanitizeRichHtml(normalizeRichHtml(parsed.html || "")),
+          text: String(parsed.text || "")
+        };
+      }catch(_){ return null; }
+    }
+    function saveReportDraftNow(){
+      if(!reportProjectId || reportEditorWrap.hidden) return;
+      const payload = {
+        html: sanitizeRichHtml(normalizeRichHtml(reportEditor.innerHTML)),
+        text: richPlainText(reportEditor)
+      };
+      try{
+        localStorage.setItem(reportDraftKey(reportProjectId), JSON.stringify(payload));
+        reportStatus.textContent = "Draft saved";
+      }catch(_){
+        reportStatus.textContent = "Draft save failed";
+      }
+    }
+    function queueReportDraftSave(){
+      clearTimeout(reportDraftTimer);
+      reportStatus.textContent = "Editing…";
+      reportDraftTimer = setTimeout(saveReportDraftNow, 350);
+    }
+    function clearReportDraft(pid){
+      clearTimeout(reportDraftTimer);
+      reportDraftTimer = null;
+      try{ localStorage.removeItem(reportDraftKey(pid)); }catch(_){}
+    }
+    function renderReportOverlay(){
+      const p = findProject(reportProjectId);
+      if(!p){ closeReport(); return; }
+      const saved = projectReport(p);
+      reportTitle.textContent = `${p.name || "Project"} · Report`;
+
+      if(reportMode === "view"){
+        reportViewer.hidden = false;
+        reportEditorWrap.hidden = true;
+        reportEditBtn.hidden = !saved.text.trim();
+        reportViewer.innerHTML = saved.html || '<div style="color:rgba(28,30,33,0.42);">(empty)</div>';
+        return;
+      }
+
+      reportViewer.hidden = true;
+      reportEditorWrap.hidden = false;
+      reportEditBtn.hidden = true;
+      const draft = loadReportDraft(reportProjectId);
+      reportEditor.innerHTML = draft ? draft.html : saved.html;
+      reportStatus.textContent = draft ? "Draft restored" : "Editing…";
+      richRanges.delete(reportEditor);
+      reportSizeSelect.value = "12px";
+      requestAnimationFrame(() => {
+        reportEditor.focus();
+        const selection = window.getSelection();
+        if(selection){
+          const range = document.createRange();
+          range.selectNodeContents(reportEditor);
+          range.collapse(false);
+          selection.removeAllRanges();
+          selection.addRange(range);
+          saveRichRange(reportEditor);
+          updateRichToolbarState(reportEditor, reportToolbar);
+        }
+      });
+    }
+    function openReport(pid, mode="view"){
+      if(!findProject(pid)) return;
+      reportProjectId = pid;
+      reportMode = mode === "edit" ? "edit" : "view";
+      reportOverlay.classList.add("open");
+      reportOverlay.setAttribute("aria-hidden","false");
+      renderReportOverlay();
+    }
+    function closeReport({discardDraft=false} = {}){
+      if(discardDraft && reportProjectId) clearReportDraft(reportProjectId);
+      clearTimeout(reportDraftTimer);
+      reportDraftTimer = null;
+      reportOverlay.classList.remove("open");
+      reportOverlay.setAttribute("aria-hidden","true");
+      reportProjectId = null;
+      reportMode = "view";
+      richRanges.delete(reportEditor);
+    }
+    function enterReportEdit(){
+      if(!reportProjectId) return;
+      reportMode = "edit";
+      renderReportOverlay();
+    }
+    function cancelReportEdit(){
+      if(!reportProjectId) return;
+      const pid = reportProjectId;
+      clearReportDraft(pid);
+      const saved = projectReport(findProject(pid));
+      if(saved.text.trim()){
+        reportMode = "view";
+        renderReportOverlay();
+      }else{
+        closeReport();
+      }
+    }
+    function saveReport(){
+      if(!reportProjectId) return;
+      const pid = reportProjectId;
+      const html = sanitizeRichHtml(normalizeRichHtml(reportEditor.innerHTML));
+      const text = richPlainText(reportEditor);
+      updateProject(pid, p => {
+        p.report = { text, html, updatedAt:new Date().toISOString() };
+      });
+      clearReportDraft(pid);
+      reportMode = "view";
+      renderReportOverlay();
+      if(openProjectId === pid) renderProjectModal(pid);
+      showToast("Report를 저장했어.");
+    }
+
+    reportEditBtn.addEventListener("click", enterReportEdit);
+    reportCloseBtn.addEventListener("click", () => closeReport());
+    reportCancelBtn.addEventListener("click", cancelReportEdit);
+    reportSaveBtn.addEventListener("click", saveReport);
+    reportOverlay.addEventListener("click", e => {
+      if(e.target === reportOverlay) closeReport();
+    });
+    reportEditor.addEventListener("input", queueReportDraftSave);
+    reportEditor.addEventListener("paste", e => {
+      e.preventDefault();
+      document.execCommand("insertText", false, e.clipboardData.getData("text/plain"));
+    });
+    reportEditor.addEventListener("mouseup", () => {
+      saveRichRange(reportEditor);
+      updateRichToolbarState(reportEditor, reportToolbar);
+    });
+    reportEditor.addEventListener("keyup", () => {
+      saveRichRange(reportEditor);
+      updateRichToolbarState(reportEditor, reportToolbar);
+    });
+    reportToolbar.addEventListener("pointerdown", e => {
+      saveRichRange(reportEditor);
+      if(e.target.closest("button")) e.preventDefault();
+    });
+    reportToolbar.addEventListener("click", e => {
+      const button = e.target.closest("[data-report-command]");
+      if(button) runRichCommand(reportEditor, button.dataset.reportCommand, reportToolbar);
+    });
+    reportFontSelect.addEventListener("change", () => {
+      applyRichFont(reportEditor, reportFontSelect.value, reportToolbar);
+    });
+    reportSizeSelect.addEventListener("change", () => {
+      applyRichSize(reportEditor, reportSizeSelect.value, reportToolbar);
+    });
+
     /* ========= Archive modal (same logic + URL support) ========= */
     let archiveSelected = new Set();
     let archivePickedId = null;
@@ -3025,7 +3610,7 @@
       const s = String(q||"").trim().toLowerCase();
       if(!s) return true;
       const parts = [
-        p.name, p.startDate, p.endDate, p.objective, projectNotes(p), p.feedback,
+        p.name, p.startDate, p.endDate, p.objective, projectNotes(p), projectReport(p).text, p.feedback,
         ...(p.tags||[]),
         ...((p.urls||[]).flatMap(u => {
           const entry = urlEntry(u);
@@ -3184,17 +3769,29 @@
       if(e.key === "Enter"){ e.preventDefault(); addProjectBtn.click(); }
     });
 
+    searchToggleBtn.addEventListener("click", () => {
+      const willOpen = !footerSearchPanel.classList.contains("open");
+      footerSearchPanel.classList.toggle("open", willOpen);
+      searchToggleBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      if(willOpen) requestAnimationFrame(() => boardSearch.focus());
+    });
+
     boardSearch.addEventListener("input", () => {
       searchQ = (boardSearch.value||"").trim();
+      clearSearchBtn.hidden = !searchQ;
+      searchToggleBtn.classList.toggle("hasQuery", !!searchQ);
       renderBoard();
     });
 
     clearSearchBtn.addEventListener("click", () => {
       boardSearch.value = "";
       searchQ = "";
+      clearSearchBtn.hidden = true;
+      searchToggleBtn.classList.remove("hasQuery");
       renderBoard();
-      showToast("검색을 지웠어.");
+      boardSearch.focus();
     });
+    clearSearchBtn.hidden = true;
 
     archiveBtn.addEventListener("click", openArchive);
 
@@ -3217,9 +3814,14 @@
     document.addEventListener("keydown", (e) => {
       if(e.key === "Escape"){
         if(confirmOverlay.classList.contains("open")){ closeDeleteConfirm(); return; }
+        if(reportOverlay.classList.contains("open")){ closeReport(); return; }
         if(pmDpPop.classList.contains("open")){ closeDP(); return; }
         if(projectModalOverlay.classList.contains("open")){ closeProjectModal(); return; }
         if(archiveOverlay.classList.contains("open")){ closeArchive(); return; }
+        if(footerSearchPanel.classList.contains("open")){
+          footerSearchPanel.classList.remove("open");
+          searchToggleBtn.setAttribute("aria-expanded","false");
+        }
       }
     });
 
