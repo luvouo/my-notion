@@ -8,11 +8,14 @@ export function rowToItem(row){
     text: row.title || "",
     done: row.status === "done",
     due_at: row.due_at ?? null, // null 가능
+    details: row.details ?? "",
+    sort_order: row.sort_order ?? null,
+    updated_at: row.updated_at ?? null,
   };
 }
 
-export function itemToRow({ id, text, done, due_at }, workspace_id){
-  return {
+export function itemToRow({ id, text, done, due_at, details, sort_order }, workspace_id){
+  const row = {
     id,
     workspace_id,
     title: (text || "").trim(),
@@ -21,6 +24,10 @@ export function itemToRow({ id, text, done, due_at }, workspace_id){
     deleted: false,
     updated_at: nowIso(),
   };
+  // 전달받지 않은 새 필드는 기존 DB 값을 보존하도록 payload에서 제외한다.
+  if(details !== undefined) row.details = details;
+  if(sort_order !== undefined) row.sort_order = sort_order;
+  return row;
 }
 
 export async function upsertItemRow(row){
@@ -40,7 +47,7 @@ export async function softDeleteItem(id){
 export async function loadUpcoming({ workspace_id, startIso=null, includeUndated=true, limit=500 }){
   // 1) dated
   const datedQuery = {
-    select: "id,title,status,due_at,updated_at",
+    select: "id,title,status,details,sort_order,due_at,updated_at",
     workspace_id: `eq.${workspace_id}`,
     deleted: "eq.false",
     due_at: "not.is.null",
@@ -56,7 +63,7 @@ export async function loadUpcoming({ workspace_id, startIso=null, includeUndated
   if (includeUndated){
     undated = await sbFetch("items", {
       query: {
-        select: "id,title,status,due_at,updated_at",
+        select: "id,title,status,details,sort_order,due_at,updated_at",
         workspace_id: `eq.${workspace_id}`,
         deleted: "eq.false",
         due_at: "is.null",
@@ -76,15 +83,14 @@ export async function loadUpcoming({ workspace_id, startIso=null, includeUndated
 export async function loadThisWeek({ workspace_id, startIso, endIso, limit=700 }){
   const rows = await sbFetch("items", {
     query: {
-      select: "id,title,status,due_at,updated_at",
+      select: "id,title,status,details,sort_order,due_at,updated_at",
       workspace_id: `eq.${workspace_id}`,
       deleted: "eq.false",
       due_at: `gte.${startIso}`,
       and: `(due_at.lt.${endIso})`,
-      order: "due_at.asc,updated_at.desc",
+      order: "due_at.asc,sort_order.desc.nullslast,updated_at.desc",
       limit: String(limit),
     }
   });
   return rows.map(rowToItem);
 }
-

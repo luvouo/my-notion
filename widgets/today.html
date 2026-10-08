@@ -140,6 +140,9 @@
       color: var(--muted);
       white-space: nowrap;
       margin-left: auto;
+      font-variant-numeric: tabular-nums;
+      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
 
     .inputRow{
@@ -237,6 +240,22 @@
       min-width: 0;
       box-sizing: border-box;
     }
+    .item.dragging{ opacity: .48; }
+    .item.drop-before{ box-shadow: 0 -3px 0 rgba(255,170,190,.75); }
+    .item.drop-after{ box-shadow: 0 3px 0 rgba(255,170,190,.75); }
+
+    .dragHandle{
+      flex: 0 0 auto;
+      border: 0;
+      background: transparent;
+      color: rgba(30,30,30,.34);
+      padding: 5px 2px;
+      cursor: grab;
+      font-size: 16px;
+      line-height: 1;
+      touch-action: none;
+    }
+    .dragHandle:active{ cursor: grabbing; }
 
     .check{
       width: 18px;
@@ -285,9 +304,31 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      cursor: pointer;
     }
+    .noteDot{
+      display:inline-block;
+      width:5px;
+      height:5px;
+      margin-left:6px;
+      border-radius:999px;
+      background:rgba(255,170,190,.82);
+      vertical-align:middle;
+    }
+    .inlineEdit{
+      flex:1 1 auto;
+      min-width:0;
+      border:1px solid rgba(255,170,190,.58);
+      background:rgba(255,255,255,.72);
+      border-radius:9px;
+      padding:6px 8px;
+      font:inherit;
+      outline:none;
+      box-shadow:var(--ring);
+    }
+    .editBtn{ font-size:15px; }
 
-    .del{
+    .del, .editBtn{
       flex: 0 0 auto;
       border: none;
       background: transparent;
@@ -299,13 +340,13 @@
       transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .08s ease;
       -webkit-tap-highlight-color: transparent;
     }
-    .del:hover{
+    .del:hover, .editBtn:hover{
       background: rgba(255,192,203,0.14);
       color: rgba(30,30,30,0.78);
       box-shadow: var(--ring);
     }
-    .del:active{ transform: scale(0.96); }
-    .del:focus-visible{
+    .del:active, .editBtn:active{ transform: scale(0.96); }
+    .del:focus-visible, .editBtn:focus-visible{
       outline: none;
       background: rgba(255,192,203,0.12);
       color: rgba(30,30,30,0.78);
@@ -709,6 +750,8 @@
     }
 
     .badge{
+      appearance: none;
+      font-family: inherit;
       font-size: 11px;
       padding: 4px 9px;
       border-radius: 999px;
@@ -716,6 +759,22 @@
       background: rgba(0,0,0,0.03);
       color: rgba(30,30,30,0.58);
       flex: 0 0 auto;
+      cursor: pointer;
+      transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+    .badge:hover{
+      border-color: rgba(255,170,190,0.70);
+      box-shadow: var(--ring);
+    }
+    .badge:active{ transform: scale(0.97); }
+    .badge:focus-visible{
+      outline: none;
+      border-color: rgba(255,170,190,0.85);
+      box-shadow: var(--ring-strong);
+    }
+    .badge:disabled{
+      cursor: wait;
+      opacity: 0.58;
     }
     .badge.done{
       border-color: rgba(255,170,190,0.40);
@@ -860,6 +919,63 @@
       box-shadow: 0 0 0 3px rgba(255,192,203,0.16);
       flex: 0 0 auto;
     }
+    .toastUndo{
+      border:0;
+      background:transparent;
+      color:rgba(170,95,115,.9);
+      padding:2px 4px;
+      font:inherit;
+      cursor:pointer;
+      pointer-events:auto;
+      text-decoration:underline;
+    }
+
+    /* ===== Compact item detail modal ===== */
+    .detailOverlay{
+      position:fixed;
+      inset:0;
+      z-index:7000;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:12px;
+      background:rgba(0,0,0,.18);
+    }
+    .detailOverlay.open{ display:flex; }
+    .detailModal{
+      width:min(460px,100%);
+      border:1px solid rgba(255,170,190,.45);
+      border-radius:18px;
+      background:rgba(255,255,255,.94);
+      box-shadow:0 18px 50px rgba(0,0,0,.16);
+      padding:16px;
+      display:grid;
+      gap:13px;
+      box-sizing:border-box;
+    }
+    .detailTitle{
+      font-family:var(--font-display);
+      font-size:14px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .detailField{ display:grid; gap:6px; font-size:12px; color:rgba(30,30,30,.62); }
+    .detailInput{
+      width:100%;
+      box-sizing:border-box;
+      border:1px solid rgba(255,170,190,.4);
+      border-radius:12px;
+      background:rgba(255,255,255,.72);
+      padding:10px;
+      color:var(--text);
+      font:inherit;
+      outline:none;
+    }
+    textarea.detailInput{ min-height:110px; resize:vertical; line-height:1.45; }
+    .detailInput:focus{ box-shadow:var(--ring); border-color:rgba(255,170,190,.72); }
+    .detailActions{ display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
+    .detailActions .moveTomorrow{ margin-right:auto; }
   
     /* ===== FINAL Add(＋) button override ===== */
     #addBtn{
@@ -951,6 +1067,7 @@
             <button class="btn secondary" id="carryYesterdayBtn" type="button">Carry over</button>
             <button class="btn secondary" id="historyBtn" type="button">History / Archive</button>
             <button class="btn secondary" id="copyTodayBtn" type="button">Copy</button>
+           
 
             <!-- kept but hidden -->
             <button class="btn secondary" id="clearDoneBtn" type="button">완료 삭제</button>
@@ -1011,6 +1128,32 @@
         <span id="archiveCount">0 days archived</span>
       </div>
     </div>
+  </div>
+
+  <div class="detailOverlay" id="detailOverlay" aria-hidden="true">
+    <form class="detailModal" id="detailForm" role="dialog" aria-modal="true" aria-label="일정 상세">
+      <div class="detailTitle" id="detailTitle"></div>
+      <label class="detailField">
+        <span>Details</span>
+        <textarea class="detailInput" id="detailDetails" maxlength="4000" placeholder="메모를 입력해줘"></textarea>
+      </label>
+      <label class="detailField">
+        <span>Date</span>
+        <input class="detailInput" id="detailDate" type="date" required />
+      </label>
+      <label class="detailField">
+        <span>Status</span>
+        <select class="detailInput" id="detailStatus">
+          <option value="todo">Todo</option>
+          <option value="done">Done</option>
+        </select>
+      </label>
+      <div class="detailActions">
+        <button class="btn secondary moveTomorrow" id="moveTomorrowBtn" type="button">Move to Tomorrow</button>
+        <button class="btn secondary" id="detailCancelBtn" type="button">Cancel</button>
+        <button class="btn" type="submit">Save</button>
+      </div>
+    </form>
   </div>
 
   <script src="../env.js"></script>
@@ -1151,6 +1294,21 @@
 
       function nowIso(){ return new Date().toISOString(); }
 
+      function ymdToInput(dateStr){ return String(dateStr || "").replaceAll(".", "-"); }
+      function inputToYmd(value){ return String(value || "").replaceAll("-", "."); }
+      function sortItems(items){
+        return [...(items || [])].sort((a, b) => {
+          const ao = a.sort_order == null ? null : Number(a.sort_order);
+          const bo = b.sort_order == null ? null : Number(b.sort_order);
+          if(ao != null || bo != null){
+            if(ao == null) return 1;
+            if(bo == null) return -1;
+            if(bo !== ao) return bo - ao;
+          }
+          return new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime();
+        });
+      }
+
       function dayRangeIso(dateStr){
         const p = parseYmd(dateStr);
         if(!p) throw new Error("bad dateStr");
@@ -1220,6 +1378,14 @@
       const archiveCount = document.getElementById("archiveCount");
       const searchInput = document.getElementById("searchInput");
       const clearSearchBtn = document.getElementById("clearSearchBtn");
+      const detailOverlay = document.getElementById("detailOverlay");
+      const detailForm = document.getElementById("detailForm");
+      const detailTitle = document.getElementById("detailTitle");
+      const detailDetails = document.getElementById("detailDetails");
+      const detailDate = document.getElementById("detailDate");
+      const detailStatus = document.getElementById("detailStatus");
+      const detailCancelBtn = document.getElementById("detailCancelBtn");
+      const moveTomorrowBtn = document.getElementById("moveTomorrowBtn");
 
       metaText.textContent = todayStr;
 
@@ -1230,13 +1396,30 @@
       let archive = {};
       let pickedDate = null;
       let searchQuery = "";
+      const pendingArchiveToggles = new Set();
+      let editingId = null;
+      let detailContext = null;
+      let dragId = null;
+      let deletedSnapshot = null;
 
-      function showToast(msg){
-        toast.textContent = msg;
+      function showToast(msg, undoFn = null, duration = 1600){
+        toast.replaceChildren(document.createTextNode(msg));
+        if(undoFn){
+          const undo = document.createElement("button");
+          undo.type = "button";
+          undo.className = "toastUndo";
+          undo.textContent = "Undo";
+          undo.addEventListener("click", async () => {
+            clearTimeout(showToast._t);
+            toast.replaceChildren();
+            await undoFn();
+          }, { once: true });
+          toast.appendChild(undo);
+      }
         clearTimeout(showToast._t);
         showToast._t = setTimeout(() => {
-          toast.textContent = "";
-        }, 1600);
+          toast.replaceChildren();
+        }, duration);
       }
 
       function syncAddButtonState(){
@@ -1325,7 +1508,11 @@
         return {
           id: row.id,
           text: row.title || "",
-          done: row.status === "done"
+          done: row.status === "done",
+          details: row.details ?? "",
+          sort_order: row.sort_order ?? null,
+          due_at: row.due_at ?? null,
+          updated_at: row.updated_at ?? null
         };
       }
 
@@ -1337,6 +1524,8 @@
           title: (item.text || "").trim(),
           status: item.done ? "done" : "todo",
           due_at: startIso,
+          details: item.details ?? "",
+          sort_order: item.sort_order ?? Date.now(),
           deleted: false,
           updated_at: nowIso(),
           pinned: false,
@@ -1349,22 +1538,22 @@
 
         const rows = await sbFetch("items", {
           query: [
-            ["select", "id,title,status,updated_at,due_at"],
+            ["select", "id,title,status,details,sort_order,updated_at,due_at"],
             ["workspace_id", `eq.${workspace_id}`],
             ["deleted", "eq.false"],
             ["due_at", `gte.${startIso}`],
             ["due_at", `lt.${endIso}`],
-            ["order", "updated_at.desc"]
+            ["order", "sort_order.desc.nullslast,updated_at.desc"]
           ]
         });
 
-        return (rows || []).map(rowToItem);
+        return sortItems((rows || []).map(rowToItem));
       }
 
       async function sbLoadArchiveAll(){
         const rows = await sbFetch("items", {
           query: {
-            select: "id,title,status,due_at,updated_at",
+            select: "id,title,status,details,sort_order,due_at,updated_at",
             workspace_id: `eq.${workspace_id}`,
             deleted: "eq.false",
             order: "due_at.desc",
@@ -1379,13 +1568,15 @@
           const dateStr = `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
           (grouped[dateStr] ||= []).push(rowToItem(r));
         }
+        for(const dateStr of Object.keys(grouped)) grouped[dateStr] = sortItems(grouped[dateStr]);
         return grouped;
       }
 
       async function sbUpsertRow(row){
         await sbFetch("items?on_conflict=id", {
           method: "POST",
-          body: [row]
+          body: [row],
+          prefer: "return=representation,resolution=merge-duplicates"
         });
       }
 
@@ -1412,16 +1603,28 @@
         for(const it of state){
           const li = document.createElement("li");
           li.className = "item" + (it.done ? " done" : "");
+          li.dataset.itemId = it.id;
           li.innerHTML = `
+            <button class="dragHandle" type="button" draggable="true" aria-label="순서 변경" data-drag-id="${escapeHtml(it.id)}">⠿</button>
             <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            <div class="text" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+            ${editingId === it.id
+              ? `<input class="inlineEdit" data-edit-input="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="80" aria-label="일정 제목 수정" />`
+              : `<div class="text" role="button" tabindex="0" data-detail-id="${escapeHtml(it.id)}" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}${String(it.details || "").trim() ? `<span class="noteDot" title="Details 있음" aria-label="Details 있음"></span>` : ""}</div>`}
+            <button class="editBtn" type="button" aria-label="제목 수정" data-edit="${escapeHtml(it.id)}">✎</button>
             <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
           `;
           listEl.appendChild(li);
+        }
+
+        if(editingId){
+          requestAnimationFrame(() => {
+            const input = listEl.querySelector(`[data-edit-input="${CSS.escape(editingId)}"]`);
+            if(input){ input.focus(); input.select(); }
+          });
         }
 
         const total = state.length;
@@ -1439,7 +1642,11 @@
         const it = {
           id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()),
           text: t,
-          done: false
+          done: false,
+          details: "",
+          sort_order: Date.now(),
+          due_at: dayRangeIso(todayStr).startIso,
+          updated_at: nowIso()
         };
 
         state.unshift(it);
@@ -1481,6 +1688,9 @@
       }
 
       async function deleteItem(id){
+        const index = state.findIndex(it => it.id === id);
+        if(index < 0) return;
+        const item = state[index];
         state = state.filter(it => it.id !== id);
         render();
 
@@ -1489,11 +1699,58 @@
             await sbSoftDelete(id);
           }catch(err){
             console.error("[Today Widget] delete sync failed:", err);
+            state.splice(Math.min(index, state.length), 0, item);
+            render();
             showToast("서버 반영 실패.");
+            return;
           }
         }else{
           saveDay(KEY_TODAY, state);
         }
+
+        deletedSnapshot = { item, index };
+        showToast("일정을 삭제했어.", async () => {
+          if(!deletedSnapshot || deletedSnapshot.item.id !== id) return;
+          const restore = deletedSnapshot;
+          deletedSnapshot = null;
+          state.splice(Math.min(restore.index, state.length), 0, restore.item);
+          render();
+          if(USE_SUPABASE){
+            try{
+              await sbPatchRow(id, { deleted: false, updated_at: restore.item.updated_at || nowIso() });
+            }catch(err){
+              state = state.filter(it => it.id !== id);
+              render();
+              showToast("복구하지 못했어.");
+            }
+          }else saveDay(KEY_TODAY, state);
+        }, 5000);
+      }
+
+      function beginInlineEdit(id){
+        if(!state.some(it => it.id === id)) return;
+        editingId = id;
+        render();
+      }
+
+      async function saveInlineEdit(id, value){
+        const title = String(value || "").trim();
+        if(!title){ showToast("제목은 비워둘 수 없어."); return; }
+        const current = state.find(it => it.id === id);
+        if(!current) return;
+        const previous = current.text;
+        editingId = null;
+        state = state.map(it => it.id === id ? ({ ...it, text: title, updated_at: nowIso() }) : it);
+        render();
+        if(USE_SUPABASE){
+          try{
+            await sbPatchRow(id, { title, updated_at: nowIso() });
+          }catch(err){
+            state = state.map(it => it.id === id ? ({ ...it, text: previous }) : it);
+            render();
+            showToast("제목을 저장하지 못했어.");
+          }
+        }else saveDay(KEY_TODAY, state);
       }
 
       function clearDone(){
@@ -1506,6 +1763,114 @@
         state = [];
         render();
         if(!USE_SUPABASE) saveDay(KEY_TODAY, state);
+      }
+
+      async function persistOrder(){
+        const base = Date.now() + state.length;
+        state = state.map((it, index) => ({ ...it, sort_order: base - index }));
+        render();
+        if(USE_SUPABASE){
+          try{
+            await Promise.all(state.map(it => sbPatchRow(it.id, {
+              sort_order: it.sort_order,
+              updated_at: nowIso()
+            })));
+          }catch(err){
+            console.error("[Today Widget] reorder sync failed:", err);
+            showToast("순서를 저장하지 못했어.");
+          }
+        }else saveDay(KEY_TODAY, state);
+      }
+
+      function reorderItem(sourceId, targetId, placeAfter){
+        if(!sourceId || !targetId || sourceId === targetId) return;
+        const from = state.findIndex(it => it.id === sourceId);
+        const target = state.findIndex(it => it.id === targetId);
+        if(from < 0 || target < 0) return;
+        const [moved] = state.splice(from, 1);
+        let insertAt = state.findIndex(it => it.id === targetId);
+        if(placeAfter) insertAt += 1;
+        state.splice(insertAt, 0, moved);
+        persistOrder();
+      }
+
+      function findItemContext(id, dateStr = todayStr){
+        if(dateStr === todayStr){
+          const item = state.find(it => String(it.id) === String(id));
+          if(item) return { item, dateStr, source: "today" };
+        }
+        const item = (archive[dateStr] || []).find(it => String(it.id) === String(id));
+        return item ? { item, dateStr, source: "archive" } : null;
+      }
+
+      function openDetail(id, dateStr = todayStr){
+        const context = findItemContext(id, dateStr);
+        if(!context) return;
+        detailContext = { id: context.item.id, dateStr: context.dateStr, source: context.source };
+        detailTitle.textContent = context.item.text || "일정 상세";
+        detailDetails.value = context.item.details || "";
+        detailDate.value = ymdToInput(context.dateStr);
+        detailStatus.value = context.item.done ? "done" : "todo";
+        detailOverlay.classList.add("open");
+        detailOverlay.setAttribute("aria-hidden", "false");
+        setTimeout(() => detailDetails.focus(), 0);
+      }
+
+      function closeDetail(){
+        detailOverlay.classList.remove("open");
+        detailOverlay.setAttribute("aria-hidden", "true");
+        detailContext = null;
+      }
+
+      async function saveDetail(){
+        if(!detailContext) return;
+        const context = detailContext;
+        const oldDate = context.dateStr;
+        const newDate = inputToYmd(detailDate.value);
+        if(!parseYmd(newDate)){ showToast("날짜를 확인해줘."); return; }
+        const oldContext = findItemContext(context.id, oldDate);
+        if(!oldContext) return;
+        const updated = {
+          ...oldContext.item,
+          details: detailDetails.value || "",
+          done: detailStatus.value === "done",
+          due_at: dayRangeIso(newDate).startIso,
+          updated_at: nowIso()
+        };
+        const patch = {
+          details: updated.details,
+          due_at: updated.due_at,
+          status: updated.done ? "done" : "todo",
+          updated_at: updated.updated_at
+        };
+        const stateBefore = state.slice();
+        const oldArchiveBefore = (archive[oldDate] || []).slice();
+        const newArchiveBefore = (archive[newDate] || []).slice();
+
+        closeDetail();
+        state = state.filter(it => String(it.id) !== String(context.id));
+        if(newDate === todayStr) state = sortItems([updated, ...state]);
+        if(archive[oldDate]) archive[oldDate] = archive[oldDate].filter(it => String(it.id) !== String(context.id));
+        if(newDate !== todayStr) archive[newDate] = sortItems([updated, ...(archive[newDate] || []).filter(it => String(it.id) !== String(context.id))]);
+        render();
+        if(modalOverlay.classList.contains("open")){ buildDates(); if(pickedDate) renderPreview(pickedDate); }
+
+        try{
+          if(USE_SUPABASE) await sbPatchRow(context.id, patch);
+          else{
+            saveDay(KEY_TODAY, state);
+            saveArchive(archive);
+          }
+          showToast(newDate === oldDate ? "상세를 저장했어." : `${formatDateLabel(newDate)}로 이동했어.`);
+        }catch(err){
+          console.error("[Today Widget] detail sync failed:", err);
+          state = stateBefore;
+          archive[oldDate] = oldArchiveBefore;
+          if(newDate !== oldDate) archive[newDate] = newArchiveBefore;
+          render();
+          if(modalOverlay.classList.contains("open")){ buildDates(); if(pickedDate) renderPreview(pickedDate); }
+          showToast("상세를 저장하지 못했어.");
+        }
       }
 
       // =====================
@@ -1547,7 +1912,11 @@
           toAdd.push({
             id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()),
             text: tx,
-            done: false
+            done: false,
+            details: it.details || "",
+            sort_order: Date.now() + unfinished.length - toAdd.length,
+            due_at: dayRangeIso(todayStr).startIso,
+            updated_at: nowIso()
           });
         }
 
@@ -1732,11 +2101,16 @@
           const badgeCls = it.done ? "badge done" : "badge";
           const badgeText = it.done ? "done" : "todo";
           const textHtml = highlight(it.text || "", q);
+          const toggleKey = `${dateStr}::${it.id}`;
+          const isPending = pendingArchiveToggles.has(toggleKey);
           return `
             <div class="pItem">
-              <span class="${badgeCls}">${badgeText}</span>
-              <span style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
-                ${textHtml}
+              <button class="${badgeCls}" type="button" data-preview-toggle="${escapeHtml(it.id)}"
+                aria-label="${escapeHtml(it.text || "할 일")} 상태를 ${it.done ? "todo" : "done"}로 변경"
+                aria-pressed="${it.done}" ${isPending ? "disabled" : ""}>${badgeText}</button>
+              <span class="archiveText" role="button" tabindex="0" data-archive-detail="${escapeHtml(it.id)}"
+                style="cursor:pointer; ${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
+                ${textHtml}${String(it.details || "").trim() ? `<span class="noteDot" title="Details 있음" aria-label="Details 있음"></span>` : ""}
               </span>
             </div>
           `;
@@ -1744,6 +2118,54 @@
 
         previewBox.innerHTML = rows;
       }
+      async function toggleArchivedItem(dateStr, id, button){
+        const items = archive[dateStr] || [];
+        const index = items.findIndex(it => String(it.id) === String(id));
+        if(index === -1) return;
+
+        const toggleKey = `${dateStr}::${id}`;
+        if(pendingArchiveToggles.has(toggleKey)) return;
+        pendingArchiveToggles.add(toggleKey);
+
+        const previousDone = Boolean(items[index].done);
+        const nextDone = !previousDone;
+        archive[dateStr] = items.map((it, i) => i === index ? ({ ...it, done: nextDone }) : it);
+
+        // Supabase의 아카이브에는 오늘도 포함되므로, 메인 목록도 즉시 같은 상태로 맞춘다.
+        if(dateStr === todayStr){
+          state = state.map(it => String(it.id) === String(id) ? ({ ...it, done: nextDone }) : it);
+          render();
+        }
+
+        button.disabled = true;
+        buildDates();
+
+        try{
+          if(USE_SUPABASE){
+            await sbPatchRow(id, {
+              status: nextDone ? "done" : "todo",
+              updated_at: nowIso()
+            });
+          }else{
+            saveArchive(archive);
+          }
+        }catch(err){
+          console.error("[Today Widget] archive toggle sync failed:", err);
+          archive[dateStr] = (archive[dateStr] || []).map(it =>
+            String(it.id) === String(id) ? ({ ...it, done: previousDone }) : it
+          );
+          if(dateStr === todayStr){
+            state = state.map(it => String(it.id) === String(id) ? ({ ...it, done: previousDone }) : it);
+            render();
+          }
+          buildDates();
+          showToast("상태 변경을 저장하지 못했어.");
+        }finally{
+          pendingArchiveToggles.delete(toggleKey);
+          buildDates();
+        }
+      }
+
 
       // =====================
       // 8) Popover
@@ -1798,17 +2220,69 @@
       listEl.addEventListener("click", async (e) => {
         const check = e.target.closest(".check");
         const del = e.target.closest("[data-del]");
+        const edit = e.target.closest("[data-edit]");
+        const detail = e.target.closest("[data-detail-id]");
         if(check) await toggleItem(check.dataset.id);
+        else if(edit) beginInlineEdit(edit.dataset.edit);
         else if(del) await deleteItem(del.dataset.del);
+        else if(detail) openDetail(detail.dataset.detailId);
       });
 
       listEl.addEventListener("keydown", async (e) => {
+        const editInput = e.target.closest("[data-edit-input]");
+        if(editInput){
+          if(e.key === "Enter"){
+            e.preventDefault();
+            await saveInlineEdit(editInput.dataset.editInput, editInput.value);
+          }else if(e.key === "Escape"){
+            e.preventDefault();
+            editingId = null;
+            render();
+          }
+          return;
+        }
+        const detail = e.target.closest("[data-detail-id]");
+        if(detail && (e.key === "Enter" || e.key === " ")){
+          e.preventDefault();
+          openDetail(detail.dataset.detailId);
+          return;
+        }
         const check = e.target.closest(".check");
         if(!check) return;
         if(e.key === "Enter" || e.key === " "){
           e.preventDefault();
           await toggleItem(check.dataset.id);
         }
+      });
+
+      listEl.addEventListener("dragstart", (e) => {
+        const handle = e.target.closest("[data-drag-id]");
+        if(!handle){ e.preventDefault(); return; }
+        dragId = handle.dataset.dragId;
+        handle.closest(".item")?.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        try{ e.dataTransfer.setData("text/plain", dragId); }catch(_){}
+      });
+      listEl.addEventListener("dragover", (e) => {
+        if(!dragId) return;
+        const row = e.target.closest(".item");
+        if(!row || row.dataset.itemId === dragId) return;
+        e.preventDefault();
+        listEl.querySelectorAll(".drop-before,.drop-after").forEach(el => el.classList.remove("drop-before", "drop-after"));
+        const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
+        row.classList.add(after ? "drop-after" : "drop-before");
+        e.dataTransfer.dropEffect = "move";
+      });
+      listEl.addEventListener("drop", (e) => {
+        const row = e.target.closest(".item");
+        if(!row || !dragId) return;
+        e.preventDefault();
+        const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
+        reorderItem(dragId, row.dataset.itemId, after);
+      });
+      listEl.addEventListener("dragend", () => {
+        dragId = null;
+        listEl.querySelectorAll(".dragging,.drop-before,.drop-after").forEach(el => el.classList.remove("dragging", "drop-before", "drop-after"));
       });
 
       if(clearDoneBtn) clearDoneBtn.addEventListener("click", clearDone);
@@ -1835,7 +2309,10 @@
 
       document.addEventListener("click", () => closeCopyPopover());
       document.addEventListener("keydown", (e) => {
-        if(e.key === "Escape") closeCopyPopover();
+        if(e.key === "Escape"){
+          closeCopyPopover();
+          if(detailOverlay.classList.contains("open")) closeDetail();
+        }
       });
 
       window.addEventListener("resize", () => {
@@ -1857,6 +2334,31 @@
         renderPreview(btn.dataset.date);
       });
 
+      previewBox.addEventListener("click", async (e) => {
+        const button = e.target.closest("[data-preview-toggle]");
+        const detail = e.target.closest("[data-archive-detail]");
+        if(button && !button.disabled && pickedDate) await toggleArchivedItem(pickedDate, button.dataset.previewToggle, button);
+        else if(detail && pickedDate) openDetail(detail.dataset.archiveDetail, pickedDate);
+      });
+      previewBox.addEventListener("keydown", (e) => {
+        const detail = e.target.closest("[data-archive-detail]");
+        if(detail && pickedDate && (e.key === "Enter" || e.key === " ")){
+          e.preventDefault();
+          openDetail(detail.dataset.archiveDetail, pickedDate);
+        }
+      });
+
+      detailCancelBtn.addEventListener("click", closeDetail);
+      detailOverlay.addEventListener("click", (e) => { if(e.target === detailOverlay) closeDetail(); });
+      detailForm.addEventListener("submit", async (e) => { e.preventDefault(); await saveDetail(); });
+      moveTomorrowBtn.addEventListener("click", async () => {
+        if(!detailContext) return;
+        const base = ymdToDate(detailContext.dateStr);
+        base.setDate(base.getDate() + 1);
+        detailDate.value = ymdToInput(ymd(base));
+        await saveDetail();
+      });
+
       copyPickedBtn.addEventListener("click", copyPicked);
 
       carryPickedBtn.addEventListener("click", () => {
@@ -1875,7 +2377,8 @@
         buildDates();
         showToast("검색을 초기화했어.");
       });
-
+  
+      
       // =====================
       // 10) Initial load
       // =====================
@@ -1896,6 +2399,7 @@
 
       render();
       syncAddButtonState();
+      metaText.textContent = todayStr;
     })();
   </script>
 
