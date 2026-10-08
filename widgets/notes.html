@@ -160,6 +160,11 @@
     .richSelect{ max-width:150px; min-width:0; }
     .richBtn:hover,
     .richSelect:hover{ border-color: var(--stroke-strong); }
+    .richBtn.active{
+      background: rgba(210,218,228,0.34);
+      border-color: rgba(190,200,212,0.82);
+      box-shadow: 0 0 0 2px rgba(210,218,228,0.14);
+    }
     .richEditor{
       width: 100%;
       min-height: 160px;
@@ -167,7 +172,7 @@
       border: 1px solid rgba(200,208,220,0.55);
       background: rgba(255,255,255,0.12);
       padding: 12px;
-      font-size: 14px;
+      font-size: 12px;
       color: var(--text);
       font-family: inherit;
       outline: none;
@@ -248,11 +253,15 @@
               <option value="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Monospace</option>
             </select>
             <select class="richSelect" id="sizeSelect" aria-label="Font size">
-              <option value="">Size</option>
+              <option value="10px">10px</option>
               <option value="12px">12px</option><option value="14px">14px</option>
               <option value="16px">16px</option><option value="18px">18px</option><option value="20px">20px</option>
             </select>
-            <button class="richBtn" type="button" data-rich-command="removeFormat">Clear</button>
+            <button class="richBtn" type="button" data-rich-command="insertUnorderedList" aria-label="Bulleted list">• List</button>
+            <button class="richBtn" type="button" data-rich-command="insertOrderedList" aria-label="Numbered list">1. List</button>
+            <button class="richBtn" type="button" data-rich-command="undo" aria-label="Undo">↶</button>
+            <button class="richBtn" type="button" data-rich-command="redo" aria-label="Redo">↷</button>
+            <button class="richBtn" type="button" data-rich-command="removeFormat">Reset</button>
           </div>
           <div class="richEditor" id="notes" contenteditable="true" role="textbox" aria-multiline="true"
             data-placeholder="짧은 메모, 컨디션, 주의사항…"></div>
@@ -260,7 +269,7 @@
 
         <div class="footer">
           <span id="status">자동 저장</span>
-          <button class="linkBtn" id="clearBtn" type="button">Clear</button>
+          <button class="linkBtn" id="saveBtn" type="button">Save</button>
         </div>
       </div>
     </div>
@@ -333,7 +342,7 @@
     const fontSelect = document.getElementById("fontSelect");
     const sizeSelect = document.getElementById("sizeSelect");
     const status = document.getElementById("status");
-    const clearBtn = document.getElementById("clearBtn");
+    const saveBtn = document.getElementById("saveBtn");
     let lastRemoteUpdatedAt = "";
     let localMutationVersion = 0;
     let syncedMutationVersion = 0;
@@ -341,52 +350,98 @@
     let remoteSaveInFlight = 0;
     let remoteRefreshInFlight = false;
 
-    const RICH_TAGS = new Set(["STRONG","B","EM","I","U","S","SPAN","BR","DIV"]);
-    const RICH_FONTS = new Set([
-      "inherit",
-      '"EnterSanChaek", ui-sans-serif, system-ui, sans-serif',
-      "Georgia, 'Times New Roman', serif",
-      "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-    ]);
-    const RICH_SIZES = new Set(["12px","14px","16px","18px","20px"]);
+    const RICH_FONTS = {
+      system: "inherit",
+      walk: '"EnterSanChaek", ui-sans-serif, system-ui, sans-serif',
+      serif: "Georgia, 'Times New Roman', serif",
+      mono: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    };
+    const RICH_SIZES = new Set(["10px","12px","14px","16px","18px","20px"]);
     let savedRange = null;
 
-    function sanitizeRichHtml(html){
+    function canonicalFont(value){
+      const lower = String(value || "").replace(/[\"']/g, "").toLowerCase();
+      if(lower.includes("entersanchaek")) return RICH_FONTS.walk;
+      if(lower.includes("ui-monospace") || lower.includes("sfmono") || lower.includes("menlo") || lower.includes("consolas") || lower === "monospace") return RICH_FONTS.mono;
+      if(lower.includes("georgia") || lower.includes("times new roman") || lower === "serif") return RICH_FONTS.serif;
+      return "";
+    }
+    function canonicalSize(value){
+      const match = String(value || "").match(/(10|12|14|16|18|20)px/i);
+      return match && RICH_SIZES.has(`${match[1]}px`) ? `${match[1]}px` : "";
+    }
+    function legacyFontSize(value){
+      return ({"1":"10px","2":"12px","3":"14px","4":"16px","5":"18px","6":"20px","7":"20px"})[String(value || "")] || "";
+    }
+    function normalizeRichHtml(html){
       const template = document.createElement("template");
       template.innerHTML = String(html || "");
-      const cleanNode = node => {
-        if(node.nodeType === Node.TEXT_NODE){
-          return document.createTextNode(node.nodeValue.replace(/\u200B/g, ""));
-        }
-        if(node.nodeType !== Node.ELEMENT_NODE) return document.createDocumentFragment();
-        const tag = node.tagName.toUpperCase();
-        if(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","LINK","META"].includes(tag)){
-          return document.createDocumentFragment();
-        }
-        if(!RICH_TAGS.has(tag)){
-          const fragment = document.createDocumentFragment();
-          [...node.childNodes].forEach(child => fragment.appendChild(cleanNode(child)));
-          return fragment;
-        }
-        const clean = document.createElement(tag.toLowerCase());
-        if(tag === "SPAN"){
-          const family = node.style.fontFamily;
-          const size = node.style.fontSize;
-          const weight = node.style.fontWeight;
-          const style = node.style.fontStyle;
-          const decoration = node.style.textDecoration;
-          if(RICH_FONTS.has(family)) clean.style.fontFamily = family;
-          if(RICH_SIZES.has(size)) clean.style.fontSize = size;
-          if(["bold","700"].includes(weight)) clean.style.fontWeight = "bold";
-          if(style === "italic") clean.style.fontStyle = "italic";
-          if(["underline","line-through"].includes(decoration)) clean.style.textDecoration = decoration;
-        }
-        [...node.childNodes].forEach(child => clean.appendChild(cleanNode(child)));
-        return clean;
-      };
       const output = document.createElement("div");
-      [...template.content.childNodes].forEach(node => output.appendChild(cleanNode(node)));
+      const baseState = { bold:false, italic:false, underline:false, strike:false, font:"", size:"" };
+      const dangerous = new Set(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","LINK","META","IMG","SVG","MATH"]);
+
+      const appendTextRun = (parent, text, state) => {
+        const value = String(text || "").replace(/\u200B/g, "");
+        if(!value) return;
+        let node = document.createTextNode(value);
+        if(state.font || state.size){
+          const span = document.createElement("span");
+          if(state.font) span.style.fontFamily = state.font;
+          if(state.size) span.style.fontSize = state.size;
+          span.appendChild(node);
+          node = span;
+        }
+        if(state.strike){ const el=document.createElement("s"); el.appendChild(node); node=el; }
+        if(state.underline){ const el=document.createElement("u"); el.appendChild(node); node=el; }
+        if(state.italic){ const el=document.createElement("em"); el.appendChild(node); node=el; }
+        if(state.bold){ const el=document.createElement("strong"); el.appendChild(node); node=el; }
+        parent.appendChild(node);
+      };
+
+      const visit = (node, parent, inherited) => {
+        if(node.nodeType === Node.TEXT_NODE){ appendTextRun(parent, node.nodeValue, inherited); return; }
+        if(node.nodeType !== Node.ELEMENT_NODE) return;
+        const tag = node.tagName.toUpperCase();
+        if(dangerous.has(tag)) return;
+        if(tag === "BR"){ parent.appendChild(document.createElement("br")); return; }
+        if(["DIV","P","UL","OL","LI"].includes(tag)){
+          const canonicalTag = tag === "P" ? "div" : tag.toLowerCase();
+          const block = document.createElement(canonicalTag);
+          [...node.childNodes].forEach(child => visit(child, block, {...inherited}));
+          parent.appendChild(block);
+          return;
+        }
+
+        const state = {...inherited};
+        if(tag === "STRONG" || tag === "B") state.bold = true;
+        if(tag === "EM" || tag === "I") state.italic = true;
+        if(tag === "U") state.underline = true;
+        if(tag === "S" || tag === "STRIKE" || tag === "DEL") state.strike = true;
+        if(tag === "FONT"){
+          if(node.hasAttribute("face")) state.font = canonicalFont(node.getAttribute("face"));
+          state.size = canonicalSize(node.style.fontSize) || legacyFontSize(node.getAttribute("size")) || state.size;
+        }
+        if(tag === "SPAN" || tag === "FONT"){
+          if(node.style.fontFamily) state.font = canonicalFont(node.style.fontFamily);
+          state.size = canonicalSize(node.style.fontSize) || state.size;
+          const weight = node.style.fontWeight;
+          const decoration = `${node.style.textDecoration} ${node.style.textDecorationLine}`;
+          if(weight === "bold" || Number(weight) >= 600) state.bold = true;
+          if(weight === "normal" || weight === "400") state.bold = false;
+          if(node.style.fontStyle === "italic") state.italic = true;
+          if(node.style.fontStyle === "normal") state.italic = false;
+          if(decoration.includes("none")){ state.underline = false; state.strike = false; }
+          if(decoration.includes("underline")) state.underline = true;
+          if(decoration.includes("line-through")) state.strike = true;
+        }
+        [...node.childNodes].forEach(child => visit(child, parent, state));
+      };
+
+      [...template.content.childNodes].forEach(node => visit(node, output, {...baseState}));
       return output.innerHTML;
+    }
+    function sanitizeRichHtml(html){
+      return normalizeRichHtml(html);
     }
     function plainText(){
       return String(editor.innerText || "").replace(/\u200B/g, "").replace(/\n+$/, "");
@@ -394,49 +449,86 @@
     function plainTextToRichHtml(text){
       const div = document.createElement("div");
       div.textContent = String(text || "");
-      return div.innerHTML.replace(/\r?\n/g, "<br>");
+      return normalizeRichHtml(div.innerHTML.replace(/\r?\n/g, "<br>"));
+    }
+    function selectionInsideEditor(range){
+      return !!range && editor.contains(range.commonAncestorContainer);
     }
     function saveSelection(){
       const selection = window.getSelection();
       if(!selection || !selection.rangeCount) return;
       const range = selection.getRangeAt(0);
-      if(editor.contains(range.commonAncestorContainer)) savedRange = range.cloneRange();
+      if(selectionInsideEditor(range)) savedRange = range.cloneRange();
     }
     function restoreSelection(){
-      if(!savedRange) return false;
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(savedRange);
-      return true;
+      if(!savedRange || !selectionInsideEditor(savedRange)) return false;
+      try{
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+        return true;
+      }catch(_){
+        savedRange = null;
+        return false;
+      }
     }
-    function applyStyle(property, value){
+    function selectionElement(){
+      const selection = window.getSelection();
+      if(!selection || !selection.rangeCount) return editor;
+      let node = selection.anchorNode;
+      if(node && node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+      return node && editor.contains(node) ? node : editor;
+    }
+    function fontSelectValue(value){
+      return canonicalFont(value) || RICH_FONTS.system;
+    }
+    function sizeSelectValue(value){
+      const px = `${Math.round(parseFloat(value) || 12)}px`;
+      return RICH_SIZES.has(px) ? px : "12px";
+    }
+    function updateToolbarState(){
+      const selection = window.getSelection();
+      if(!selection || !selection.rangeCount || !selectionInsideEditor(selection.getRangeAt(0))) return;
+      const states = {
+        bold: document.queryCommandState("bold"),
+        italic: document.queryCommandState("italic"),
+        underline: document.queryCommandState("underline"),
+        strikeThrough: document.queryCommandState("strikeThrough"),
+        insertUnorderedList: document.queryCommandState("insertUnorderedList"),
+        insertOrderedList: document.queryCommandState("insertOrderedList")
+      };
+      toolbar.querySelectorAll("[data-rich-command]").forEach(button => {
+        button.classList.toggle("active", !!states[button.dataset.richCommand]);
+        button.setAttribute("aria-pressed", states[button.dataset.richCommand] ? "true" : "false");
+      });
+      const computed = getComputedStyle(selectionElement());
+      fontSelect.value = fontSelectValue(computed.fontFamily);
+      sizeSelect.value = sizeSelectValue(computed.fontSize);
+    }
+    function notifyFormattingChange(){
+      saveSelection();
+      updateToolbarState();
+      editor.dispatchEvent(new Event("input", { bubbles:true }));
+    }
+    function runCommand(command, value=null){
       editor.focus();
       if(!restoreSelection()) return;
-      const selection = window.getSelection();
-      const range = selection.getRangeAt(0);
-      const span = document.createElement("span");
-      span.style[property] = value;
-      if(range.collapsed){
-        span.textContent = "\u200B";
-        range.insertNode(span);
-        range.setStart(span.firstChild, 1);
-        range.collapse(true);
-      }else{
-        span.appendChild(range.extractContents());
-        range.insertNode(span);
-        range.selectNodeContents(span);
-      }
-      selection.removeAllRanges();
-      selection.addRange(range);
-      savedRange = range.cloneRange();
-      editor.dispatchEvent(new Event("input", { bubbles:true }));
+      document.execCommand("styleWithCSS", false, false);
+      document.execCommand(command, false, value);
+      notifyFormattingChange();
     }
-    function runCommand(command){
+    function applyFont(font){
+      runCommand("fontName", font === RICH_FONTS.system ? "inherit" : font);
+    }
+    function applySize(size){
       editor.focus();
-      restoreSelection();
-      document.execCommand(command, false, null);
-      saveSelection();
-      editor.dispatchEvent(new Event("input", { bubbles:true }));
+      if(!restoreSelection()) return;
+      document.execCommand("fontSize", false, "7");
+      editor.querySelectorAll('font[size="7"]').forEach(font => {
+        font.removeAttribute("size");
+        font.style.fontSize = size;
+      });
+      notifyFormattingChange();
     }
 
     function updateMeta(){
@@ -447,7 +539,7 @@
       try{
         const rich = localStorage.getItem(RICH_STORAGE_KEY);
         if(rich !== null){
-          editor.innerHTML = sanitizeRichHtml(rich);
+          editor.innerHTML = sanitizeRichHtml(normalizeRichHtml(rich));
           return;
         }
         const plain = localStorage.getItem(STORAGE_KEY);
@@ -455,7 +547,9 @@
       }catch(e){}
     }
     function currentPayload(){
-      return { html:sanitizeRichHtml(editor.innerHTML), text:plainText() };
+      const normalizedHtml = normalizeRichHtml(editor.innerHTML);
+      const safeHtml = sanitizeRichHtml(normalizedHtml);
+      return { html:safeHtml, text:plainText() };
     }
     function persistLocal(payload){
       localStorage.setItem(RICH_STORAGE_KEY, payload.html);
@@ -486,6 +580,7 @@
     }
     async function save(){
       pendingSave = false;
+      status.textContent = "저장 중…";
       const payload = currentPayload();
       try{
         persistLocal(payload);
@@ -515,7 +610,7 @@
       const payload = row && row.payload;
       if(!payload || typeof payload !== "object") return false;
       const html = typeof payload.html === "string"
-        ? sanitizeRichHtml(payload.html)
+        ? sanitizeRichHtml(normalizeRichHtml(payload.html))
         : plainTextToRichHtml(payload.text || "");
       editor.innerHTML = html;
       const localPayload = { html, text:typeof payload.text === "string" ? payload.text : plainText() };
@@ -569,9 +664,12 @@
       t = setTimeout(save, 350);
     });
 
-    document.addEventListener("selectionchange", saveSelection);
-    editor.addEventListener("mouseup", saveSelection);
-    editor.addEventListener("keyup", saveSelection);
+    document.addEventListener("selectionchange", () => {
+      saveSelection();
+      updateToolbarState();
+    });
+    editor.addEventListener("mouseup", () => { saveSelection(); updateToolbarState(); });
+    editor.addEventListener("keyup", () => { saveSelection(); updateToolbarState(); });
     editor.addEventListener("paste", (e) => {
       e.preventDefault();
       document.execCommand("insertText", false, e.clipboardData.getData("text/plain"));
@@ -584,24 +682,21 @@
       const button = e.target.closest("[data-rich-command]");
       if(button) runCommand(button.dataset.richCommand);
     });
-    fontSelect.addEventListener("change", () => applyStyle("fontFamily", fontSelect.value));
-    sizeSelect.addEventListener("change", () => {
-      if(sizeSelect.value) applyStyle("fontSize", sizeSelect.value);
-      sizeSelect.value = "";
-    });
+    fontSelect.addEventListener("change", () => applyFont(fontSelect.value));
+    sizeSelect.addEventListener("change", () => applySize(sizeSelect.value));
 
-    clearBtn.addEventListener("click", () => {
+    saveBtn.addEventListener("click", async () => {
       clearTimeout(t);
       pendingSave = false;
-      editor.innerHTML = "";
-      savedRange = null;
-      save();
+      status.textContent = "저장 중…";
+      await save();
     });
 
     loadLocal();
     await bootstrapSync();
     updateMeta();
     status.textContent = "자동 저장";
+    sizeSelect.value = "12px";
 
     const REMOTE_REFRESH_INTERVAL_MS = 15000;
     setInterval(() => {
