@@ -997,6 +997,31 @@
     .detailInput:focus{ box-shadow:var(--ring); border-color:rgba(255,170,190,.72); }
     .detailActions{ display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
     .detailActions .moveTomorrow{ margin-right:auto; }
+
+    /* Detail modal actions: match the Today footer action buttons. */
+    #moveTomorrowBtn,
+    #detailCancelBtn,
+    #detailSaveBtn{
+      font-family: var(--font-display);
+      transition: color .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .08s ease;
+    }
+    #moveTomorrowBtn:hover,
+    #detailCancelBtn:hover,
+    #detailSaveBtn:hover{
+      color: var(--accent-1);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,170,190,0.70);
+      box-shadow: var(--ring);
+    }
+    #moveTomorrowBtn:focus-visible,
+    #detailCancelBtn:focus-visible,
+    #detailSaveBtn:focus-visible{
+      outline: none;
+      color: var(--accent-1);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,170,190,0.78);
+      box-shadow: var(--ring-strong);
+    }
   
     /* ===== FINAL Add(＋) button override ===== */
     #addBtn{
@@ -1173,7 +1198,7 @@
       <div class="detailActions">
         <button class="btn secondary moveTomorrow" id="moveTomorrowBtn" type="button">Move to Tomorrow</button>
         <button class="btn secondary" id="detailCancelBtn" type="button">Cancel</button>
-        <button class="btn" type="submit">Save</button>
+        <button class="btn secondary" id="detailSaveBtn" type="submit">Save</button>
       </div>
     </form>
   </div>
@@ -1341,6 +1366,12 @@
       function applyItemStatus(item, status){
         const normalized = normalizeItemStatus(status, false);
         return { ...item, status: normalized, done: normalized === "done" };
+      }
+      function nextArchiveStatus(status){
+        const current = normalizeItemStatus(status, false);
+        if(current === "todo") return "hold";
+        if(current === "hold") return "done";
+        return "todo";
       }
 
       function dayRangeIso(dateStr){
@@ -2156,7 +2187,8 @@
           return `
             <div class="pItem">
               <button class="${badgeCls}" type="button" data-preview-toggle="${escapeHtml(it.id)}"
-                aria-label="${escapeHtml(it.text || "할 일")} 상태를 ${status === "done" ? "todo" : "done"}로 변경"
+                title="클릭: ${status === "todo" ? "On Hold" : (status === "hold" ? "Done" : "Todo")}로 변경"
+                aria-label="${escapeHtml(it.text || "할 일")} 상태를 ${status === "todo" ? "On Hold" : (status === "hold" ? "Done" : "Todo")}로 변경"
                 aria-pressed="${status === "done"}" ${isPending ? "disabled" : ""}>${badgeText}</button>
               <span class="archiveText" role="button" tabindex="0" data-archive-detail="${escapeHtml(it.id)}"
                 style="cursor:pointer; ${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
@@ -2178,7 +2210,7 @@
         pendingArchiveToggles.add(toggleKey);
 
         const previousStatus = getItemStatus(items[index]);
-        const nextStatus = previousStatus === "done" ? "todo" : "done";
+        const nextStatus = nextArchiveStatus(previousStatus);
         archive[dateStr] = items.map((it, i) => i === index ? applyItemStatus(it, nextStatus) : it);
 
         // Supabase의 아카이브에는 오늘도 포함되므로, 메인 목록도 즉시 같은 상태로 맞춘다.
