@@ -615,6 +615,27 @@
     }
     .item.done .check svg{ opacity: 1; transform: scale(1); }
 
+    .holdMark{
+      display:none;
+      font-size:14px;
+      line-height:1;
+      color:rgba(30,30,30,0.60);
+      transform:translateY(-1px);
+    }
+    .item.hold{ opacity:0.90; }
+    .item.hold .text{ color:rgba(30,30,30,0.62); }
+    .item.hold .check{
+      background:rgba(165,206,240,0.08);
+      border-color:rgba(140,190,232,0.72);
+    }
+    .item.hold .check .holdMark{ display:block; }
+    .item.hold .check svg{ display:none; }
+    .badge.hold{
+      border-color:rgba(140,190,232,0.28);
+      background:rgba(255,255,255,0.30);
+      color:rgba(30,30,30,0.56);
+    }
+
     .footer{
       display:flex;
       justify-content: space-between;
@@ -1457,6 +1478,7 @@
         <span>Status</span>
         <select class="weekDetailInput" id="weekDetailStatus">
           <option value="todo">Todo</option>
+          <option value="hold">On Hold</option>
           <option value="done">Done</option>
         </select>
       </label>
@@ -1675,6 +1697,21 @@
         return new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime();
       });
     }
+    function normalizeItemStatus(status, done = false){
+      if(status === "done" || status === "hold") return status;
+      return done ? "done" : "todo";
+    }
+    function getItemStatus(item){
+      return normalizeItemStatus(item && item.status, Boolean(item && item.done));
+    }
+    function applyItemStatus(item, status){
+      const normalized = normalizeItemStatus(status, false);
+      return { ...item, status: normalized, done: normalized === "done" };
+    }
+    function statusMark(item){
+      const status = getItemStatus(item);
+      return status === "done" ? "x" : (status === "hold" ? "-" : " ");
+    }
     function emptyWeekState(){
       const days = {};
       for(let i=0;i<7;i++) days[String(i)] = [];
@@ -1752,7 +1789,7 @@
         id: item.id,
         workspace_id,
         title: (item.text || "").trim(),
-        status: item.done ? "done" : "todo",
+        status: getItemStatus(item),
         due_at: isoForWeekDay(weekId, dayIndex),
         deleted: false,
         updated_at: updatedAt
@@ -1823,10 +1860,12 @@
       });
     }
     function remoteItemToLocal(row){
+      const status = normalizeItemStatus(row.status, false);
       return {
         id:row.id,
         text:row.title || "",
-        done:row.status === "done",
+        status,
+        done:status === "done",
         details:row.details ?? "",
         sort_order:row.sort_order ?? null,
         due_at:row.due_at ?? null,
@@ -1842,6 +1881,8 @@
       if(kind === "item"){
         return {
           ...localItem,
+          status: getItemStatus(localItem),
+          done: getItemStatus(localItem) === "done",
           details: localItem.details ?? remoteRow.details ?? "",
           sort_order: localItem.sort_order ?? remoteRow.sort_order ?? null,
           due_at: localItem.due_at ?? remoteRow.due_at ?? null,
@@ -1949,15 +1990,15 @@
       for(const [id, entry] of currentItems){
         const old = previousItems.get(id);
         const remote = remoteItems.get(id);
-        const localChanged = !old || old.day !== entry.day || old.item.text !== entry.item.text || !!old.item.done !== !!entry.item.done;
-        const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.title !== entry.item.text || (remote.status === "done") !== !!entry.item.done || Number(remote.dayIndex) !== entry.day);
+        const localChanged = !old || old.day !== entry.day || old.item.text !== entry.item.text || getItemStatus(old.item) !== getItemStatus(entry.item);
+        const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.title !== entry.item.text || normalizeItemStatus(remote.status, false) !== getItemStatus(entry.item) || Number(remote.dayIndex) !== entry.day);
         if(localChanged || remoteDiffers){
           const updatedAt = localChanged ? now : getLocalUpdatedAt("item", entry.item.id);
           setLocalUpdatedAt("item", entry.item.id, updatedAt);
           if(old && localChanged){
             const patch = { updated_at: updatedAt };
             if(old.item.text !== entry.item.text) patch.title = (entry.item.text || "").trim();
-            if(!!old.item.done !== !!entry.item.done) patch.status = entry.item.done ? "done" : "todo";
+            if(getItemStatus(old.item) !== getItemStatus(entry.item)) patch.status = getItemStatus(entry.item);
             if(old.day !== entry.day) patch.due_at = isoForWeekDay(weekId, entry.day);
             await patchItemFields(entry.item.id, patch);
           }else{
@@ -2213,7 +2254,7 @@
       weekDetailTitle.textContent = found.item.text || "일정 상세";
       weekDetailDetails.value = found.item.details || "";
       weekDetailDate.value = weekYmdToInput(found.dateStr);
-      weekDetailStatus.value = found.item.done ? "done" : "todo";
+      weekDetailStatus.value = getItemStatus(found.item);
       weekDetailOverlay.classList.add("open");
       weekDetailOverlay.setAttribute("aria-hidden", "false");
       setTimeout(() => weekDetailDetails.focus(), 0);
@@ -2237,17 +2278,19 @@
       }
 
       const updatedAt = new Date().toISOString();
+      const selectedStatus = normalizeItemStatus(weekDetailStatus.value, false);
       const updated = {
         ...found.item,
+        status: selectedStatus,
+        done: selectedStatus === "done",
         details: weekDetailDetails.value || "",
-        done: weekDetailStatus.value === "done",
         due_at: dueDate.toISOString(),
         updated_at: updatedAt
       };
       const patch = {
         details: updated.details,
         due_at: updated.due_at,
-        status: updated.done ? "done" : "todo",
+        status: selectedStatus,
         updated_at: updatedAt
       };
 
@@ -2449,13 +2492,17 @@
         if(total >= 2 && !isOpen) visible = list.slice(0, 1);
 
         for(const it of visible){
+          const status = getItemStatus(it);
           const row = document.createElement("div");
-          row.className = "item" + (it.done ? " done" : "");
+          row.className = "item" + (status === "done" ? " done" : (status === "hold" ? " hold" : ""));
           row.innerHTML = `
-            <button class="check" type="button" role="checkbox" aria-checked="${it.done}" data-id="${it.id}" data-day="${i}">
+            <button class="check" type="button" role="checkbox" aria-checked="${status === "done"}"
+              aria-label="${status === "hold" ? "보류된 일정. 완료로 변경" : "완료 상태 변경"}"
+              data-id="${it.id}" data-day="${i}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
+              <span class="holdMark" aria-hidden="true">–</span>
             </button>
             <div class="text detailTrigger" role="button" tabindex="0"
               data-detail-id="${escapeHtml(it.id)}" data-detail-day="${i}"
@@ -2512,6 +2559,7 @@
       arr.unshift({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
+        status: "todo",
         done: false,
         details: "",
         sort_order: Date.now(),
@@ -2525,7 +2573,11 @@
     function toggleItem(dayIndex, id){
       const dayKey = String(dayIndex);
       const arr = weekState.days[dayKey] || [];
-      weekState.days[dayKey] = arr.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+      weekState.days[dayKey] = arr.map(it => {
+        if(it.id !== id) return it;
+        const nextStatus = getItemStatus(it) === "done" ? "todo" : "done";
+        return applyItemStatus(it, nextStatus);
+      });
       persistCurrentWeek();
       renderWeekList();
     }
@@ -2597,7 +2649,7 @@
       lines.push(`> from ${getWeekId()}`);
       lines.push("");
       if(arr.length === 0) lines.push(`- (empty)`);
-      else for(const it of arr) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+      else for(const it of arr) lines.push(`- [${statusMark(it)}] ${it.text}`);
       const ok = await copyToClipboard(lines.join("\n"));
       showToast(ok ? `${label}를 복사했어.` : "복사 실패 (권한 확인)");
     }
@@ -2714,9 +2766,11 @@
         const tx = (it.text||"").trim();
         if(!tx) continue;
         if(existing.has(tx)) continue;
+        const carriedStatus = getItemStatus(it) === "hold" ? "hold" : "todo";
         arr.unshift({
           id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
           text: tx,
+          status: carriedStatus,
           done: false
         });
         existing.add(tx);
@@ -2751,9 +2805,11 @@
         const tx = (it.text||"").trim();
         if(!tx) continue;
         if(existing.has(tx)) continue;
+        const carriedStatus = getItemStatus(it) === "hold" ? "hold" : "todo";
         dest.unshift({
           id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
           text: tx,
+          status: carriedStatus,
           done: false
         });
         existing.add(tx);
@@ -2922,19 +2978,19 @@
           continue;
         }
         for(const it of arr){
-          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+          lines.push(`- [${statusMark(it)}] ${it.text}`);
         }
       }
 
       const tx = Array.isArray(data.thisInbox) ? data.thisInbox : [];
       lines.push(`\nThis Week Inbox`);
       if(tx.length === 0) lines.push(`- (empty)`);
-      else for(const it of tx) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+      else for(const it of tx) lines.push(`- [${statusMark(it)}] ${it.text}`);
 
       const nx = Array.isArray(data.nextInbox) ? data.nextInbox : [];
       lines.push(`\nNext Week Inbox`);
       if(nx.length === 0) lines.push(`- (empty)`);
-      else for(const it of nx) lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+      else for(const it of nx) lines.push(`- [${statusMark(it)}] ${it.text}`);
 
       return lines.join("\n");
     }
@@ -2955,7 +3011,7 @@
           lines.push(`- (empty)`);
         } else {
           for(const it of arr){
-            lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+            lines.push(`- [${statusMark(it)}] ${it.text}`);
           }
         }
         lines.push("");
@@ -2967,7 +3023,7 @@
         lines.push(`- (empty)`);
       }else{
         for(const it of tx){
-          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+          lines.push(`- [${statusMark(it)}] ${it.text}`);
         }
       }
       lines.push("");
@@ -2978,7 +3034,7 @@
         lines.push(`- (empty)`);
       }else{
         for(const it of nx){
-          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+          lines.push(`- [${statusMark(it)}] ${it.text}`);
         }
       }
 
@@ -3317,7 +3373,11 @@
       }else{
         const day = String(sec);
         const arr = (data.days && data.days[day]) ? data.days[day] : [];
-        data.days[day] = arr.map(it => it.id === itemId ? ({...it, done: !it.done}) : it);
+        data.days[day] = arr.map(it => {
+          if(it.id !== itemId) return it;
+          const nextStatus = getItemStatus(it) === "done" ? "todo" : "done";
+          return applyItemStatus(it, nextStatus);
+        });
       }
       saveWeekStateById(weekId, data);
       buildWeeks();
@@ -3430,8 +3490,9 @@
         const view = q ? arr.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase()) || id.toLowerCase().includes(q.toLowerCase())) : arr;
 
         for(const it of view){
-          const badgeCls = it.done ? "badge done" : "badge";
-          const badgeText = it.done ? "done" : "todo";
+          const status = getItemStatus(it);
+          const badgeCls = status === "done" ? "badge done" : (status === "hold" ? "badge hold" : "badge");
+          const badgeText = status === "done" ? "done" : (status === "hold" ? "hold" : "todo");
           const textHtml = highlight(it.text || "", q);
           rows.push(`
             <div class="pItem">
@@ -3453,8 +3514,9 @@
       }else{
         const viewTx = q ? tx.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase())) : tx;
         for(const it of viewTx){
-          const badgeCls = it.done ? "badge done" : "badge";
-          const badgeText = it.done ? "done" : "todo";
+          const status = getItemStatus(it);
+          const badgeCls = status === "done" ? "badge done" : (status === "hold" ? "badge hold" : "badge");
+          const badgeText = status === "done" ? "done" : (status === "hold" ? "hold" : "todo");
           const textHtml = highlight(it.text || "", q);
           rows.push(`
             <div class="pItem">
@@ -3476,8 +3538,9 @@
       }else{
         const viewNx = q ? nx.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase())) : nx;
         for(const it of viewNx){
-          const badgeCls = it.done ? "badge done" : "badge";
-          const badgeText = it.done ? "done" : "todo";
+          const status = getItemStatus(it);
+          const badgeCls = status === "done" ? "badge done" : (status === "hold" ? "badge hold" : "badge");
+          const badgeText = status === "done" ? "done" : (status === "hold" ? "hold" : "todo");
           const textHtml = highlight(it.text || "", q);
           rows.push(`
             <div class="pItem">
