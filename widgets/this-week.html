@@ -1052,6 +1052,35 @@
     }
     .pTog.on svg{ opacity: 1; }
 
+    .pHold{
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1px solid rgba(140,190,232,0.35);
+      background: rgba(255,255,255,0.70);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      flex: 0 0 auto;
+      color: rgba(120,120,120,0.78);
+      font-size: 14px;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .18s ease, border-color .18s ease, color .18s ease, transform .08s ease, box-shadow .18s ease;
+    }
+    .pHold:hover{
+      border-color: rgba(140,190,232,0.60);
+      background: rgba(255,255,255,0.82);
+      box-shadow: 0 0 0 3px rgba(165,206,240,0.14);
+    }
+    .pHold:active{ transform: scale(0.98); }
+    .pHold.on{
+      border-color: rgba(140,190,232,0.68);
+      background: rgba(165,206,240,0.14);
+      color: rgba(80,120,155,0.86);
+    }
+
     .pDel{
       width: 18px;
       height: 18px;
@@ -1485,7 +1514,7 @@
       <div class="weekDetailActions">
         <button class="btn secondary moveTomorrow" id="weekMoveTomorrowBtn" type="button">Move to Tomorrow</button>
         <button class="btn secondary" id="weekDetailCancelBtn" type="button">Cancel</button>
-        <button class="btn" type="submit">Save</button>
+        <button class="btn secondary" id="weekDetailSaveBtn" type="submit">Save</button>
       </div>
     </form>
   </div>
@@ -3364,7 +3393,21 @@
       hideModalToast();
     });
 
-    /* ✅ 프리뷰: done 토글 + delete(Undo 3s) */
+    /* ✅ 프리뷰: done / hold 토글 + delete(Undo 3s) */
+    function togglePreviewHold(weekId, dayIndex, itemId){
+      const data = loadWeekStateById(weekId);
+      const day = String(dayIndex);
+      const arr = (data.days && data.days[day]) ? data.days[day] : [];
+      data.days[day] = arr.map(it => {
+        if(String(it.id) !== String(itemId)) return it;
+        const nextStatus = getItemStatus(it) === "hold" ? "todo" : "hold";
+        return applyItemStatus(it, nextStatus);
+      });
+      saveWeekStateById(weekId, data);
+      buildWeeks();
+      renderWeekPreview(weekId);
+    }
+
     function togglePreviewDone(weekId, sec, itemId){
       const data = loadWeekStateById(weekId);
       if(sec === "tx" || sec === "nx"){
@@ -3460,6 +3503,12 @@
         </button>
       `;
 
+      const holdBtnHtml = (weekId, dayIndex, itemId, on) => `
+        <button class="pHold ${on ? "on" : ""}" type="button" title="${on ? "Hold 해제" : "Hold"}"
+          aria-pressed="${on}" data-phold-week="${escapeHtml(weekId)}"
+          data-phold-day="${escapeHtml(dayIndex)}" data-phold-id="${escapeHtml(itemId)}">–</button>
+      `;
+
       const trashBtnHtml = (weekId, sec, itemId) => `
         <button class="pDel" type="button" title="삭제"
           data-pdel-week="${escapeHtml(weekId)}" data-pdel-sec="${escapeHtml(sec)}" data-pdel-id="${escapeHtml(itemId)}">
@@ -3500,6 +3549,7 @@
               <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}
               </span>
+              ${holdBtnHtml(id, String(i), it.id, status === "hold")}
               ${togBtnHtml(id, String(i), it.id, it.done)}
               ${trashBtnHtml(id, String(i), it.id)}
             </div>
@@ -3643,8 +3693,14 @@
       renderWeekPreview(btn.dataset.week);
     });
 
-    // ✅ preview interactions: done toggle + delete(with undo)
+    // ✅ preview interactions: hold/done toggle + delete(with undo)
     previewBox.addEventListener("click", (e) => {
+      const hold = e.target.closest("[data-phold-week]");
+      if(hold){
+        togglePreviewHold(hold.dataset.pholdWeek, hold.dataset.pholdDay, hold.dataset.pholdId);
+        return;
+      }
+
       const tog = e.target.closest("[data-ptog-week]");
       if(tog){
         togglePreviewDone(tog.dataset.ptogWeek, tog.dataset.ptogSec, tog.dataset.ptogId);
