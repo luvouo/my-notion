@@ -3,10 +3,12 @@ import { sbFetch } from "./supabase-rest.js";
 import { nowIso } from "./date-utils.js";
 
 export function rowToItem(row){
+  const status = row.status === "done" || row.status === "hold" ? row.status : "todo";
   return {
     id: row.id,
     text: row.title || "",
-    done: row.status === "done",
+    status,
+    done: status === "done",
     due_at: row.due_at ?? null, // null 가능
     details: row.details ?? "",
     sort_order: row.sort_order ?? null,
@@ -14,12 +16,15 @@ export function rowToItem(row){
   };
 }
 
-export function itemToRow({ id, text, done, due_at, details, sort_order }, workspace_id){
+export function itemToRow({ id, text, status, done, due_at, details, sort_order }, workspace_id){
+  const normalizedStatus = status === "done" || status === "hold"
+    ? status
+    : (done ? "done" : "todo");
   const row = {
     id,
     workspace_id,
     title: (text || "").trim(),
-    status: done ? "done" : "todo",
+    status: normalizedStatus,
     due_at: due_at ?? null, // null 허용
     deleted: false,
     updated_at: nowIso(),
