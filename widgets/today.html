@@ -361,6 +361,27 @@
     }
     .item.done .check svg{ opacity: 1; transform: scale(1); }
 
+    .holdMark{
+      display:none;
+      font-size:14px;
+      line-height:1;
+      color:rgba(30,30,30,0.62);
+      transform:translateY(-1px);
+    }
+    .item.hold{ opacity: 0.90; }
+    .item.hold .text{ color: rgba(30,30,30,0.62); }
+    .item.hold .check{
+      background: rgba(255,192,203,0.10);
+      border-color: rgba(255,170,190,0.76);
+    }
+    .item.hold .check .holdMark{ display:block; }
+    .item.hold .check svg{ display:none; }
+    .badge.hold{
+      border-color: rgba(255,170,190,0.34);
+      background: rgba(255,255,255,0.30);
+      color: rgba(30,30,30,0.56);
+    }
+
     .footer{
       display:flex;
       justify-content: space-between;
@@ -1145,6 +1166,7 @@
         <span>Status</span>
         <select class="detailInput" id="detailStatus">
           <option value="todo">Todo</option>
+          <option value="hold">On Hold</option>
           <option value="done">Done</option>
         </select>
       </label>
@@ -1309,6 +1331,18 @@
         });
       }
 
+      function normalizeItemStatus(status, done = false){
+        if(status === "done" || status === "hold") return status;
+        return done ? "done" : "todo";
+      }
+      function getItemStatus(item){
+        return normalizeItemStatus(item && item.status, Boolean(item && item.done));
+      }
+      function applyItemStatus(item, status){
+        const normalized = normalizeItemStatus(status, false);
+        return { ...item, status: normalized, done: normalized === "done" };
+      }
+
       function dayRangeIso(dateStr){
         const p = parseYmd(dateStr);
         if(!p) throw new Error("bad dateStr");
@@ -1320,7 +1354,9 @@
       function formatForCopy(dateStr, items){
         const lines = [`[Today | ${dateStr}]`];
         for(const it of items){
-          lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+          const status = getItemStatus(it);
+          const mark = status === "done" ? "x" : (status === "hold" ? "-" : " ");
+          lines.push(`- [${mark}] ${it.text}`);
         }
         return lines.join("\n");
       }
@@ -1505,10 +1541,12 @@
       // 4) Supabase layer
       // =====================
       function rowToItem(row){
+        const status = normalizeItemStatus(row.status, false);
         return {
           id: row.id,
           text: row.title || "",
-          done: row.status === "done",
+          status,
+          done: status === "done",
           details: row.details ?? "",
           sort_order: row.sort_order ?? null,
           due_at: row.due_at ?? null,
@@ -1522,7 +1560,7 @@
           id: item.id,
           workspace_id,
           title: (item.text || "").trim(),
-          status: item.done ? "done" : "todo",
+          status: getItemStatus(item),
           due_at: startIso,
           details: item.details ?? "",
           sort_order: item.sort_order ?? Date.now(),
@@ -1601,15 +1639,17 @@
         listEl.innerHTML = "";
 
         for(const it of state){
+          const status = getItemStatus(it);
           const li = document.createElement("li");
-          li.className = "item" + (it.done ? " done" : "");
+          li.className = "item" + (status === "done" ? " done" : (status === "hold" ? " hold" : ""));
           li.dataset.itemId = it.id;
           li.innerHTML = `
             <button class="dragHandle" type="button" draggable="true" aria-label="순서 변경" data-drag-id="${escapeHtml(it.id)}">⠿</button>
-            <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
+            <div class="check" role="checkbox" aria-checked="${status === "done"}" aria-label="${status === "hold" ? "보류된 일정. 완료로 변경" : "완료 상태 변경"}" tabindex="0" data-id="${it.id}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
+              <span class="holdMark" aria-hidden="true">–</span>
             </div>
             ${editingId === it.id
               ? `<input class="inlineEdit" data-edit-input="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="80" aria-label="일정 제목 수정" />`
@@ -1642,6 +1682,7 @@
         const it = {
           id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()),
           text: t,
+          status: "todo",
           done: false,
           details: "",
           sort_order: Date.now(),
@@ -1666,7 +1707,11 @@
       }
 
       async function toggleItem(id){
-        state = state.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+        state = state.map(it => {
+          if(it.id !== id) return it;
+          const nextStatus = getItemStatus(it) === "done" ? "todo" : "done";
+          return applyItemStatus(it, nextStatus);
+        });
         render();
 
         const it = state.find(x => x.id === id);
@@ -1675,7 +1720,7 @@
         if(USE_SUPABASE){
           try{
             await sbPatchRow(id, {
-              status: it.done ? "done" : "todo",
+              status: getItemStatus(it),
               updated_at: nowIso()
             });
           }catch(err){
@@ -1810,7 +1855,7 @@
         detailTitle.textContent = context.item.text || "일정 상세";
         detailDetails.value = context.item.details || "";
         detailDate.value = ymdToInput(context.dateStr);
-        detailStatus.value = context.item.done ? "done" : "todo";
+        detailStatus.value = getItemStatus(context.item);
         detailOverlay.classList.add("open");
         detailOverlay.setAttribute("aria-hidden", "false");
         setTimeout(() => detailDetails.focus(), 0);
@@ -1830,17 +1875,19 @@
         if(!parseYmd(newDate)){ showToast("날짜를 확인해줘."); return; }
         const oldContext = findItemContext(context.id, oldDate);
         if(!oldContext) return;
+        const selectedStatus = normalizeItemStatus(detailStatus.value, false);
         const updated = {
           ...oldContext.item,
+          status: selectedStatus,
+          done: selectedStatus === "done",
           details: detailDetails.value || "",
-          done: detailStatus.value === "done",
           due_at: dayRangeIso(newDate).startIso,
           updated_at: nowIso()
         };
         const patch = {
           details: updated.details,
           due_at: updated.due_at,
-          status: updated.done ? "done" : "todo",
+          status: selectedStatus,
           updated_at: updated.updated_at
         };
         const stateBefore = state.slice();
@@ -1909,9 +1956,11 @@
           if(!tx) continue;
           if(existing.has(tx)) continue;
 
+          const carriedStatus = getItemStatus(it) === "hold" ? "hold" : "todo";
           toAdd.push({
             id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()),
             text: tx,
+            status: carriedStatus,
             done: false,
             details: it.details || "",
             sort_order: Date.now() + unfinished.length - toAdd.length,
@@ -2098,16 +2147,17 @@
         }
 
         const rows = view.map(it => {
-          const badgeCls = it.done ? "badge done" : "badge";
-          const badgeText = it.done ? "done" : "todo";
+          const status = getItemStatus(it);
+          const badgeCls = status === "done" ? "badge done" : (status === "hold" ? "badge hold" : "badge");
+          const badgeText = status === "done" ? "done" : (status === "hold" ? "hold" : "todo");
           const textHtml = highlight(it.text || "", q);
           const toggleKey = `${dateStr}::${it.id}`;
           const isPending = pendingArchiveToggles.has(toggleKey);
           return `
             <div class="pItem">
               <button class="${badgeCls}" type="button" data-preview-toggle="${escapeHtml(it.id)}"
-                aria-label="${escapeHtml(it.text || "할 일")} 상태를 ${it.done ? "todo" : "done"}로 변경"
-                aria-pressed="${it.done}" ${isPending ? "disabled" : ""}>${badgeText}</button>
+                aria-label="${escapeHtml(it.text || "할 일")} 상태를 ${status === "done" ? "todo" : "done"}로 변경"
+                aria-pressed="${status === "done"}" ${isPending ? "disabled" : ""}>${badgeText}</button>
               <span class="archiveText" role="button" tabindex="0" data-archive-detail="${escapeHtml(it.id)}"
                 style="cursor:pointer; ${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}${String(it.details || "").trim() ? `<span class="noteDot" title="Details 있음" aria-label="Details 있음"></span>` : ""}
@@ -2127,13 +2177,13 @@
         if(pendingArchiveToggles.has(toggleKey)) return;
         pendingArchiveToggles.add(toggleKey);
 
-        const previousDone = Boolean(items[index].done);
-        const nextDone = !previousDone;
-        archive[dateStr] = items.map((it, i) => i === index ? ({ ...it, done: nextDone }) : it);
+        const previousStatus = getItemStatus(items[index]);
+        const nextStatus = previousStatus === "done" ? "todo" : "done";
+        archive[dateStr] = items.map((it, i) => i === index ? applyItemStatus(it, nextStatus) : it);
 
         // Supabase의 아카이브에는 오늘도 포함되므로, 메인 목록도 즉시 같은 상태로 맞춘다.
         if(dateStr === todayStr){
-          state = state.map(it => String(it.id) === String(id) ? ({ ...it, done: nextDone }) : it);
+          state = state.map(it => String(it.id) === String(id) ? applyItemStatus(it, nextStatus) : it);
           render();
         }
 
@@ -2143,7 +2193,7 @@
         try{
           if(USE_SUPABASE){
             await sbPatchRow(id, {
-              status: nextDone ? "done" : "todo",
+              status: nextStatus,
               updated_at: nowIso()
             });
           }else{
@@ -2152,10 +2202,10 @@
         }catch(err){
           console.error("[Today Widget] archive toggle sync failed:", err);
           archive[dateStr] = (archive[dateStr] || []).map(it =>
-            String(it.id) === String(id) ? ({ ...it, done: previousDone }) : it
+            String(it.id) === String(id) ? applyItemStatus(it, previousStatus) : it
           );
           if(dateStr === todayStr){
-            state = state.map(it => String(it.id) === String(id) ? ({ ...it, done: previousDone }) : it);
+            state = state.map(it => String(it.id) === String(id) ? applyItemStatus(it, previousStatus) : it);
             render();
           }
           buildDates();
