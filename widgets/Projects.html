@@ -1589,14 +1589,6 @@
       console.warn("[Projects Widget] Supabase unavailable. Falling back to localStorage.", err);
     }
 
-    // Connection controls work inside desktop and mobile Notion embeds.
-    import("../core/connection-panel.js?v=20261011-1").then(({ mountConnectionPanel }) => {
-      mountConnectionPanel({
-        getWorkspaceId: () => workspace_id,
-        getServerMode: () => USE_SUPABASE && !syncError,
-        sources: [{ table: "widget_state", widgetKey: "projects_v1" }]
-      });
-    }).catch(error => console.warn("[Widget connection] Controls unavailable.", error));
 
     const PROJECTS_KEY = USE_SUPABASE
       ? `soft_schedule_projects_${workspace_id}_v1`

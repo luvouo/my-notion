@@ -108,6 +108,7 @@
       align-items: baseline;
       justify-content: space-between;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
     .title{
@@ -138,9 +139,13 @@
     }
 
     .meta{
+      font-family: var(--font-display);
       font-size: 12px;
       color: var(--muted);
       white-space: nowrap;
+      margin-left: auto;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
     }
 
     .richWrap{ display:grid; gap:8px; min-width:0; }
@@ -222,9 +227,6 @@
     }
     .linkBtn:hover{ background: rgba(255,255,255,0.14); }
 
-    @media (max-width: 360px){
-      .meta{ display:none; }
-    }
   </style>
 </head>
 
@@ -326,14 +328,6 @@
       console.warn("[Notes Widget] Supabase unavailable. Falling back to localStorage.", err);
     }
 
-    // Connection controls work inside desktop and mobile Notion embeds.
-    import("../core/connection-panel.js?v=20261011-1").then(({ mountConnectionPanel }) => {
-      mountConnectionPanel({
-        getWorkspaceId: () => workspace_id,
-        getServerMode: () => USE_SUPABASE && !syncError,
-        sources: [{ table: "widget_state", widgetKey: "notes_v1" }]
-      });
-    }).catch(error => console.warn("[Widget connection] Controls unavailable.", error));
 
     function ymd(d=new Date()){
       const y=d.getFullYear();
@@ -541,8 +535,7 @@
     }
 
     function updateMeta(){
-      const syncMeta = USE_SUPABASE && !syncError ? `서버 · ${workspace_id.slice(0,8)}` : "로컬";
-      metaText.textContent = `${ymd()} · ${syncMeta}`;
+      metaText.textContent = ymd();
     }
     function loadLocal(){
       try{

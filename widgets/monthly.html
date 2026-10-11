@@ -486,14 +486,6 @@
         console.warn("[Monthly Widget] Supabase unavailable. Falling back to localStorage.", error);
       }
 
-      // Connection controls work inside desktop and mobile Notion embeds.
-      import("../core/connection-panel.js?v=20261011-1").then(({ mountConnectionPanel }) => {
-        mountConnectionPanel({
-          getWorkspaceId: () => workspace_id,
-          getServerMode: () => USE_SUPABASE && !syncError,
-          sources: [{ table: "widget_state", widgetKey: "monthly_v1" }]
-        });
-      }).catch(error => console.warn("[Widget connection] Controls unavailable.", error));
 
       const STORAGE_KEY = "my-notion.monthly.events.v1";
       const MONTHLY_WIDGET_KEY = "monthly_v1";

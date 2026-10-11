@@ -817,13 +817,6 @@
     });
     let state = store.items();
     metaText.textContent = "서버 연결 중";
-    import("../core/connection-panel.js?v=20261011-1").then(({ mountConnectionPanel }) => {
-      mountConnectionPanel({
-        getWorkspaceId: () => workspace_id,
-        getServerMode: () => store.getStatus().connected,
-        sources: [{ table: "widget_state", widgetKey: "upcoming_v1" }]
-      });
-    }).catch(error => console.warn("[Upcoming Widget] Connection controls unavailable.", error));
 
     // ===== Custom Date Picker (inside card) =====
     const dpTrigger = document.getElementById("dpTrigger");
