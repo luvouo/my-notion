@@ -1231,7 +1231,7 @@
               </div>
 
               <div class="inputRow">
-                <input id="passInput" class="input" type="password" placeholder="패스코드 입력…" />
+                <input id="passInput" autocapitalize="none" autocorrect="off" spellcheck="false" class="input" type="password" placeholder="패스코드 입력…" />
                 <button class="btn" id="passBtn" type="button" style="min-width:90px;">확인</button>
               </div>
 
@@ -1281,6 +1281,15 @@
       // =====================
       // 1) Constants & helpers
       // =====================
+      // Connection controls work inside desktop and mobile Notion embeds.
+      import("../core/connection-panel.js?v=20261011-1").then(({ mountConnectionPanel }) => {
+        mountConnectionPanel({
+          getWorkspaceId: () => workspace_id,
+          getServerMode: () => USE_SUPABASE,
+          sources: [{ table: "items", activeOnly: true }]
+        });
+      }).catch(error => console.warn("[Widget connection] Controls unavailable.", error));
+
       const PREFIX_DAY = `soft_schedule_today_${workspace_id}_`;
       const KEY_ARCHIVE = `soft_schedule_today_${workspace_id}_archive_v1`;
 

@@ -449,7 +449,7 @@
                 </div>
               </header>
               <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center;">
-                <input id="passInput" type="password" placeholder="패스코드 입력…" autocomplete="current-password" />
+                <input id="passInput" autocapitalize="none" autocorrect="off" spellcheck="false" type="password" placeholder="패스코드 입력…" autocomplete="current-password" />
                 <button class="btn" id="passBtn" type="button">확인</button>
               </div>
               <div style="font-size:12px; color:var(--muted); line-height:1.45;">
@@ -485,6 +485,15 @@
       } catch (error) {
         console.warn("[Monthly Widget] Supabase unavailable. Falling back to localStorage.", error);
       }
+
+      // Connection controls work inside desktop and mobile Notion embeds.
+      import("../core/connection-panel.js?v=20261011-1").then(({ mountConnectionPanel }) => {
+        mountConnectionPanel({
+          getWorkspaceId: () => workspace_id,
+          getServerMode: () => USE_SUPABASE && !syncError,
+          sources: [{ table: "widget_state", widgetKey: "monthly_v1" }]
+        });
+      }).catch(error => console.warn("[Widget connection] Controls unavailable.", error));
 
       const STORAGE_KEY = "my-notion.monthly.events.v1";
       const MONTHLY_WIDGET_KEY = "monthly_v1";

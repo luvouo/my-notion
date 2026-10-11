@@ -1557,7 +1557,7 @@
               <div class="meta">sync</div>
             </div>
             <div class="inputRow">
-              <input id="passInput" class="input" type="password" placeholder="패스코드 입력…" />
+              <input id="passInput" autocapitalize="none" autocorrect="off" spellcheck="false" class="input" type="password" placeholder="패스코드 입력…" />
               <button class="btn" id="passBtn" type="button" style="min-width:90px;">확인</button>
             </div>
             <div style="font-size:12px; color:var(--muted); line-height:1.4;">같은 패스코드를 쓰는 모든 위젯과 기기가 같은 workspace를 사용해.</div>
@@ -1588,6 +1588,15 @@
     }catch(err){
       console.warn("[Projects Widget] Supabase unavailable. Falling back to localStorage.", err);
     }
+
+    // Connection controls work inside desktop and mobile Notion embeds.
+    import("../core/connection-panel.js?v=20261011-1").then(({ mountConnectionPanel }) => {
+      mountConnectionPanel({
+        getWorkspaceId: () => workspace_id,
+        getServerMode: () => USE_SUPABASE && !syncError,
+        sources: [{ table: "widget_state", widgetKey: "projects_v1" }]
+      });
+    }).catch(error => console.warn("[Widget connection] Controls unavailable.", error));
 
     const PROJECTS_KEY = USE_SUPABASE
       ? `soft_schedule_projects_${workspace_id}_v1`
