@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Projects — Soft Schedule</title>
 
-  <link rel="stylesheet" href="../core/project-images.css?v=20261011-1" />
+  <link rel="stylesheet" href="../core/project-images.css?v=20261011-2" />
   <style>
     :root{
       --accent-1: rgba(210, 218, 228, 0.88);
@@ -528,6 +528,8 @@
     .reportViewer li,
     .reportEditor li{ margin:2px 0; }
     .reportEditorWrap{ display:grid; gap:10px; }
+    .reportViewer[hidden],
+    .reportEditorWrap[hidden]{ display:none; }
     .reportEditorShell{
       border:1px solid rgba(190,200,212,0.38);
       background:rgba(255,255,255,0.62);
@@ -1540,7 +1542,7 @@
 
   <script src="../env.js"></script>
   <script type="module">
-  import { createProjectImages, canonicalImage } from "../core/project-images.js?v=20261011-1";
+  import { createProjectImages, canonicalImage } from "../core/project-images.js?v=20261011-2";
   (async function main(){
     /* ========= optional Supabase sync (same passcode/workspace as Today) ========= */
     let USE_SUPABASE = false;

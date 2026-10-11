@@ -13,8 +13,13 @@ begin
 end $$;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('project-images', 'project-images', false, 6291456, array['image/webp'])
+values ('project-images', 'project-images', false, 6291456, array['image/webp', 'image/png', 'image/jpeg'])
 on conflict (id) do nothing;
+
+-- Also enable native PNG/JPEG encoding in an already configured mobile bucket.
+update storage.buckets
+set allowed_mime_types = array['image/webp', 'image/png', 'image/jpeg']
+where id = 'project-images' and public = false;
 
 -- Base64 is only the UTF-8 transport encoding, not encryption. Requests use HTTPS.
 -- Recompute the existing workspace hash instead of trusting a supplied folder ID.
@@ -44,7 +49,7 @@ create policy project_images_insert on storage.objects for insert to anon, authe
 with check (
   bucket_id = 'project-images'
   and (storage.foldername(name))[1] = (select public.project_image_workspace())
-  and name ~ '^[a-f0-9]{64}/[A-Za-z0-9_-]{1,100}/[a-f0-9-]{36}\.webp$'
+  and name ~ '^[a-f0-9]{64}/[A-Za-z0-9_-]{1,100}/[a-f0-9-]{36}\.(webp|png|jpg)$'
 );
 
 drop policy if exists project_images_select on storage.objects;
@@ -64,7 +69,7 @@ drop policy if exists project_images_write_guard on storage.objects;
 create policy project_images_write_guard on storage.objects as restrictive for insert to anon, authenticated
 with check (bucket_id <> 'project-images' or (
   (storage.foldername(name))[1] = (select public.project_image_workspace())
-  and name ~ '^[a-f0-9]{64}/[A-Za-z0-9_-]{1,100}/[a-f0-9-]{36}\.webp$'
+  and name ~ '^[a-f0-9]{64}/[A-Za-z0-9_-]{1,100}/[a-f0-9-]{36}\.(webp|png|jpg)$'
 ));
 
 drop policy if exists project_images_no_update on storage.objects;

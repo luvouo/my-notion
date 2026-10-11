@@ -5,10 +5,21 @@ const MAX_SOURCE = 20 * 1024 * 1024;
 const MAX_UPLOAD = 6 * 1024 * 1024;
 const TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 const WIDTHS = new Set(['25', '50', '75', '100']);
+let webpEncoding;
+
+function outputType(source) {
+  if (webpEncoding === undefined) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    webpEncoding = canvas.toDataURL('image/webp').startsWith('data:image/webp');
+  }
+  // WebP decoding does not imply canvas encoding support in mobile WebViews.
+  return webpEncoding ? 'image/webp' : source.type === 'image/jpeg' ? 'image/jpeg' : 'image/png';
+}
 
 export function validImagePath(path, workspace) {
   return /^[a-f0-9]{64}$/.test(workspace) &&
-    new RegExp(`^${workspace}/[A-Za-z0-9_-]{1,100}/[a-f0-9-]{36}\\.webp$`).test(path || '');
+    new RegExp(`^${workspace}/[A-Za-z0-9_-]{1,100}/[a-f0-9-]{36}\\.(webp|png|jpg)$`).test(path || '');
 }
 
 // Rebuild the image reference, never trust pasted attributes, URLs or controls.
@@ -29,10 +40,21 @@ export function canonicalImage(node, workspace) {
 function openQueue(workspace) {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(`project_images_${workspace}_v1`, 1);
+    // Some embedded WebViews leave this request pending indefinitely.
+    // Local recovery is optional; it must not prevent a server upload.
+    let expired = false;
+    const timeout = setTimeout(() => {
+      expired = true;
+      reject(new Error('이미지 임시 저장 공간을 열 수 없습니다.'));
+    }, 1500);
     request.onupgradeneeded = () => request.result.createObjectStore('pending', { keyPath: 'path' });
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-    request.onblocked = () => reject(new Error('이미지 임시 저장 공간을 열 수 없습니다.'));
+    request.onsuccess = () => {
+      clearTimeout(timeout);
+      if (expired) request.result.close();
+      else resolve(request.result);
+    };
+    request.onerror = () => { clearTimeout(timeout); reject(request.error); };
+    request.onblocked = () => { clearTimeout(timeout); expired = true; reject(new Error('이미지 임시 저장 공간을 열 수 없습니다.')); };
   });
 }
 
@@ -52,8 +74,16 @@ async function compress(source) {
     canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
     canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.86));
-    if (!blob || blob.type !== 'image/webp' || blob.size > MAX_UPLOAD)
+    const type = outputType(source);
+    let blob = await new Promise(resolve => canvas.toBlob(resolve, type, 0.86));
+    // Keep transparency in PNG fallbacks, reducing dimensions only if needed.
+    for (let attempt = 0; blob?.size > MAX_UPLOAD && attempt < 3; attempt++) {
+      canvas.width = Math.max(1, Math.round(canvas.width * 0.75));
+      canvas.height = Math.max(1, Math.round(canvas.height * 0.75));
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      blob = await new Promise(resolve => canvas.toBlob(resolve, type, 0.86));
+    }
+    if (!blob || !TYPES.has(blob.type) || blob.size > MAX_UPLOAD)
       throw new Error('이미지를 변환할 수 없습니다. 크기를 줄인 PNG 또는 JPG를 사용해 주세요.');
     return blob;
   } finally { URL.revokeObjectURL(url); }
@@ -159,7 +189,7 @@ export function createProjectImages({ workspace, notify }) {
     if (!entry?.blob || entry.busy || entry.uploaded) return;
     entry.busy = true; entry.error = ''; repaint(path);
     try {
-      const blob = entry.blob.type === 'image/webp' && entry.compressed ? entry.blob : await compress(entry.blob);
+      const blob = entry.compressed ? entry.blob : await compress(entry.blob);
       entry.blob = blob; entry.compressed = true;
       try { await queue('put', { path, blob, compressed: true }); entry.durable = true; } catch (_) {}
       try { await request(`/object/${BUCKET}/${path}`, blob, blob.type); }
@@ -236,7 +266,8 @@ export function createProjectImages({ workspace, notify }) {
       if (!TYPES.has(file.type) || file.size > MAX_SOURCE) {
         notify('PNG·JPG·WebP 형식의 20MB 이하 이미지를 사용해 주세요.'); continue;
       }
-      const path = `${workspace}/${binding.project.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 100) || 'project'}/${crypto.randomUUID()}.webp`;
+      const extension = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg' }[outputType(file)];
+      const path = `${workspace}/${binding.project.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 100) || 'project'}/${crypto.randomUUID()}.${extension}`;
       const seed = document.createElement('figure'); seed.dataset.projectImage = path;
       const figure = canonicalImage(seed, workspace);
       const entry = { blob: file, preview: URL.createObjectURL(file), uploaded: false, busy: true, durable: false };
