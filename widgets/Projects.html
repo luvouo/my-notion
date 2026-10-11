@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Projects — Soft Schedule</title>
 
+  <link rel="stylesheet" href="../core/project-images.css?v=20261011-1" />
   <style>
     :root{
       --accent-1: rgba(210, 218, 228, 0.88);
@@ -1539,6 +1540,7 @@
 
   <script src="../env.js"></script>
   <script type="module">
+  import { createProjectImages, canonicalImage } from "../core/project-images.js?v=20261011-1";
   (async function main(){
     /* ========= optional Supabase sync (same passcode/workspace as Today) ========= */
     let USE_SUPABASE = false;
@@ -1597,6 +1599,7 @@
       ? `soft_schedule_projects_archive_${workspace_id}_v1`
       : "soft_schedule_projects_archive_v1";
     const PROJECTS_WIDGET_KEY = "projects_v1";
+    const projectImages = createProjectImages({ workspace: workspace_id, notify: message => showToast(message) });
 
     /* ========= SBstar ========= */
     const STAR_IMG_URL = "https://luvouo.github.io/my-notion/widgets/icon/SBstar.png";
@@ -1682,6 +1685,11 @@
         if(node.nodeType === Node.TEXT_NODE){ appendTextRun(parent, node.nodeValue, inherited); return; }
         if(node.nodeType !== Node.ELEMENT_NODE) return;
         const tag = node.tagName.toUpperCase();
+        if(tag === "FIGURE" && node.hasAttribute("data-project-image")){
+          const figure = canonicalImage(node, workspace_id);
+          if(figure) parent.appendChild(figure);
+          return;
+        }
         if(dangerous.has(tag)) return;
         if(tag === "BR"){ parent.appendChild(document.createElement("br")); return; }
         if(["DIV","P","UL","OL","LI"].includes(tag)){
@@ -1725,7 +1733,17 @@
       return normalizeRichHtml(div.innerHTML.replace(/\r?\n/g, "<br>"));
     }
     function richPlainText(editor){
-      return String(editor.innerText || "").replace(/\u200B/g, "").replace(/\n+$/, "");
+      if(!editor.querySelector("figure[data-project-image]")){
+        return String(editor.innerText || "").replace(/\u200B/g, "").replace(/\n+$/, "");
+      }
+      const clone = editor.cloneNode(true);
+      clone.querySelectorAll("figure[data-project-image]").forEach(figure => figure.replaceWith(document.createTextNode("[이미지]")));
+      clone.style.cssText = "position:fixed;left:-100000px;top:0;width:500px;";
+      clone.removeAttribute("id");
+      document.body.appendChild(clone);
+      const text = String(clone.innerText || "").replace(/\u200B/g, "").replace(/\n+$/, "");
+      clone.remove();
+      return text;
     }
     function richSelectionInsideEditor(editor, range){
       return !!editor && !!range && editor.contains(range.commonAncestorContainer);
@@ -1819,6 +1837,9 @@
       }
       return { label: "", url: "" };
     }
+    function projectObjectiveRichHtml(p){
+      return typeof p.objectiveHtml === "string" ? sanitizeRichHtml(p.objectiveHtml) : plainTextToRichHtml(p.objective || "");
+    }
     function projectNotes(p){
       return Object.prototype.hasOwnProperty.call(p || {}, "notes")
         ? String(p.notes || "")
@@ -1858,6 +1879,7 @@
         tags: [],
         urls: [],
         objective: "",
+        objectiveHtml: "",
         notes: "",
         notesHtml: "",
         todos: [],
@@ -2755,7 +2777,10 @@
 
         <div class="section">
           <div class="fieldLabel">Objective</div>
-          <textarea class="feedback" data-objective placeholder="프로젝트의 목적 또는 최종 결과물…">${escapeHtml(p.objective||"")}</textarea>
+          <div class="richWrap" data-rich-wrap>
+            <div class="richEditor" contenteditable="true" role="textbox" aria-multiline="true"
+              aria-label="Objective" data-objective data-rich-editor data-placeholder="프로젝트의 목적 또는 최종 결과물…">${projectObjectiveRichHtml(p)}</div>
+          </div>
         </div>
 
         <div class="section">
@@ -2828,6 +2853,8 @@
       `;
       // innerHTML로 덮어쓰면 pmDpPop이 DOM에서 제거되므로 다시 붙여 줌
       pmBody.appendChild(pmDpPop);
+      projectImages.attach(pmBody.querySelector("[data-objective]"), pid);
+      projectImages.attach(pmBody.querySelector("[data-notes-rich]"), pid);
     }
 
     function openProjectModal(pid){
@@ -3362,7 +3389,10 @@
 
       const objective = e.target.closest("[data-objective]");
       if(objective){
-        updateProject(pid, p => p.objective = objective.value || "");
+        updateProject(pid, p => {
+          p.objectiveHtml = sanitizeRichHtml(objective.innerHTML);
+          p.objective = richPlainText(objective);
+        });
         return;
       }
 
@@ -3493,6 +3523,7 @@
         reportEditorWrap.hidden = true;
         reportEditBtn.hidden = !saved.text.trim();
         reportViewer.innerHTML = saved.html || '<div style="color:rgba(28,30,33,0.42);">(empty)</div>';
+        projectImages.show(reportViewer);
         return;
       }
 
@@ -3501,6 +3532,7 @@
       reportEditBtn.hidden = true;
       const draft = loadReportDraft(reportProjectId);
       reportEditor.innerHTML = draft ? draft.html : saved.html;
+      projectImages.attach(reportEditor, reportProjectId);
       reportStatus.textContent = draft ? "Draft restored" : "Editing…";
       richRanges.delete(reportEditor);
       reportSizeSelect.value = "12px";
@@ -3527,6 +3559,7 @@
       renderReportOverlay();
     }
     function closeReport({discardDraft=false} = {}){
+      if(!discardDraft && reportProjectId && reportMode === "edit") saveReportDraftNow();
       if(discardDraft && reportProjectId) clearReportDraft(reportProjectId);
       clearTimeout(reportDraftTimer);
       reportDraftTimer = null;
@@ -3550,7 +3583,7 @@
         reportMode = "view";
         renderReportOverlay();
       }else{
-        closeReport();
+        closeReport({discardDraft:true});
       }
     }
     function saveReport(){
@@ -3665,6 +3698,23 @@
           <pre style="margin:0; white-space:pre-wrap; font-size:12px; color:rgba(30,30,30,0.72); background:rgba(255,255,255,0.55); border:1px solid rgba(0,0,0,0.06); border-radius:14px; padding:10px;">${escapeHtml(mdForProject(picked))}</pre>
         </div>
       `;
+      const imageSections = [
+        ["Objective", projectObjectiveRichHtml(picked)],
+        ["Notes", projectNotesRichHtml(picked)],
+        ["Report", projectReport(picked).html]
+      ];
+      for(const [label, html] of imageSections){
+        const template = document.createElement("template");
+        template.innerHTML = html;
+        const images = [...template.content.querySelectorAll("figure[data-project-image]")];
+        if(!images.length) continue;
+        const section = document.createElement("div");
+        const heading = document.createElement("div");
+        heading.className = "fieldLabel"; heading.textContent = label;
+        section.append(heading, ...images);
+        archivePreview.appendChild(section);
+      }
+      projectImages.show(archivePreview);
     }
 
     function openArchive(){
