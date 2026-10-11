@@ -1324,6 +1324,36 @@
     }
     .weekDetailActions .moveTomorrow{ margin-right:auto; }
 
+    /* Grid items must shrink with the Notion embed instead of their content. */
+    .inner, .controls, .weekList, .daySection, .items { min-width: 0; }
+    .inner { grid-template-columns: minmax(0, 1fr); }
+    .weekList, .items { grid-template-columns: minmax(0, 1fr); }
+    .footer-actions { box-sizing: border-box; min-width: 0; }
+
+    @media (max-width: 520px){
+      .inputRow { flex-basis: 100%; gap: 8px; }
+      .inputRow > .input { flex: 1 1 100%; width: 100%; box-sizing: border-box; }
+      .weekbar { flex: 1 1 100%; width: 100%; min-width: 0; justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
+      .weeknav { gap: 6px; }
+      .weekdays { flex: 1 1 auto; min-width: 0; justify-content: space-between; gap: 4px; }
+      .dayPill, .navBtn { flex: 0 0 28px; box-sizing: border-box; }
+      .nextInboxRow { flex-wrap: wrap; }
+      .nextInboxLeft { flex-wrap: wrap; gap: 6px; }
+      .nextInboxRight { margin-left: auto; }
+      .dayHead, .dayLabel { flex-wrap: wrap; gap: 6px; }
+      .dayHead .showBtn { margin-left: auto; }
+      .footer-actions { flex-wrap: wrap; gap: 6px; padding-left: 0; }
+      .modalHeader, .mhLeft, .mhRight, .previewTop, .previewTop > div:last-child { flex-wrap: wrap; }
+      .mhRight { width: 100%; }
+      .modalBody { grid-template-columns: minmax(0, 1fr); }
+      .weeks { width: auto; max-height: 160px; border-right: 0; border-bottom: 1px solid rgba(0,0,0,.06); }
+      .preview, .previewBox { min-width: 0; }
+    }
+    @media (max-width: 380px){
+      .weeknav { flex-basis: 100%; justify-content: flex-end; }
+      .weekdays { flex-basis: 100%; }
+    }
+
   </style>
 </head>
 

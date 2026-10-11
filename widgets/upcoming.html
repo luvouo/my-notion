@@ -697,7 +697,47 @@
     </div>
   </div>
 
-  <script>
+  <script src="../env.js"></script>
+  <script type="module">
+  (async function main(){
+    let workspace_id = "local";
+    let sbFetch = null;
+    try {
+      const auth = await import("../core/auth-lite.js");
+      const supa = await import("../core/supabase-rest.js");
+      const ws = await auth.getWorkspaceId();
+      if (!ws) {
+        document.querySelector(".inner").innerHTML = `
+          <div class="top"><div class="title"><img class="pearl" src="./icon/pearl.png" alt="" /><h1>Passcode</h1></div></div>
+          <div class="inputRow">
+            <input id="passInput" class="input" type="password" placeholder="패스코드 입력…" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" />
+            <button id="passBtn" class="btn" type="button">확인</button>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin:0;">기존 위젯에서 사용하는 패스코드를 입력해 주세요.</p>`;
+        const input = document.getElementById("passInput");
+        const submit = () => {
+          const pass = input.value.trim();
+          if (!pass) return;
+          auth.savePasscode(pass);
+          location.reload();
+        };
+        document.getElementById("passBtn").addEventListener("click", submit);
+        input.addEventListener("keydown", event => { if (event.key === "Enter") submit(); });
+        return;
+      }
+      workspace_id = ws;
+      sbFetch = supa.sbFetch;
+    } catch (error) {
+      console.warn("[Upcoming Widget] Server modules unavailable.", error);
+      document.querySelector(".inner").innerHTML = `
+        <div class="top"><div class="title"><img class="pearl" src="./icon/pearl.png" alt="" /><h1>Upcoming</h1></div></div>
+        <p style="font-size:13px;">연결 설정을 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 새로고침해 주세요.</p>
+        <button id="retryConnection" class="btn" type="button">위젯 새로고침</button>`;
+      document.getElementById("retryConnection").addEventListener("click", () => location.reload());
+      return;
+    }
+    const { createUpcomingStore } = await import("../core/upcoming-sync.js?v=20261011-2");
+
     // ===== Helpers =====
     function pad2(n){ return String(n).padStart(2,"0"); }
     function ymdDash(d=new Date()){
@@ -766,24 +806,24 @@
       showToast._t = setTimeout(()=> toast.textContent = "", 1600);
     }
 
-    metaText.textContent = "Date optional";
-
-    // ===== Storage =====
-    const KEY_UPCOMING = "soft_schedule_upcoming_v1";
-
-    function loadUpcoming(){
-      try{
-        const raw = localStorage.getItem(KEY_UPCOMING);
-        if(!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
-      }catch(e){ return []; }
-    }
-    function saveUpcoming(items){
-      localStorage.setItem(KEY_UPCOMING, JSON.stringify(items));
-    }
-
-    let state = loadUpcoming();
+    const store = createUpcomingStore({
+      workspaceId: workspace_id,
+      sbFetch,
+      onChange: items => { state = items; render(); },
+      onStatus: status => {
+        metaText.textContent = status.connected ? `서버 · ${workspace_id.slice(0, 8)}` : "로컬 · 연결 대기";
+        metaText.title = status.error ? "서버 연결에 실패했습니다. 기록을 보관하고 다시 연결합니다." : "같은 패스코드로 기기 간 기록을 동기화합니다.";
+      }
+    });
+    let state = store.items();
+    metaText.textContent = "서버 연결 중";
+    import("../core/connection-panel.js?v=20261011-1").then(({ mountConnectionPanel }) => {
+      mountConnectionPanel({
+        getWorkspaceId: () => workspace_id,
+        getServerMode: () => store.getStatus().connected,
+        sources: [{ table: "widget_state", widgetKey: "upcoming_v1" }]
+      });
+    }).catch(error => console.warn("[Upcoming Widget] Connection controls unavailable.", error));
 
     // ===== Custom Date Picker (inside card) =====
     const dpTrigger = document.getElementById("dpTrigger");
@@ -979,24 +1019,25 @@
             </svg>
           </div>
           <span class="${badgeCls}" title="${badgeText}">${badgeText}</span>
-          <div class="text" title="${String(it.text||"").replace(/"/g,'&quot;')}">${String(it.text||"")}</div>
+          <div class="text"></div>
           <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
         `;
+        li.querySelector(".text").textContent = String(it.text || "");
+        li.querySelector(".text").title = String(it.text || "");
         listEl.appendChild(li);
       }
 
       const total = state.length;
       const done = state.filter(x => x.done).length;
       countText.textContent = `${done}/${total} done`;
-
-      saveUpcoming(state);
     }
 
     function addItem(){
       const t = (inputEl.value || "").trim();
       if(!t) return;
 
-      state.unshift({
+      const dated = Boolean(selectedDate);
+      store.add({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
         date: selectedDate || null,
@@ -1011,24 +1052,20 @@
       // 추가 후 날짜는 다시 옵션 상태로
       setSelected(null, {close:false});
 
-      showToast(selectedDate ? "날짜 포함으로 추가했어." : "Someday로 추가했어.");
-      render();
+      showToast(dated ? "날짜 포함으로 추가했어." : "Someday로 추가했어.");
     }
 
     function toggleItem(id){
-      state = state.map(it => it.id === id ? ({...it, done: !it.done}) : it);
-      render();
+      store.toggle(id);
     }
 
     function deleteItem(id){
-      state = state.filter(it => it.id !== id);
-      render();
+      store.remove([id]);
     }
 
     function clearDone(){
       const before = state.length;
-      state = state.filter(it => !it.done);
-      render();
+      store.remove(state.filter(it => it.done).map(it => it.id));
       showToast(before === state.length ? "완료된 항목이 없어." : "완료 항목을 지웠어.");
     }
 
@@ -1073,6 +1110,13 @@
 
     // Initial
     render();
+    await store.sync();
+    const refresh = () => { if (!document.hidden) store.sync(); };
+    setInterval(refresh, 10000);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("online", refresh);
+  })();
   </script>
 </body>
 </html>
