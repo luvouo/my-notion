@@ -3015,12 +3015,12 @@
 
     window.addEventListener("resize", () => {
       if(nextPopover.classList.contains("open")){
-        placeNextPopover(activeInboxKey === "thisInbox" ? thisShowBtn : nextShowBtn);
+        placeNextPopover(nextShowBtn);
       }
     }, { passive: true });
     window.addEventListener("scroll", () => {
       if(nextPopover.classList.contains("open")){
-        placeNextPopover(activeInboxKey === "thisInbox" ? thisShowBtn : nextShowBtn);
+        placeNextPopover(nextShowBtn);
       }
     }, { passive: true });
 
