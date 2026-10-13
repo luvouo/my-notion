@@ -299,21 +299,29 @@
     .text{
       flex: 1 1 auto;
       min-width: 0;
+      display:flex;
+      align-items:center;
+      gap:6px;
       line-height: 1.45;
       font-size: 14px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       cursor: pointer;
+    }
+    .textLabel{
+      flex:1 1 auto;
+      min-width:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .noteDot{
       display:inline-block;
       width:5px;
       height:5px;
-      margin-left:6px;
+      margin-left:0;
       border-radius:999px;
       background:rgba(255,170,190,.82);
       vertical-align:middle;
+      flex:0 0 5px;
     }
     .inlineEdit{
       flex:1 1 auto;
@@ -821,6 +829,18 @@
       color: rgba(30,30,30,0.55);
     }
 
+    @media (max-width: 520px){
+      .footer-actions{
+        justify-content:flex-start;
+        padding-left:0;
+      }
+      #carryYesterdayBtn,
+      #historyBtn,
+      #copyTodayBtn{
+        width:auto;
+      }
+    }
+
     @media (max-width: 420px){
       .modalBody{ grid-template-columns: 1fr; }
       .dates{ border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06); }
@@ -830,6 +850,11 @@
     @media (max-width: 360px){
       .meta{ display:none; }
       .btn{ width: 100%; }
+      #carryYesterdayBtn,
+      #historyBtn,
+      #copyTodayBtn{
+        width:auto;
+      }
       .input{ flex-basis: 100%; }
     }
 
@@ -1686,7 +1711,7 @@
             </div>
             ${editingId === it.id
               ? `<input class="inlineEdit" data-edit-input="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="80" aria-label="일정 제목 수정" />`
-              : `<div class="text" role="button" tabindex="0" data-detail-id="${escapeHtml(it.id)}" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}${String(it.details || "").trim() ? `<span class="noteDot" title="Details 있음" aria-label="Details 있음"></span>` : ""}</div>`}
+              : `<div class="text" role="button" tabindex="0" data-detail-id="${escapeHtml(it.id)}" title="${escapeHtml(it.text)}"><span class="textLabel">${escapeHtml(it.text)}</span>${String(it.details || "").trim() ? `<span class="noteDot" title="Details 있음" aria-label="Details 있음"></span>` : ""}</div>`}
             <button class="editBtn" type="button" aria-label="제목 수정" data-edit="${escapeHtml(it.id)}">✎</button>
             <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
           `;
