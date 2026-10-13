@@ -444,10 +444,11 @@
 
       fillSelect(addStatus,STATUS,"not_started");
       fillSelect(addPriority,PRIORITY,"normal");
-      renderColorPicker(addColorPicker,DEFAULT_COLOR,function(color){
+      function selectAddColor(color){
         selectedColor=color;
-        renderColorPicker(addColorPicker,selectedColor,arguments.callee);
-      });
+        renderColorPicker(addColorPicker,selectedColor,selectAddColor);
+      }
+      renderColorPicker(addColorPicker,DEFAULT_COLOR,selectAddColor);
 
       document.getElementById("prevMonth").addEventListener("click",function(){moveMonth(-1);});
       document.getElementById("nextMonth").addEventListener("click",function(){moveMonth(1);});
@@ -695,10 +696,7 @@
         addForm.reset();
         addStatus.value="not_started";addPriority.value="normal";selectedColor=DEFAULT_COLOR;
         addScheduleDate.value=dateKey;addDateLabel.textContent=formatDate(dateKey);
-        renderColorPicker(addColorPicker,selectedColor,function(color){
-          selectedColor=color;
-          renderColorPicker(addColorPicker,selectedColor,arguments.callee);
-        });
+        renderColorPicker(addColorPicker,selectedColor,selectAddColor);
         addOverlay.hidden=false;
         addName.focus();
       }
@@ -791,16 +789,28 @@
         document.getElementById("detailTitle").textContent=item.name;
         detailBody.replaceChildren();
         FIELD_DEFS.forEach(function(def){
-          var row=document.createElement("button");
-          row.type="button";row.className="detailRow";
+          var row=document.createElement("div");
+          row.className="detailRow";
           var editable=def.type!=="readonly";
-          if(editable)row.classList.add("editable");
+          if(editable){
+            row.classList.add("editable");
+            row.tabIndex=0;
+            row.setAttribute("role","button");
+          }
           var label=document.createElement("span");label.className="detailLabel";label.textContent=def.label;
           var value=document.createElement("span");value.className="detailValue";
           var node=displayValue(item,def);value.append(node);
           if(node.nodeType===Node.TEXT_NODE&&node.textContent==="—")value.classList.add("empty");
           row.append(label,value);
-          if(editable)row.addEventListener("click",function(){beginInlineEdit(row,value,def);});
+          if(editable){
+            row.addEventListener("click",function(){beginInlineEdit(row,value,def);});
+            row.addEventListener("keydown",function(event){
+              if(event.key==="Enter"||event.key===" "){
+                event.preventDefault();
+                beginInlineEdit(row,value,def);
+              }
+            });
+          }
           detailBody.append(row);
         });
       }
