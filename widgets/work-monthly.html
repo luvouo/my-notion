@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Work Monthly — Soft Schedule</title>
+  <style>
+    :root{
+      --lavender: rgba(194,181,226,.92);
+      --border: rgba(184,169,218,.56);
+      --border-soft: rgba(184,169,218,.30);
+      --text: rgba(30,28,34,.91);
+      --muted: rgba(30,28,34,.46);
+      --glass: rgba(255,255,255,.12);
+      --shadow: 0 10px 30px rgba(64,52,86,.06);
+      --display: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+    @font-face{
+      font-family:"EnterSanChaek";
+      src:url("../fonts/엔터산책10.ttf") format("truetype");
+      font-weight:400;
+      font-style:normal;
+      font-display:swap;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;padding:0;background:transparent;color:var(--text);
+      font-family:ui-sans-serif,system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    button,input,textarea,select{font:inherit}
+    .wrap{width:min(1180px,100%);margin:0 auto;padding:clamp(10px,2vw,18px)}
+    .card{
+      position:relative;overflow:hidden;padding:clamp(14px,2vw,20px);
+      border:1px solid var(--border);border-radius:20px;background:var(--glass);
+      box-shadow:var(--shadow);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    }
+    .card::before{
+      content:"";position:absolute;inset:-2px;pointer-events:none;
+      background:
+        radial-gradient(90% 60% at 0% 0%,rgba(218,208,239,.32),transparent 62%),
+        radial-gradient(70% 60% at 100% 12%,rgba(194,181,226,.17),transparent 62%);
+    }
+    .inner{position:relative;z-index:1;display:grid;gap:14px}
+    .top,.monthNav,.pickerHead,.modalHead,.actions,.colorPicker{display:flex;align-items:center}
+    .top{justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .title{display:flex;align-items:center;gap:10px}
+    .pearl{width:18px;height:18px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px rgba(194,181,226,.24)}
+    h1{margin:0;font:400 clamp(16px,2.4vw,19px)/1 var(--display);letter-spacing:-.2px}
+    .monthNav{gap:8px}
+    .btn,.iconBtn{
+      border:1px solid var(--border);color:rgba(40,35,48,.78);background:rgba(255,255,255,.18);
+      cursor:pointer;transition:border-color .18s ease,box-shadow .18s ease,transform .08s ease,color .18s ease;
+    }
+    .btn:hover,.iconBtn:hover{
+      border-color:rgba(174,156,214,.78);color:rgba(126,99,181,.90);
+      text-shadow:0 0 7px rgba(174,156,214,.28);box-shadow:0 0 0 3px rgba(194,181,226,.16);
+    }
+    .btn:focus-visible,.iconBtn:focus-visible,.day:focus-visible,.workChip:focus-visible,.detailRow:focus-visible{
+      outline:none;box-shadow:0 0 0 3px rgba(194,181,226,.30);
+    }
+    .btn:active,.iconBtn:active{transform:scale(.97)}
+    .btn{min-height:34px;padding:7px 12px;border-radius:12px;font:12px var(--display)}
+    .btn.primary{background:rgba(210,198,237,.42)}
+    .btn.danger{border-color:rgba(210,150,164,.46);color:rgba(135,65,82,.78)}
+    .iconBtn{display:inline-grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%}
+    .iconBtn svg{display:block;width:13px;height:13px}
+
+    .calendarScroller{
+      overflow-x:auto;border:1px solid var(--border-soft);border-radius:16px;background:rgba(255,255,255,.07);
+      scrollbar-color:rgba(184,169,218,.46) transparent;
+    }
+    .calendar{min-width:650px}
+    .weekdays,.monthGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+    .weekday{
+      padding:9px 6px 8px;text-align:center;color:var(--muted);border-bottom:1px solid var(--border-soft);
+      font:11px var(--display);letter-spacing:.04em;
+    }
+    .weekday:first-child{color:rgba(183,106,128,.66)}
+    .weekday:last-child{color:rgba(100,119,174,.67)}
+    .day{
+      position:relative;min-width:0;height:clamp(105px,11vw,136px);padding:8px;border:0;
+      border-right:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft);
+      background:rgba(255,255,255,.035);cursor:pointer;transition:background .16s ease,box-shadow .16s ease;
+    }
+    .day:nth-child(7n){border-right:0}
+    .day:nth-last-child(-n+7){border-bottom:0}
+    .day:hover{background:rgba(230,223,244,.27)}
+    .day.other{background:rgba(255,255,255,.018);color:rgba(30,28,34,.25)}
+    .day.selected{background:rgba(218,208,239,.23);box-shadow:inset 0 0 0 1px #d5c4ff}
+    .day.today .dayNumber{
+      color:rgba(68,51,105,.86);background:rgba(194,181,226,.48);box-shadow:0 0 0 3px rgba(218,208,239,.25)
+    }
+    .dayNumber{
+      display:grid;place-items:center;width:23px;height:23px;margin-bottom:5px;border-radius:50%;
+      font-size:11px;font-variant-numeric:tabular-nums;
+    }
+    .day:nth-child(7n+1):not(.other) .dayNumber{color:rgba(174,83,111,.76)}
+    .day:nth-child(7n):not(.other) .dayNumber{color:rgba(76,99,164,.78)}
+    .items{display:grid;gap:3px}
+    .workChip{
+      display:flex;align-items:center;gap:5px;width:100%;min-width:0;padding:3px 5px;overflow:hidden;
+      border:0;border-left:2px solid var(--item-accent,rgba(174,156,214,.70));border-radius:4px;
+      color:rgba(39,35,45,.76);background:var(--item-tint,rgba(242,238,249,.40));
+      text-align:left;font-size:10.5px;line-height:1.25;cursor:pointer;
+    }
+    .workChipName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .statusDot{width:5px;height:5px;border-radius:50%;flex:0 0 auto;background:rgba(120,120,130,.52)}
+    .statusDot.in_progress{background:rgba(105,155,203,.78)}
+    .statusDot.review{background:rgba(188,148,86,.78)}
+    .statusDot.done{background:rgba(102,167,133,.78)}
+    .statusDot.on_hold{background:rgba(170,125,141,.70)}
+    .other .workChip{opacity:.42}
+    .more{padding-left:6px;color:rgba(99,76,141,.66);font:10px var(--display)}
+
+    .monthPicker{
+      position:absolute;z-index:8;top:45px;right:0;width:min(270px,calc(100vw - 52px));padding:12px;
+      border:1px solid rgba(184,169,218,.46);border-radius:16px;background:rgba(255,255,255,.91);
+      box-shadow:0 14px 34px rgba(54,42,75,.12);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    }
+    .monthPicker[hidden],.overlay[hidden]{display:none}
+    .pickerHead{justify-content:space-between;gap:10px;margin-bottom:10px}
+    .pickerYear{color:rgba(44,38,52,.76);font:14px var(--display);font-variant-numeric:tabular-nums}
+    .pickerGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .monthOption{
+      min-height:34px;border:1px solid transparent;border-radius:10px;color:rgba(43,38,50,.66);
+      background:transparent;font:11px var(--display);cursor:pointer;
+    }
+    .monthOption:hover{border-color:rgba(174,156,214,.45);color:rgba(119,91,174,.88);background:rgba(235,229,247,.30)}
+    .monthOption.selected{border-color:rgba(174,156,214,.48);background:rgba(218,208,239,.25);color:rgba(92,68,139,.86)}
+    .monthOption.current::after{content:"";display:block;width:3px;height:3px;margin:3px auto 0;border-radius:50%;background:rgba(139,112,190,.68)}
+
+    .overlay{
+      position:absolute;z-index:12;inset:0;display:grid;place-items:center;padding:18px;
+      background:rgba(240,235,248,.24);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+    }
+    .modal{
+      width:min(560px,100%);max-height:calc(100% - 12px);overflow:auto;padding:16px;
+      border:1px solid rgba(184,169,218,.52);border-radius:18px;background:rgba(255,255,255,.94);
+      box-shadow:0 18px 44px rgba(54,42,75,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    }
+    .modalHead{justify-content:space-between;gap:12px;margin-bottom:13px}
+    .modalTitle{margin:0;font:14px var(--display)}
+    .modalSub{margin-top:3px;color:var(--muted);font-size:11px}
+    .closeX{border:0;background:transparent;color:rgba(45,39,54,.48);font-size:18px;cursor:pointer;padding:3px 6px}
+
+    .addForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .field{display:grid;gap:5px}
+    .field.full{grid-column:1/-1}
+    label{color:var(--muted);font:11px var(--display)}
+    input,textarea,select{
+      width:100%;border:1px solid var(--border-soft);border-radius:11px;outline:0;color:var(--text);
+      background:rgba(255,255,255,.18);padding:9px 10px;font-size:13px;
+    }
+    textarea{min-height:78px;resize:vertical;line-height:1.45}
+    input:focus,textarea:focus,select:focus{border-color:rgba(174,156,214,.78);box-shadow:0 0 0 3px rgba(194,181,226,.20)}
+    .autoValue{min-height:38px;display:flex;align-items:center;padding:9px 10px;border:1px solid var(--border-soft);border-radius:11px;color:var(--muted);font-size:12px}
+    .colorPicker{gap:8px;min-height:32px;flex-wrap:wrap}
+    .colorSwatch{
+      width:20px;height:20px;padding:0;border:1px solid rgba(48,42,56,.10);border-radius:50%;
+      background:var(--swatch);cursor:pointer;transition:border-color .18s ease,box-shadow .18s ease,transform .08s ease;
+    }
+    .colorSwatch:hover{border-color:rgba(87,73,105,.30);transform:scale(1.05)}
+    .colorSwatch[aria-pressed="true"]{border-color:rgba(99,80,137,.48);box-shadow:0 0 0 3px rgba(194,181,226,.22),0 0 8px rgba(174,156,214,.18)}
+    .actions{grid-column:1/-1;justify-content:flex-end;gap:7px;margin-top:2px}
+    .detailBody{display:grid;gap:1px;border-top:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft)}
+    .detailRow{
+      display:grid;grid-template-columns:118px minmax(0,1fr);gap:12px;align-items:start;
+      padding:10px 4px;border:0;border-bottom:1px solid rgba(184,169,218,.16);background:transparent;
+      text-align:left;color:inherit;width:100%;
+    }
+    .detailRow:last-child{border-bottom:0}
+    .detailRow.editable{cursor:pointer}
+    .detailRow.editable:hover{background:rgba(235,229,247,.16)}
+    .detailLabel{color:var(--muted);font:11px var(--display);padding-top:2px}
+    .detailValue{min-width:0;font-size:13px;line-height:1.45;word-break:break-word}
+    .detailValue.empty{color:rgba(30,28,34,.28)}
+    .detailValue .inlineInput,.detailValue .inlineTextarea,.detailValue .inlineSelect{margin:-5px 0;width:100%}
+    .detailValue .inlineTextarea{min-height:86px}
+    .tagList{display:flex;gap:5px;flex-wrap:wrap}
+    .tag{padding:2px 7px;border-radius:999px;background:rgba(235,229,247,.42);color:rgba(84,68,111,.74);font-size:11px}
+    .colorValue{display:inline-flex;align-items:center;gap:7px}
+    .colorDot{width:11px;height:11px;border-radius:50%;background:var(--dot);border:1px solid rgba(40,35,48,.08)}
+    .detailFooter{display:flex;justify-content:space-between;gap:8px;margin-top:13px}
+    .inlinePalette{display:flex;gap:8px;flex-wrap:wrap;padding:2px 0}
+
+    .toast{
+      position:fixed;z-index:20;left:50%;bottom:18px;translate:-50% 12px;max-width:min(360px,calc(100vw - 32px));
+      padding:9px 13px;border:1px solid var(--border);border-radius:999px;background:rgba(250,248,253,.94);
+      box-shadow:0 8px 24px rgba(48,38,66,.12);opacity:0;pointer-events:none;color:rgba(45,38,54,.76);
+      text-align:center;font-size:12px;transition:opacity .18s ease,translate .18s ease;
+    }
+    .toast.show{opacity:1;translate:-50% 0}
+    @media(max-width:720px){
+      .calendar{min-width:560px}.day{height:94px;padding:6px}.workChip{font-size:9.5px;padding-inline:4px}
+    }
+    @media(max-width:520px){
+      .wrap{padding:8px}.card{padding:12px;border-radius:17px}.top{align-items:flex-start}
+      .monthNav{width:100%;justify-content:space-between}.monthPicker{top:84px}.calendar{min-width:490px}
+      .day{height:84px;padding:5px}.workChip:nth-child(n+3){display:none}.addForm{grid-template-columns:1fr}
+      .field,.field.full,.actions{grid-column:1}.detailRow{grid-template-columns:92px minmax(0,1fr)}.overlay{padding:10px}
+    }
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card" aria-label="Work monthly planner">
+      <div class="inner">
+        <header class="top">
+          <div class="title">
+            <img class="pearl" src="./icon/pearl.png" alt="" aria-hidden="true" />
+            <h1>Work Monthly</h1>
+          </div>
+          <nav class="monthNav" aria-label="월 이동">
+            <button class="iconBtn" id="prevMonth" type="button" aria-label="이전 달">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
+            <button class="btn" id="monthTrigger" type="button" aria-haspopup="dialog" aria-expanded="false"></button>
+            <button class="iconBtn" id="nextMonth" type="button" aria-label="다음 달">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </button>
+          </nav>
+        </header>
+        <div class="calendarScroller" aria-label="업무 월간 달력">
+          <div class="calendar">
+            <div class="weekdays" aria-hidden="true">
+              <div class="weekday">SUN</div><div class="weekday">MON</div><div class="weekday">TUE</div>
+              <div class="weekday">WED</div><div class="weekday">THU</div><div class="weekday">FRI</div>
+              <div class="weekday">SAT</div>
+            </div>
+            <div class="monthGrid" id="monthGrid" role="grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="monthPicker" id="monthPicker" role="dialog" aria-label="Month picker" hidden>
+        <div class="pickerHead">
+          <button class="iconBtn" id="pickerPrevYear" type="button" aria-label="이전 연도">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+          <div class="pickerYear" id="pickerYear"></div>
+          <button class="iconBtn" id="pickerNextYear" type="button" aria-label="다음 연도">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+        </div>
+        <div class="pickerGrid" id="pickerGrid"></div>
+      </div>
+
+      <div class="overlay" id="addOverlay" hidden>
+        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+          <div class="modalHead">
+            <div>
+              <h2 class="modalTitle" id="addTitle">Add Work Item</h2>
+              <div class="modalSub" id="addDateLabel"></div>
+            </div>
+            <button class="closeX" id="closeAdd" type="button" aria-label="닫기">×</button>
+          </div>
+          <form class="addForm" id="addForm">
+            <div class="field full">
+              <label for="addName">Name</label>
+              <input id="addName" type="text" maxlength="120" required placeholder="작업 이름" />
+            </div>
+            <div class="field full">
+              <label>Color</label>
+              <div class="colorPicker" id="addColorPicker"></div>
+            </div>
+            <div class="field">
+              <label for="addStatus">Status</label>
+              <select id="addStatus"></select>
+            </div>
+            <div class="field">
+              <label for="addPriority">Priority</label>
+              <select id="addPriority"></select>
+            </div>
+            <div class="field full">
+              <label for="addTags">Tags</label>
+              <input id="addTags" type="text" maxlength="240" placeholder="태그를 쉼표로 구분" />
+            </div>
+            <div class="field">
+              <label for="addScheduleDate">Schedule date</label>
+              <input id="addScheduleDate" type="date" required />
+            </div>
+            <div class="field">
+              <label for="addType">Type</label>
+              <input id="addType" type="text" maxlength="80" placeholder="Design / Video / AI ..." />
+            </div>
+            <div class="field">
+              <label for="addStartDate">Start date</label>
+              <input id="addStartDate" type="date" />
+            </div>
+            <div class="field">
+              <label for="addDueDate">Due date</label>
+              <input id="addDueDate" type="date" />
+            </div>
+            <div class="field full">
+              <label for="addLink">Link</label>
+              <input id="addLink" type="url" maxlength="500" placeholder="https://..." />
+            </div>
+            <div class="field">
+              <label>Created</label>
+              <div class="autoValue">저장 시 자동 기록</div>
+            </div>
+            <div class="field">
+              <label>Updated</label>
+              <div class="autoValue">수정 시 자동 갱신</div>
+            </div>
+            <div class="field full">
+              <label for="addNotes">Notes</label>
+              <textarea id="addNotes" maxlength="3000" placeholder="추가 사항이나 메모"></textarea>
+            </div>
+            <div class="actions">
+              <button class="btn" id="cancelAdd" type="button">Cancel</button>
+              <button class="btn primary" type="submit">Add</button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <div class="overlay" id="detailOverlay" hidden>
+        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+          <div class="modalHead">
+            <div>
+              <h2 class="modalTitle" id="detailTitle">Work Details</h2>
+              <div class="modalSub">항목을 클릭하면 바로 수정할 수 있습니다.</div>
+            </div>
+            <button class="closeX" id="closeDetail" type="button" aria-label="닫기">×</button>
+          </div>
+          <div class="detailBody" id="detailBody"></div>
+          <div class="detailFooter">
+            <button class="btn danger" id="deleteItem" type="button">Delete</button>
+            <button class="btn" id="detailDone" type="button">Close</button>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="../env.js"></script>
+  <script type="module">
+    (async function(){
+      "use strict";
+
+      var USE_SUPABASE=false;
+      var workspace_id="local";
+      var sbFetch=null;
+      var lastRemoteUpdatedAt="";
+      var localMutationVersion=0;
+      var syncedMutationVersion=0;
+      var remoteSaveInFlight=0;
+      var remoteRefreshInFlight=false;
+      var remoteSaveQueue=Promise.resolve();
+
+      async function renderPasscodeGate(savePasscode){
+        var wrap=document.querySelector(".wrap");
+        if(!wrap)return;
+        wrap.innerHTML=
+          '<section class="card" role="application" aria-label="Passcode Gate"><div class="inner" style="gap:12px;">'+
+          '<header class="top"><div class="title"><img class="pearl" src="./icon/pearl.png" alt="" /><h1>Passcode</h1></div></header>'+
+          '<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;"><input id="passInput" type="password" placeholder="패스코드 입력…" />'+
+          '<button class="btn" id="passBtn" type="button">확인</button></div>'+
+          '<div style="font-size:12px;color:var(--muted);">같은 패스코드를 쓰는 모든 기기에서 같은 Work Monthly를 사용합니다.</div></div></section>';
+        var input=document.getElementById("passInput");
+        function submit(){
+          var pass=(input.value||"").trim();
+          if(!pass)return;
+          savePasscode(pass);
+          location.reload();
+        }
+        document.getElementById("passBtn").addEventListener("click",submit);
+        input.addEventListener("keydown",function(e){if(e.key==="Enter")submit();});
+        input.focus();
+      }
+
+      try{
+        var auth=await import("../core/auth-lite.js");
+        var supa=await import("../core/supabase-rest.js");
+        var ws=await auth.getWorkspaceId();
+        if(!ws){
+          await renderPasscodeGate(auth.savePasscode);
+          return;
+        }
+        workspace_id=ws;
+        sbFetch=supa.sbFetch;
+        USE_SUPABASE=true;
+      }catch(err){
+        console.warn("[Work Monthly] Supabase unavailable; using localStorage.",err);
+      }
+
+      var STORAGE_KEY="my-notion.work-monthly.items.v1";
+      var WIDGET_KEY="work_monthly_v1";
+      var DEFAULT_COLOR="lavender";
+      var PALETTE={
+        lavender:{label:"Lavender",swatch:"#ddd0f7",accent:"rgba(174,156,214,.72)",text:"rgba(115,92,158,.78)",tint:"rgba(242,238,249,.46)"},
+        pink:{label:"Baby pink",swatch:"#ffc8d8",accent:"rgba(222,157,179,.72)",text:"rgba(166,93,118,.78)",tint:"rgba(252,238,243,.46)"},
+        sky:{label:"Sky blue",swatch:"#c5e2ff",accent:"rgba(142,190,222,.74)",text:"rgba(79,131,168,.80)",tint:"rgba(237,247,252,.48)"},
+        mint:{label:"Mint blue",swatch:"#a0e4cd",accent:"rgba(102,183,156,.82)",text:"rgba(62,135,111,.86)",tint:"#e8fdec"},
+        peach:{label:"Peach",swatch:"#ffebeb",accent:"rgba(218,151,151,.82)",text:"rgba(161,92,92,.86)",tint:"#ffebeb"},
+        yellow:{label:"Yellow",swatch:"#fef8e5",accent:"rgba(242,229,184,.82)",text:"rgba(219,203,145,.96)",tint:"#fdf8e6"},
+        gray:{label:"Gray",swatch:"#e6e6e6",accent:"rgba(166,166,166,.82)",text:"rgba(93,93,93,.86)",tint:"#e6e6e6"}
+      };
+      var STATUS={
+        not_started:"시작 전",
+        in_progress:"진행 중",
+        review:"검토·수정",
+        done:"완료",
+        on_hold:"보류"
+      };
+      var PRIORITY={low:"Low",normal:"Normal",high:"High"};
+      var MONTH_NAMES=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+
+      var today=startOfDay(new Date());
+      var visibleMonth=new Date(today.getFullYear(),today.getMonth(),1);
+      var selectedDate=toDateKey(today);
+      var selectedColor=DEFAULT_COLOR;
+      var pickerYearValue=visibleMonth.getFullYear();
+      var items=loadItems();
+      var activeItemId=null;
+      var inlineEditing=null;
+      var toastTimer;
+
+      var monthGrid=document.getElementById("monthGrid");
+      var monthTrigger=document.getElementById("monthTrigger");
+      var monthPicker=document.getElementById("monthPicker");
+      var pickerYear=document.getElementById("pickerYear");
+      var pickerGrid=document.getElementById("pickerGrid");
+      var addOverlay=document.getElementById("addOverlay");
+      var detailOverlay=document.getElementById("detailOverlay");
+      var addForm=document.getElementById("addForm");
+      var addName=document.getElementById("addName");
+      var addStatus=document.getElementById("addStatus");
+      var addPriority=document.getElementById("addPriority");
+      var addTags=document.getElementById("addTags");
+      var addScheduleDate=document.getElementById("addScheduleDate");
+      var addStartDate=document.getElementById("addStartDate");
+      var addDueDate=document.getElementById("addDueDate");
+      var addType=document.getElementById("addType");
+      var addLink=document.getElementById("addLink");
+      var addNotes=document.getElementById("addNotes");
+      var addColorPicker=document.getElementById("addColorPicker");
+      var addDateLabel=document.getElementById("addDateLabel");
+      var detailBody=document.getElementById("detailBody");
+      var toast=document.getElementById("toast");
+
+      fillSelect(addStatus,STATUS,"not_started");
+      fillSelect(addPriority,PRIORITY,"normal");
+      renderColorPicker(addColorPicker,DEFAULT_COLOR,function(color){
+        selectedColor=color;
+        renderColorPicker(addColorPicker,selectedColor,arguments.callee);
+      });
+
+      document.getElementById("prevMonth").addEventListener("click",function(){moveMonth(-1);});
+      document.getElementById("nextMonth").addEventListener("click",function(){moveMonth(1);});
+      monthTrigger.addEventListener("click",function(event){
+        event.stopPropagation();
+        if(monthPicker.hidden){openMonthPicker();return;}
+        visibleMonth=new Date(today.getFullYear(),today.getMonth(),1);
+        selectedDate=toDateKey(today);
+        closeMonthPicker();
+        render();
+      });
+      document.getElementById("pickerPrevYear").addEventListener("click",function(event){event.stopPropagation();pickerYearValue-=1;renderMonthPicker();});
+      document.getElementById("pickerNextYear").addEventListener("click",function(event){event.stopPropagation();pickerYearValue+=1;renderMonthPicker();});
+      monthPicker.addEventListener("click",function(event){event.stopPropagation();});
+      document.addEventListener("click",closeMonthPicker);
+      document.getElementById("closeAdd").addEventListener("click",closeAddModal);
+      document.getElementById("cancelAdd").addEventListener("click",closeAddModal);
+      document.getElementById("closeDetail").addEventListener("click",closeDetail);
+      document.getElementById("detailDone").addEventListener("click",closeDetail);
+      document.getElementById("deleteItem").addEventListener("click",deleteActiveItem);
+      addOverlay.addEventListener("click",function(event){if(event.target===addOverlay)closeAddModal();});
+      detailOverlay.addEventListener("click",function(event){if(event.target===detailOverlay)closeDetail();});
+      addForm.addEventListener("submit",createItem);
+      document.addEventListener("keydown",function(event){
+        if(event.key!=="Escape")return;
+        if(inlineEditing){renderDetail();return;}
+        if(!addOverlay.hidden)closeAddModal();
+        else if(!detailOverlay.hidden)closeDetail();
+        else closeMonthPicker();
+      });
+
+      function fillSelect(select,map,selected){
+        select.replaceChildren();
+        Object.keys(map).forEach(function(key){
+          var option=document.createElement("option");
+          option.value=key;option.textContent=map[key];
+          if(key===selected)option.selected=true;
+          select.append(option);
+        });
+      }
+      function startOfDay(date){return new Date(date.getFullYear(),date.getMonth(),date.getDate());}
+      function toDateKey(date){
+        return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");
+      }
+      function parseDateKey(key){
+        var parts=String(key||"").split("-").map(Number);
+        return new Date(parts[0],parts[1]-1,parts[2]);
+      }
+      function nowIso(){return new Date().toISOString();}
+      function createId(){
+        return globalThis.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2);
+      }
+      function normalizeColor(value){return Object.prototype.hasOwnProperty.call(PALETTE,value)?value:DEFAULT_COLOR;}
+      function normalizeStatus(value){return Object.prototype.hasOwnProperty.call(STATUS,value)?value:"not_started";}
+      function normalizePriority(value){return Object.prototype.hasOwnProperty.call(PRIORITY,value)?value:"normal";}
+      function parseTags(value){
+        var arr=Array.isArray(value)?value:String(value||"").split(",");
+        var seen=new Set();
+        return arr.map(function(x){return String(x).trim();}).filter(function(x){
+          if(!x||seen.has(x))return false;seen.add(x);return true;
+        }).slice(0,20);
+      }
+      function isValidItem(item){
+        return item&&typeof item.id==="string"&&typeof item.name==="string"&&item.name.trim()&&/^\d{4}-\d{2}-\d{2}$/.test(item.scheduleDate||"");
+      }
+      function normalizeItems(raw){
+        if(!Array.isArray(raw))return[];
+        return raw.filter(isValidItem).map(function(item,index){
+          return {
+            id:item.id,
+            name:item.name.trim().slice(0,120),
+            color:normalizeColor(item.color),
+            status:normalizeStatus(item.status),
+            tags:parseTags(item.tags),
+            scheduleDate:item.scheduleDate,
+            startDate:/^\d{4}-\d{2}-\d{2}$/.test(item.startDate||"")?item.startDate:"",
+            dueDate:/^\d{4}-\d{2}-\d{2}$/.test(item.dueDate||"")?item.dueDate:"",
+            priority:normalizePriority(item.priority),
+            type:typeof item.type==="string"?item.type.slice(0,80):"",
+            createdAt:typeof item.createdAt==="string"?item.createdAt:nowIso(),
+            updatedAt:typeof item.updatedAt==="string"?item.updatedAt:(typeof item.createdAt==="string"?item.createdAt:nowIso()),
+            link:typeof item.link==="string"?item.link.slice(0,500):"",
+            notes:typeof item.notes==="string"?item.notes.slice(0,3000):"",
+            order:Number.isFinite(Number(item.order))?Number(item.order):index
+          };
+        });
+      }
+      function loadItems(){
+        try{return normalizeItems(JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"));}catch(err){return[];}
+      }
+      function persistLocal(){localStorage.setItem(STORAGE_KEY,JSON.stringify(items));}
+      function currentPayload(){return{items:items};}
+      async function saveRemote(payload,version){
+        if(!USE_SUPABASE||!sbFetch)return false;
+        remoteSaveInFlight+=1;
+        try{
+          var updatedAt=new Date().toISOString();
+          var rows=await sbFetch("widget_state?on_conflict=workspace_id,widget_key",{
+            method:"POST",
+            body:[{workspace_id:workspace_id,widget_key:WIDGET_KEY,payload:payload,updated_at:updatedAt}],
+            prefer:"return=representation,resolution=merge-duplicates"
+          });
+          lastRemoteUpdatedAt=rows&&rows[0]&&rows[0].updated_at||updatedAt;
+          syncedMutationVersion=Math.max(syncedMutationVersion,version);
+          return true;
+        }catch(err){
+          console.warn("[Work Monthly] Remote save failed; local cache is safe.",err);
+          return false;
+        }finally{remoteSaveInFlight=Math.max(0,remoteSaveInFlight-1);}
+      }
+      function persist(){
+        persistLocal();
+        localMutationVersion+=1;
+        var version=localMutationVersion;
+        var payload=currentPayload();
+        if(!USE_SUPABASE||!sbFetch){syncedMutationVersion=version;return;}
+        remoteSaveQueue=remoteSaveQueue.catch(function(){}).then(function(){return saveRemote(payload,version);});
+      }
+      async function loadRemoteState(){
+        return sbFetch("widget_state",{query:{
+          select:"payload,updated_at",
+          workspace_id:"eq."+workspace_id,
+          widget_key:"eq."+WIDGET_KEY,
+          limit:"1"
+        }});
+      }
+      function applyRemoteRow(row){
+        var payload=row&&row.payload;
+        var raw=Array.isArray(payload)?payload:payload&&payload.items;
+        if(!Array.isArray(raw))return false;
+        items=normalizeItems(raw);
+        persistLocal();
+        lastRemoteUpdatedAt=row.updated_at||lastRemoteUpdatedAt;
+        render();
+        if(!detailOverlay.hidden&&activeItemId){
+          if(getActiveItem())renderDetail();else closeDetail();
+        }
+        return true;
+      }
+      function canApplyRemote(){
+        return addOverlay.hidden&&detailOverlay.hidden&&!inlineEditing&&remoteSaveInFlight===0&&localMutationVersion===syncedMutationVersion;
+      }
+      async function bootstrapSync(){
+        if(!USE_SUPABASE||!sbFetch)return;
+        try{
+          var rows=await loadRemoteState();
+          if(rows&&rows.length){applyRemoteRow(rows[0]);syncedMutationVersion=localMutationVersion;}
+          else await saveRemote(currentPayload(),localMutationVersion);
+        }catch(err){console.warn("[Work Monthly] Initial remote load failed; using local cache.",err);}
+      }
+      async function refreshFromRemote(){
+        if(!USE_SUPABASE||!sbFetch||remoteRefreshInFlight||!canApplyRemote())return;
+        remoteRefreshInFlight=true;
+        try{
+          var rows=await loadRemoteState();
+          var row=rows&&rows[0];
+          if(row&&(!lastRemoteUpdatedAt||row.updated_at>lastRemoteUpdatedAt))applyRemoteRow(row);
+        }catch(err){console.warn("[Work Monthly] Remote refresh failed.",err);}
+        finally{remoteRefreshInFlight=false;}
+      }
+
+      function itemsFor(dateKey){
+        return items.filter(function(item){return item.scheduleDate===dateKey;}).sort(function(a,b){
+          if(a.order!==b.order)return a.order-b.order;
+          return a.createdAt.localeCompare(b.createdAt);
+        });
+      }
+      function nextOrder(dateKey){
+        var list=itemsFor(dateKey);
+        return list.length?Math.max.apply(null,list.map(function(x){return x.order||0;}))+1:0;
+      }
+      function applyItemColor(element,color){
+        var p=PALETTE[normalizeColor(color)];
+        element.style.setProperty("--item-accent",p.accent);
+        element.style.setProperty("--item-tint",p.tint);
+      }
+      function moveMonth(amount){
+        visibleMonth=new Date(visibleMonth.getFullYear(),visibleMonth.getMonth()+amount,1);
+        selectedDate=toDateKey(visibleMonth);
+        closeMonthPicker();
+        render();
+      }
+      function render(){
+        monthTrigger.textContent=String(visibleMonth.getMonth()+1).padStart(2,"0")+"월";
+        renderCalendar();
+      }
+      function renderCalendar(){
+        monthGrid.replaceChildren();
+        var gridStart=new Date(visibleMonth.getFullYear(),visibleMonth.getMonth(),1-visibleMonth.getDay());
+        for(var index=0;index<42;index+=1){
+          var date=new Date(gridStart.getFullYear(),gridStart.getMonth(),gridStart.getDate()+index);
+          var dateKey=toDateKey(date);
+          var dayItems=itemsFor(dateKey);
+          var cell=document.createElement("div");
+          cell.className="day";
+          if(date.getMonth()!==visibleMonth.getMonth())cell.classList.add("other");
+          if(dateKey===selectedDate)cell.classList.add("selected");
+          if(dateKey===toDateKey(today))cell.classList.add("today");
+          cell.tabIndex=0;cell.setAttribute("role","gridcell");
+          cell.setAttribute("aria-selected",String(dateKey===selectedDate));
+          cell.setAttribute("aria-label",date.getFullYear()+"년 "+(date.getMonth()+1)+"월 "+date.getDate()+"일, 항목 "+dayItems.length+"개");
+          cell.addEventListener("click",function(key,d){return function(){
+            selectedDate=key;
+            if(d.getMonth()!==visibleMonth.getMonth())visibleMonth=new Date(d.getFullYear(),d.getMonth(),1);
+            render();
+            openAddModal(key);
+          };}(dateKey,date));
+          cell.addEventListener("keydown",function(key){return function(e){
+            if(e.key==="Enter"||e.key===" "){e.preventDefault();openAddModal(key);}
+          };}(dateKey));
+
+          var num=document.createElement("span");
+          num.className="dayNumber";num.textContent=date.getDate();cell.append(num);
+          var list=document.createElement("div");list.className="items";
+          dayItems.slice(0,3).forEach(function(item){
+            var chip=document.createElement("button");
+            chip.type="button";chip.className="workChip";applyItemColor(chip,item.color);
+            chip.title=item.name;
+            var dot=document.createElement("span");dot.className="statusDot "+item.status;chip.append(dot);
+            var name=document.createElement("span");name.className="workChipName";name.textContent=item.name;chip.append(name);
+            chip.addEventListener("click",function(e){
+              e.stopPropagation();selectedDate=item.scheduleDate;render();openDetail(item.id);
+            });
+            list.append(chip);
+          });
+          if(dayItems.length>3){
+            var more=document.createElement("div");more.className="more";more.textContent="+"+(dayItems.length-3)+" more";list.append(more);
+          }
+          cell.append(list);monthGrid.append(cell);
+        }
+      }
+
+      function renderColorPicker(container,selected,onSelect){
+        container.replaceChildren();
+        Object.keys(PALETTE).forEach(function(key){
+          var b=document.createElement("button");
+          b.type="button";b.className="colorSwatch";b.style.setProperty("--swatch",PALETTE[key].swatch);
+          b.setAttribute("aria-label",PALETTE[key].label);b.setAttribute("aria-pressed",String(key===selected));
+          b.addEventListener("click",function(){onSelect(key);});
+          container.append(b);
+        });
+      }
+      function openAddModal(dateKey){
+        selectedDate=dateKey;
+        addForm.reset();
+        addStatus.value="not_started";addPriority.value="normal";selectedColor=DEFAULT_COLOR;
+        addScheduleDate.value=dateKey;addDateLabel.textContent=formatDate(dateKey);
+        renderColorPicker(addColorPicker,selectedColor,function(color){
+          selectedColor=color;
+          renderColorPicker(addColorPicker,selectedColor,arguments.callee);
+        });
+        addOverlay.hidden=false;
+        addName.focus();
+      }
+      function closeAddModal(){addOverlay.hidden=true;addForm.reset();}
+      function createItem(event){
+        event.preventDefault();
+        var name=addName.value.trim();
+        if(!name){addName.focus();return;}
+        var scheduleDate=addScheduleDate.value||selectedDate;
+        var now=nowIso();
+        items.push({
+          id:createId(),
+          name:name,
+          color:selectedColor,
+          status:normalizeStatus(addStatus.value),
+          tags:parseTags(addTags.value),
+          scheduleDate:scheduleDate,
+          startDate:addStartDate.value||"",
+          dueDate:addDueDate.value||"",
+          priority:normalizePriority(addPriority.value),
+          type:addType.value.trim().slice(0,80),
+          createdAt:now,
+          updatedAt:now,
+          link:addLink.value.trim().slice(0,500),
+          notes:addNotes.value.trim().slice(0,3000),
+          order:nextOrder(scheduleDate)
+        });
+        selectedDate=scheduleDate;
+        persist();closeAddModal();
+        var d=parseDateKey(scheduleDate);visibleMonth=new Date(d.getFullYear(),d.getMonth(),1);
+        render();showToast("작업을 추가했어요.");
+      }
+
+      function getActiveItem(){return items.find(function(item){return item.id===activeItemId;})||null;}
+      function openDetail(id){
+        activeItemId=id;inlineEditing=null;detailOverlay.hidden=false;renderDetail();
+      }
+      function closeDetail(){detailOverlay.hidden=true;activeItemId=null;inlineEditing=null;}
+      function deleteActiveItem(){
+        var item=getActiveItem();if(!item)return;
+        items=items.filter(function(x){return x.id!==item.id;});
+        persist();closeDetail();render();showToast("작업을 삭제했어요.");
+      }
+      function formatDate(dateKey){
+        if(!dateKey)return"";
+        var d=parseDateKey(dateKey);
+        return d.getFullYear()+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getDate()).padStart(2,"0");
+      }
+      function formatTimestamp(value){
+        var d=new Date(value);if(Number.isNaN(d.getTime()))return"";
+        return d.getFullYear()+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getDate()).padStart(2,"0")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+      }
+      var FIELD_DEFS=[
+        {key:"name",label:"Name",type:"text"},
+        {key:"color",label:"Color",type:"color"},
+        {key:"status",label:"Status",type:"select",options:STATUS},
+        {key:"tags",label:"Tags",type:"tags"},
+        {key:"scheduleDate",label:"Schedule date",type:"date"},
+        {key:"startDate",label:"Start date",type:"date"},
+        {key:"dueDate",label:"Due date",type:"date"},
+        {key:"priority",label:"Priority",type:"select",options:PRIORITY},
+        {key:"type",label:"Type",type:"text"},
+        {key:"createdAt",label:"Created",type:"readonly"},
+        {key:"updatedAt",label:"Updated",type:"readonly"},
+        {key:"link",label:"Link",type:"url"},
+        {key:"notes",label:"Notes",type:"textarea"}
+      ];
+      function displayValue(item,def){
+        var value=item[def.key];
+        if(def.key==="color"){
+          var p=PALETTE[item.color];var wrap=document.createElement("span");wrap.className="colorValue";
+          var dot=document.createElement("span");dot.className="colorDot";dot.style.setProperty("--dot",p.swatch);
+          var txt=document.createElement("span");txt.textContent=p.label;wrap.append(dot,txt);return wrap;
+        }
+        if(def.key==="status")return document.createTextNode(STATUS[item.status]);
+        if(def.key==="priority")return document.createTextNode(PRIORITY[item.priority]);
+        if(def.key==="tags"){
+          if(!item.tags.length)return document.createTextNode("—");
+          var list=document.createElement("span");list.className="tagList";
+          item.tags.forEach(function(tag){var s=document.createElement("span");s.className="tag";s.textContent=tag;list.append(s);});
+          return list;
+        }
+        if(def.key==="createdAt"||def.key==="updatedAt")return document.createTextNode(formatTimestamp(value)||"—");
+        if(def.type==="date")return document.createTextNode(value?formatDate(value):"—");
+        return document.createTextNode(value||"—");
+      }
+      function renderDetail(){
+        inlineEditing=null;
+        var item=getActiveItem();if(!item){closeDetail();return;}
+        document.getElementById("detailTitle").textContent=item.name;
+        detailBody.replaceChildren();
+        FIELD_DEFS.forEach(function(def){
+          var row=document.createElement("button");
+          row.type="button";row.className="detailRow";
+          var editable=def.type!=="readonly";
+          if(editable)row.classList.add("editable");
+          var label=document.createElement("span");label.className="detailLabel";label.textContent=def.label;
+          var value=document.createElement("span");value.className="detailValue";
+          var node=displayValue(item,def);value.append(node);
+          if(node.nodeType===Node.TEXT_NODE&&node.textContent==="—")value.classList.add("empty");
+          row.append(label,value);
+          if(editable)row.addEventListener("click",function(){beginInlineEdit(row,value,def);});
+          detailBody.append(row);
+        });
+      }
+      function beginInlineEdit(row,valueEl,def){
+        if(inlineEditing)return;
+        var item=getActiveItem();if(!item)return;
+        inlineEditing=def.key;
+        row.classList.remove("editable");
+        valueEl.replaceChildren();
+
+        if(def.type==="color"){
+          var palette=document.createElement("div");palette.className="inlinePalette";
+          renderColorPicker(palette,item.color,function(color){saveField(def.key,color);});
+          valueEl.append(palette);return;
+        }
+
+        var control;
+        if(def.type==="select"){
+          control=document.createElement("select");control.className="inlineSelect";
+          fillSelect(control,def.options,item[def.key]);
+          control.addEventListener("change",function(){saveField(def.key,control.value);});
+        }else if(def.type==="textarea"){
+          control=document.createElement("textarea");control.className="inlineTextarea";control.value=item[def.key]||"";control.maxLength=3000;
+          control.addEventListener("blur",function(){saveField(def.key,control.value);},{once:true});
+        }else{
+          control=document.createElement("input");control.className="inlineInput";
+          control.type=def.type==="date"?"date":def.type==="url"?"url":"text";
+          control.value=def.type==="tags"?item.tags.join(", "):(item[def.key]||"");
+          control.maxLength=def.key==="name"?120:def.key==="link"?500:def.key==="type"?80:240;
+          control.addEventListener("blur",function(){saveField(def.key,control.value);},{once:true});
+        }
+        control.addEventListener("click",function(e){e.stopPropagation();});
+        control.addEventListener("keydown",function(e){
+          if(e.key==="Escape"){e.preventDefault();renderDetail();}
+          else if(e.key==="Enter"&&def.type!=="textarea"){e.preventDefault();saveField(def.key,control.value);}
+        });
+        valueEl.append(control);control.focus();
+        if(control.select)control.select();
+      }
+      function saveField(field,value){
+        var item=getActiveItem();if(!item)return;
+        var next=value;
+        if(field==="tags")next=parseTags(value);
+        if(field==="color")next=normalizeColor(value);
+        if(field==="status")next=normalizeStatus(value);
+        if(field==="priority")next=normalizePriority(value);
+        if(field==="name"){
+          next=String(value||"").trim().slice(0,120);
+          if(!next){renderDetail();return;}
+        }
+        if(field==="type")next=String(value||"").trim().slice(0,80);
+        if(field==="link")next=String(value||"").trim().slice(0,500);
+        if(field==="notes")next=String(value||"").slice(0,3000);
+        if(["scheduleDate","startDate","dueDate"].includes(field)){
+          next=/^\d{4}-\d{2}-\d{2}$/.test(String(value||""))?String(value):"";
+          if(field==="scheduleDate"&&!next){renderDetail();return;}
+        }
+        items=items.map(function(x){
+          if(x.id!==item.id)return x;
+          var updated=Object.assign({},x);updated[field]=next;updated.updatedAt=nowIso();
+          if(field==="scheduleDate"&&next!==x.scheduleDate)updated.order=nextOrder(next);
+          return updated;
+        });
+        if(field==="scheduleDate"){
+          selectedDate=next;
+          var d=parseDateKey(next);visibleMonth=new Date(d.getFullYear(),d.getMonth(),1);
+        }
+        persist();render();renderDetail();showToast("수정했어요.");
+      }
+
+      function openMonthPicker(){
+        pickerYearValue=visibleMonth.getFullYear();monthPicker.hidden=false;
+        monthTrigger.setAttribute("aria-expanded","true");renderMonthPicker();
+        document.getElementById("pickerPrevYear").focus();
+      }
+      function closeMonthPicker(){monthPicker.hidden=true;monthTrigger.setAttribute("aria-expanded","false");}
+      function renderMonthPicker(){
+        pickerYear.textContent=pickerYearValue;pickerGrid.replaceChildren();
+        MONTH_NAMES.forEach(function(name,month){
+          var b=document.createElement("button");b.type="button";b.className="monthOption";b.textContent=name;
+          if(pickerYearValue===visibleMonth.getFullYear()&&month===visibleMonth.getMonth())b.classList.add("selected");
+          if(pickerYearValue===today.getFullYear()&&month===today.getMonth())b.classList.add("current");
+          b.addEventListener("click",function(){
+            visibleMonth=new Date(pickerYearValue,month,1);selectedDate=toDateKey(visibleMonth);closeMonthPicker();render();
+          });
+          pickerGrid.append(b);
+        });
+      }
+      function showToast(message){
+        clearTimeout(toastTimer);toast.textContent=message;toast.classList.add("show");
+        toastTimer=setTimeout(function(){toast.classList.remove("show");},1800);
+      }
+
+      render();
+      await bootstrapSync();
+      var REMOTE_REFRESH_INTERVAL_MS=5000;
+      setInterval(function(){if(document.visibilityState==="visible")refreshFromRemote();},REMOTE_REFRESH_INTERVAL_MS);
+      document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")refreshFromRemote();});
+      window.addEventListener("focus",refreshFromRemote);
+      window.addEventListener("pageshow",refreshFromRemote);
+    })();
+  </script>
+</body>
+</html>
