@@ -191,6 +191,33 @@
     .other .eventChip{ opacity: .42; }
     .eventTime{ color: var(--event-text, rgba(115,92,158,.76)); font-variant-numeric: tabular-nums; margin-right: 4px; }
     .more{ padding-left: 6px; color: rgba(99,76,141,.66); font: 10px var(--display); }
+    .eventChip[draggable="true"]{ cursor: grab; }
+    .eventChip.dragging{ opacity: .42; cursor: grabbing; }
+    .eventChip.dragTarget{ box-shadow: inset 0 1px 0 rgba(126,99,181,.70); }
+
+    .monthNotes{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .monthNoteCard{
+      display: grid;
+      gap: 7px;
+      padding: 11px 12px;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      background: rgba(255,255,255,.08);
+    }
+    .monthNoteTitle{
+      color: rgba(54,46,65,.66);
+      font: 12px var(--display);
+    }
+    .monthNoteInput{
+      min-height: 74px;
+      resize: vertical;
+      line-height: 1.45;
+      background: rgba(255,255,255,.14);
+    }
 
     .monthPicker{
       position: absolute;
@@ -325,6 +352,7 @@
       .form{ grid-template-columns: 1fr; }
       .field, .field.full, .formActions{ grid-column: 1; }
       .eventOverlay{ padding: 10px; }
+      .monthNotes{ grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce){ *{ scroll-behavior: auto !important; transition: none !important; } }
   </style>
@@ -360,6 +388,17 @@
             <div class="monthGrid" id="monthGrid" role="grid"></div>
           </div>
         </div>
+
+        <section class="monthNotes" aria-label="이번 달 계획">
+          <div class="monthNoteCard">
+            <div class="monthNoteTitle">To do</div>
+            <textarea class="monthNoteInput" id="monthTodo" maxlength="1200" placeholder="이번 달 해야 할 일을 적어보세요."></textarea>
+          </div>
+          <div class="monthNoteCard">
+            <div class="monthNoteTitle">Goal</div>
+            <textarea class="monthNoteInput" id="monthGoal" maxlength="1200" placeholder="이번 달 목표를 적어보세요."></textarea>
+          </div>
+        </section>
 
       </div>
 
@@ -402,6 +441,7 @@
                 <button class="colorSwatch" type="button" data-color="mint" style="--swatch: #a0e4cd" aria-label="Mint blue" aria-pressed="false"></button>
                 <button class="colorSwatch" type="button" data-color="peach" style="--swatch: #ffebeb" aria-label="Peach" aria-pressed="false"></button>
                 <button class="colorSwatch" type="button" data-color="yellow" style="--swatch: #fef8e5" aria-label="yellow" aria-pressed="false"></button>
+                <button class="colorSwatch" type="button" data-color="gray" style="--swatch: #e6e6e6" aria-label="Gray" aria-pressed="false"></button>
               </div>
             </div>
             <div class="field full">
@@ -488,6 +528,7 @@
 
 
       const STORAGE_KEY = "my-notion.monthly.events.v1";
+      const MONTH_NOTES_STORAGE_KEY = "my-notion.monthly.month-notes.v1";
       const MONTHLY_WIDGET_KEY = "monthly_v1";
       const DEFAULT_COLOR = "lavender";
       const PALETTE = {
@@ -496,7 +537,8 @@
         sky: { accent: "rgba(142,190,222,.74)", text: "rgba(79,131,168,.80)", tint: "rgba(237,247,252,.48)" },
         mint: { accent: "rgba(102,183,156,.82)", text: "rgba(62,135,111,.86)", tint: "#e8fdec" },
         peach: { accent: "rgba(218,151,151,.82)", text: "rgba(161,92,92,.86)", tint: "#ffebeb" },
-        yellow: { accent: "rgba(242, 229, 184,.82)", text: "rgba(219, 203, 145, 0.96)", tint: "#fdf8e6" }
+        yellow: { accent: "rgba(242, 229, 184,.82)", text: "rgba(219, 203, 145, 0.96)", tint: "#fdf8e6" },
+        gray: { accent: "rgba(166,166,166,.82)", text: "rgba(93,93,93,.86)", tint: "#e6e6e6" }
       };
       const MONTH_NAMES = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
       const today = startOfDay(new Date());
@@ -506,7 +548,10 @@
       let selectedColor = DEFAULT_COLOR;
       let pickerYearValue = visibleMonth.getFullYear();
       let events = loadEvents();
+      let monthNotes = loadMonthNotes();
       let toastTimer;
+      let dragState = null;
+      let suppressChipClickUntil = 0;
 
       const monthGrid = document.getElementById("monthGrid");
       const monthTrigger = document.getElementById("monthTrigger");
@@ -524,6 +569,8 @@
       const saveButton = document.getElementById("saveEvent");
       const cancelButton = document.getElementById("cancelEdit");
       const deleteButton = document.getElementById("deleteEvent");
+      const monthTodoInput = document.getElementById("monthTodo");
+      const monthGoalInput = document.getElementById("monthGoal");
       const toast = document.getElementById("toast");
 
       document.getElementById("prevMonth").addEventListener("click", () => moveMonth(-1));
@@ -554,6 +601,13 @@
       deleteButton.addEventListener("click", deleteEditingEvent);
       eventForm.addEventListener("submit", saveEvent);
       colorSwatches.forEach(swatch => swatch.addEventListener("click", () => selectColor(swatch.dataset.color)));
+      [monthTodoInput, monthGoalInput].forEach(input => {
+        input.addEventListener("input", updateMonthNoteDraft);
+        input.addEventListener("blur", () => {
+          updateMonthNoteDraft();
+          persist();
+        });
+      });
       eventOverlay.addEventListener("click", event => {
         if (event.target === eventOverlay) closeEventModal();
       });
@@ -580,15 +634,36 @@
           && typeof item.title === "string" && item.title.trim();
       }
       function normalizeEvents(saved){
-        return Array.isArray(saved) ? saved.filter(isValidEvent).map(item => ({
+        if (!Array.isArray(saved)) return [];
+        const normalized = saved.filter(isValidEvent).map(item => ({
           ...item,
           id: item.id,
           date: item.date,
           title: item.title.trim().slice(0, 100),
           time: typeof item.time === "string" ? item.time : "",
           memo: typeof item.memo === "string" ? item.memo.slice(0, 500) : "",
-          color: normalizeColor(item.color)
-        })) : [];
+          color: normalizeColor(item.color),
+          order: Number.isFinite(Number(item.order)) ? Number(item.order) : null
+        }));
+        const dates = [...new Set(normalized.map(item => item.date))];
+        dates.forEach(dateKey => {
+          const group = normalized.filter(item => item.date === dateKey);
+          const fallback = (a, b) => {
+            if (!a.time && b.time) return 1;
+            if (a.time && !b.time) return -1;
+            return a.time.localeCompare(b.time) || a.title.localeCompare(b.title, "ko");
+          };
+          group.sort((a, b) => {
+            const ao = Number.isFinite(a.order);
+            const bo = Number.isFinite(b.order);
+            if (ao && bo) return a.order - b.order || fallback(a, b);
+            if (ao) return -1;
+            if (bo) return 1;
+            return fallback(a, b);
+          });
+          group.forEach((item, index) => { item.order = index; });
+        });
+        return normalized;
       }
       function loadEvents(){
         try {
@@ -597,16 +672,26 @@
           return [];
         }
       }
+      function loadMonthNotes(){
+        try {
+          const saved = JSON.parse(localStorage.getItem(MONTH_NOTES_STORAGE_KEY) || "{}");
+          return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+        } catch (error) {
+          return {};
+        }
+      }
       function currentPayload(){
         return {
           events: events.map(item => ({
             ...item,
             color: normalizeColor(item.color)
-          }))
+          })),
+          monthNotes
         };
       }
       function persistLocal(){
         localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+        localStorage.setItem(MONTH_NOTES_STORAGE_KEY, JSON.stringify(monthNotes));
       }
       async function saveRemote(payload, version){
         if (!USE_SUPABASE || !sbFetch) return false;
@@ -661,6 +746,9 @@
         const rawEvents = Array.isArray(payload) ? payload : payload && payload.events;
         if (!Array.isArray(rawEvents)) return false;
         events = normalizeEvents(rawEvents);
+        if (payload && !Array.isArray(payload) && payload.monthNotes && typeof payload.monthNotes === "object" && !Array.isArray(payload.monthNotes)) {
+          monthNotes = payload.monthNotes;
+        }
         persistLocal();
         lastRemoteUpdatedAt = row.updated_at || lastRemoteUpdatedAt;
         render();
@@ -668,6 +756,8 @@
       }
       function canApplyRemote(){
         return eventOverlay.hidden
+          && document.activeElement !== monthTodoInput
+          && document.activeElement !== monthGoalInput
           && remoteSaveInFlight === 0
           && localMutationVersion === syncedMutationVersion;
       }
@@ -717,10 +807,49 @@
       }
       function eventsFor(dateKey){
         return events.filter(event => event.date === dateKey).sort((a, b) => {
+          const ao = Number.isFinite(Number(a.order)) ? Number(a.order) : Number.MAX_SAFE_INTEGER;
+          const bo = Number.isFinite(Number(b.order)) ? Number(b.order) : Number.MAX_SAFE_INTEGER;
+          if (ao !== bo) return ao - bo;
           if (!a.time && b.time) return 1;
           if (a.time && !b.time) return -1;
           return a.time.localeCompare(b.time) || a.title.localeCompare(b.title, "ko");
         });
+      }
+      function nextOrderForDate(dateKey){
+        const ordered = eventsFor(dateKey);
+        return ordered.length ? Math.max(...ordered.map(item => Number(item.order) || 0)) + 1 : 0;
+      }
+      function reorderDateEvents(dateKey, sourceId, targetId=null){
+        const ordered = eventsFor(dateKey);
+        const sourceIndex = ordered.findIndex(item => item.id === sourceId);
+        if (sourceIndex < 0) return;
+        const [moved] = ordered.splice(sourceIndex, 1);
+        if (targetId) {
+          const targetIndex = ordered.findIndex(item => item.id === targetId);
+          ordered.splice(targetIndex < 0 ? ordered.length : targetIndex, 0, moved);
+        } else {
+          ordered.push(moved);
+        }
+        const orderById = new Map(ordered.map((item, index) => [item.id, index]));
+        events = events.map(item => item.date === dateKey && orderById.has(item.id)
+          ? { ...item, order: orderById.get(item.id) }
+          : item);
+        persist();
+        render();
+      }
+      function monthKey(date=visibleMonth){
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      }
+      function renderMonthNotes(){
+        const note = monthNotes[monthKey()] || {};
+        monthTodoInput.value = typeof note.todo === "string" ? note.todo : "";
+        monthGoalInput.value = typeof note.goal === "string" ? note.goal : "";
+      }
+      function updateMonthNoteDraft(){
+        monthNotes[monthKey()] = {
+          todo: monthTodoInput.value.slice(0, 1200),
+          goal: monthGoalInput.value.slice(0, 1200)
+        };
       }
       function moveMonth(amount){
         visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + amount, 1);
@@ -745,6 +874,7 @@
       function render(){
         monthTrigger.textContent = `${String(visibleMonth.getMonth() + 1).padStart(2, "0")}월`;
         renderCalendar();
+        renderMonthNotes();
       }
       function renderCalendar(){
         monthGrid.replaceChildren();
@@ -775,14 +905,59 @@
 
           const list = document.createElement("div");
           list.className = "events";
+          list.addEventListener("dragover", event => {
+            if (!dragState || dragState.date !== dateKey) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+          });
+          list.addEventListener("drop", event => {
+            if (!dragState || dragState.date !== dateKey || event.target.closest(".eventChip")) return;
+            event.preventDefault();
+            event.stopPropagation();
+            reorderDateEvents(dateKey, dragState.id);
+            dragState = null;
+          });
           dayEvents.slice(0, 3).forEach(item => {
             const chip = document.createElement("button");
             chip.type = "button";
             chip.className = "eventChip";
+            chip.draggable = true;
+            chip.dataset.eventId = item.id;
             applyEventColor(chip, item.color);
             chip.title = `${item.time ? `${item.time} ` : ""}${item.title}`;
+            chip.addEventListener("dragstart", event => {
+              event.stopPropagation();
+              dragState = { id:item.id, date:dateKey };
+              chip.classList.add("dragging");
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData("text/plain", item.id);
+            });
+            chip.addEventListener("dragend", () => {
+              chip.classList.remove("dragging");
+              document.querySelectorAll(".eventChip.dragTarget").forEach(node => node.classList.remove("dragTarget"));
+              dragState = null;
+              suppressChipClickUntil = Date.now() + 180;
+            });
+            chip.addEventListener("dragover", event => {
+              if (!dragState || dragState.date !== dateKey || dragState.id === item.id) return;
+              event.preventDefault();
+              event.stopPropagation();
+              chip.classList.add("dragTarget");
+              event.dataTransfer.dropEffect = "move";
+            });
+            chip.addEventListener("dragleave", () => chip.classList.remove("dragTarget"));
+            chip.addEventListener("drop", event => {
+              if (!dragState || dragState.date !== dateKey || dragState.id === item.id) return;
+              event.preventDefault();
+              event.stopPropagation();
+              chip.classList.remove("dragTarget");
+              reorderDateEvents(dateKey, dragState.id, item.id);
+              dragState = null;
+              suppressChipClickUntil = Date.now() + 180;
+            });
             chip.addEventListener("click", event => {
               event.stopPropagation();
+              if (Date.now() < suppressChipClickUntil) return;
               selectedDate = dateKey;
               if (date.getMonth() !== visibleMonth.getMonth()) visibleMonth = new Date(date.getFullYear(), date.getMonth(), 1);
               render();
@@ -822,7 +997,7 @@
           events = events.map(item => item.id === editingId ? { ...item, ...values } : item);
           showToast(`“${title}” 일정을 수정했어요.`);
         } else {
-          events.push({ id: createId(), ...values });
+          events.push({ id: createId(), ...values, order: nextOrderForDate(selectedDate) });
           showToast(`“${title}” 일정을 추가했어요.`);
         }
         persist();
