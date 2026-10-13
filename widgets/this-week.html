@@ -1398,9 +1398,24 @@
     .footer-actions { box-sizing: border-box; min-width: 0; }
 
     @media (max-width: 520px){
-      .inputRow { flex-basis: 100%; gap: 8px; }
-      .inputRow > .input { flex: 1 1 100%; width: 100%; box-sizing: border-box; }
-      .weekbar { flex: 1 1 100%; width: 100%; min-width: 0; justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
+      .controls{ gap: 8px; }
+      .inputRow{
+        flex-basis: 100%;
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+      .inputRow > .input{
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+      .inputRow > #addBtn{
+        flex: 0 0 32px;
+        width: 32px;
+        min-width: 32px;
+      }
+      .weekbar { flex: 1 1 100%; width: 100%; min-width: 0; justify-content: flex-start; flex-wrap: wrap; gap: 6px 8px; }
       .weeknav { gap: 6px; }
       .weekdays { flex: 1 1 auto; min-width: 0; justify-content: space-between; gap: 4px; }
       .dayPill, .navBtn { flex: 0 0 28px; box-sizing: border-box; }
