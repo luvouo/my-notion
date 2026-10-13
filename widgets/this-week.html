@@ -348,6 +348,71 @@
       flex: 0 0 auto;
     }
 
+    #thisInboxRow{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      align-items:center;
+    }
+    .inboxToggleTitle{
+      appearance:none;
+      -webkit-appearance:none;
+      border:0;
+      background:transparent;
+      padding:0;
+      margin:0;
+      cursor:pointer;
+      text-align:left;
+    }
+    .inboxToggleTitle:hover{ color: var(--accent-1); }
+    .inboxToggleTitle:focus-visible{
+      outline:none;
+      border-radius:6px;
+      box-shadow:0 0 0 3px rgba(165,206,240,0.18);
+    }
+    .thisInboxList{
+      grid-column:1 / -1;
+      display:grid;
+      gap:4px;
+      min-width:0;
+      padding-top:8px;
+      margin-top:2px;
+      border-top:1px solid rgba(140,190,232,0.14);
+    }
+    .thisInboxList.collapsed{ display:none; }
+    .thisInboxItem{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      min-width:0;
+      padding:4px 2px;
+    }
+    .thisInboxText{
+      flex:1 1 auto;
+      min-width:0;
+      color:rgba(30,30,30,0.45);
+      font-size:13px;
+      line-height:1.45;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .thisInboxItem.done .thisInboxText{
+      text-decoration:line-through;
+      color:rgba(30,30,30,0.38);
+    }
+    .thisInboxEmpty{
+      color:rgba(30,30,30,0.45);
+      font-size:12px;
+      padding:3px 2px 1px;
+    }
+
+    #fromTodayBtn{
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:11.5px;
+      line-height:1;
+    }
+
     .popover{
       position: fixed;
       left: 0;
@@ -1352,7 +1417,7 @@
       .preview, .previewBox { min-width: 0; }
     }
     @media (max-width: 380px){
-      .weeknav { flex-basis: 100%; justify-content: flex-end; }
+      .weeknav { flex-basis: 100%; justify-content: flex-start; }
       .weekdays { flex-basis: 100%; }
     }
 
@@ -1374,9 +1439,6 @@
         <div class="controls">
           <div class="inputRow">
             <input id="taskInput" class="input" type="text" placeholder="이번 주 할 일…" maxlength="80" />
-            <button class="btn secondary" id="fromTodayBtn" type="button">From Today</button>
-            <button class="btn secondary" id="pullBtn" type="button" title="Today에서 가져오기">Pull</button>
-            <button class="btn secondary" id="pushBtn" type="button" title="Today로 보내기">Push</button>
             <button id="addBtn" type="button" title="할 일 추가" aria-label="할 일 추가"></button>
           </div>
 
@@ -1393,6 +1455,8 @@
                   <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
+
+              <button class="btn secondary" id="fromTodayBtn" type="button" title="이번 주 오늘로 이동">Today</button>
             </div>
 
             <div class="weekdays" id="weekdayPills" aria-label="요일 선택"></div>
@@ -1401,13 +1465,13 @@
 
         <div class="nextInboxRow" id="thisInboxRow" aria-label="This Week Inbox">
           <div class="nextInboxLeft">
-            <span class="nextInboxTitle">This Week Inbox</span>
+            <button class="nextInboxTitle inboxToggleTitle" id="thisInboxToggle" type="button" aria-expanded="true">This Week Inbox</button>
             <span class="nextInboxCount" id="thisInboxCount">0</span>
           </div>
           <div class="nextInboxRight">
             <button class="btn secondary" id="thisAddBtn" type="button">Add</button>
-            <button class="btn secondary" id="thisShowBtn" type="button">Show</button>
           </div>
+          <div class="thisInboxList" id="thisInboxList"></div>
         </div>
 
         <div class="nextInboxRow" id="nextInboxRow" aria-label="Next Week Inbox">
@@ -2183,8 +2247,6 @@
 
     const taskInput = document.getElementById("taskInput");
     const fromTodayBtn = document.getElementById("fromTodayBtn");
-    const pullBtn = document.getElementById("pullBtn");
-    const pushBtn = document.getElementById("pushBtn");
     const addBtn = document.getElementById("addBtn");
 
     const prevWeekBtn = document.getElementById("prevWeekBtn");
@@ -2200,8 +2262,9 @@
     const toast = document.getElementById("toast");
 
     const thisInboxCount = document.getElementById("thisInboxCount");
+    const thisInboxToggle = document.getElementById("thisInboxToggle");
+    const thisInboxList = document.getElementById("thisInboxList");
     const thisAddBtn = document.getElementById("thisAddBtn");
-    const thisShowBtn = document.getElementById("thisShowBtn");
     const nextInboxCount = document.getElementById("nextInboxCount");
     const nextAddBtn = document.getElementById("nextAddBtn");
     const nextShowBtn = document.getElementById("nextShowBtn");
@@ -2467,14 +2530,46 @@
     }
 
     let activeInboxKey = "nextInbox";
+    let thisInboxCollapsed = false;
 
     function inboxLabel(key){
       return key === "thisInbox" ? "This Week Inbox" : "Next Week Inbox";
     }
 
+    function renderThisInboxList(){
+      const arr = weekState.thisInbox || [];
+      thisInboxList.classList.toggle("collapsed", thisInboxCollapsed);
+      thisInboxToggle.setAttribute("aria-expanded", String(!thisInboxCollapsed));
+      thisInboxToggle.title = thisInboxCollapsed ? "클릭해서 펼치기" : "클릭해서 접기";
+      thisInboxList.innerHTML = "";
+
+      if(thisInboxCollapsed) return;
+      if(arr.length === 0){
+        thisInboxList.innerHTML = '<div class="thisInboxEmpty">(empty)</div>';
+        return;
+      }
+
+      for(const it of arr){
+        const row = document.createElement("div");
+        row.className = "thisInboxItem" + (it.done ? " done" : "");
+        row.innerHTML = `
+          <button class="check" type="button" role="checkbox" aria-checked="${it.done}"
+            data-this-inbox-id="${escapeHtml(it.id)}">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="thisInboxText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+          <button class="del" type="button" aria-label="삭제" data-this-inbox-del="${escapeHtml(it.id)}">✕</button>
+        `;
+        thisInboxList.appendChild(row);
+      }
+    }
+
     function renderInboxRows(){
       thisInboxCount.textContent = String((weekState.thisInbox || []).length);
       nextInboxCount.textContent = String((weekState.nextInbox || []).length);
+      renderThisInboxList();
     }
 
     function renderNextPopover(){
@@ -2678,21 +2773,24 @@
       showToast(`${inboxLabel(activeInboxKey)}에 추가했어.`);
     }
 
-    function toggleInbox(id){
-      const arr = weekState[activeInboxKey] || [];
-      weekState[activeInboxKey] = arr.map(it => it.id === id ? ({ ...it, done: !it.done }) : it);
+    function toggleInboxForKey(key, id){
+      const arr = weekState[key] || [];
+      weekState[key] = arr.map(it => String(it.id) === String(id) ? ({ ...it, done: !it.done }) : it);
       persistCurrentWeek();
       renderInboxRows();
-      renderNextPopover();
+      if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
     }
 
-    function deleteInbox(id){
-      const arr = weekState[activeInboxKey] || [];
-      weekState[activeInboxKey] = arr.filter(it => it.id !== id);
+    function deleteInboxForKey(key, id){
+      const arr = weekState[key] || [];
+      weekState[key] = arr.filter(it => String(it.id) !== String(id));
       persistCurrentWeek();
       renderInboxRows();
-      renderNextPopover();
+      if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
     }
+
+    function toggleInbox(id){ toggleInboxForKey(activeInboxKey, id); }
+    function deleteInbox(id){ deleteInboxForKey(activeInboxKey, id); }
 
     function clearInboxDone(){
       const arr = weekState[activeInboxKey] || [];
@@ -2769,122 +2867,12 @@
     });
 
     fromTodayBtn.addEventListener("click", () => {
-      const today = new Date();
-      const mon = mondayOfWeek(today);
-      const sameWeek = (dateToYmd(mon) === dateToYmd(viewMonday));
-      if(!sameWeek){
-        showToast("현재 보고 있는 주가 이번 주가 아니야.");
-        return;
-      }
-      const idx = (today.getDay() + 6) % 7;
-      setSelectedDay(idx);
-      showToast("Today 기준으로 이동했어.");
-    });
-
-    function readTodayList(){
-      const key1 = TODAY_PREFIX_SCOPED + ymd(new Date());
-      const key2 = TODAY_PREFIX_FALLBACK + ymd(new Date());
-
-      let data = null;
-      for(const k of [key1, key2]){
-        try{
-          const raw = localStorage.getItem(k);
-          if(!raw) continue;
-          const parsed = JSON.parse(raw);
-          if(Array.isArray(parsed)){
-            data = parsed;
-            break;
-          }
-        }catch(e){}
-      }
-      return Array.isArray(data) ? data : [];
-    }
-
-    function writeTodayList(list){
-      const key = TODAY_PREFIX_SCOPED + ymd(new Date());
-      localStorage.setItem(key, JSON.stringify(Array.isArray(list) ? list : []));
-    }
-
-    pullBtn.addEventListener("click", () => {
-      const src = readTodayList();
-
-      if(!Array.isArray(src) || src.length === 0){
-        showToast("Today 기록이 없어.");
-        return;
-      }
-
-      const unfinished = src.filter(x => !x.done && (x.text||"").trim());
-      if(unfinished.length === 0){
-        showToast("가져올 미완료가 없어.");
-        return;
-      }
-
-      const dayKey = String(selectedDayIndex);
-      const arr = weekState.days[dayKey] || (weekState.days[dayKey] = []);
-      const existing = new Set(arr.map(x => (x.text||"").trim()));
-
-      let added = 0;
-      for(const it of unfinished){
-        const tx = (it.text||"").trim();
-        if(!tx) continue;
-        if(existing.has(tx)) continue;
-        const carriedStatus = getItemStatus(it) === "hold" ? "hold" : "todo";
-        arr.unshift({
-          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
-          text: tx,
-          status: carriedStatus,
-          done: false
-        });
-        existing.add(tx);
-        added++;
-      }
-
-      if(added === 0){
-        showToast("이미 이번 주에 있어.");
-        return;
-      }
-
       persistCurrentWeek();
-      renderWeekList();
-      showToast(`Today에서 ${added}개 가져왔어.`);
-    });
-
-    pushBtn.addEventListener("click", () => {
-      let dest = readTodayList();
-      if(!Array.isArray(dest)) dest = [];
-
-      const dayArr = weekState.days[String(selectedDayIndex)] || [];
-      const unfinished = dayArr.filter(x => !x.done && (x.text||"").trim());
-      if(unfinished.length === 0){
-        showToast("보낼 미완료가 없어.");
-        return;
-      }
-
-      const existing = new Set(dest.map(x => (x.text||"").trim()));
-      let added = 0;
-
-      for(const it of unfinished){
-        const tx = (it.text||"").trim();
-        if(!tx) continue;
-        if(existing.has(tx)) continue;
-        const carriedStatus = getItemStatus(it) === "hold" ? "hold" : "todo";
-        dest.unshift({
-          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
-          text: tx,
-          status: carriedStatus,
-          done: false
-        });
-        existing.add(tx);
-        added++;
-      }
-
-      if(added === 0){
-        showToast("이미 Today에 있어.");
-        return;
-      }
-
-      writeTodayList(dest);
-      showToast(`Today로 ${added}개 보냈어.`);
+      const today = new Date();
+      viewMonday = mondayOfWeek(today);
+      selectedDayIndex = (today.getDay() + 6) % 7;
+      loadCurrentViewWeek();
+      showToast("이번 주 오늘로 이동했어.");
     });
 
     function placeNextPopover(anchorEl){
@@ -2964,16 +2952,28 @@
       if(e.key === "Escape"){ closeMiniAdd(); }
     });
 
+    thisInboxToggle.addEventListener("click", () => {
+      thisInboxCollapsed = !thisInboxCollapsed;
+      renderInboxRows();
+    });
+
+    thisInboxList.addEventListener("click", (e) => {
+      const check = e.target.closest("[data-this-inbox-id]");
+      const del = e.target.closest("[data-this-inbox-del]");
+      if(check){
+        toggleInboxForKey("thisInbox", check.dataset.thisInboxId);
+        return;
+      }
+      if(del){
+        deleteInboxForKey("thisInbox", del.dataset.thisInboxDel);
+      }
+    });
+
     function toggleInboxPopover(anchorEl, inboxKey){
       const isSameOpen = nextPopover.classList.contains("open") && activeInboxKey === inboxKey;
       if(isSameOpen) closeNextPopover();
       else openNextPopover(anchorEl, inboxKey);
     }
-
-    thisShowBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleInboxPopover(thisShowBtn, "thisInbox");
-    });
 
     nextShowBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -3003,7 +3003,7 @@
     document.addEventListener("click", (e) => {
       if(!nextPopover.classList.contains("open")) return;
       const inside = nextPopover.contains(e.target);
-      const onBtn = nextShowBtn.contains(e.target) || thisShowBtn.contains(e.target);
+      const onBtn = nextShowBtn.contains(e.target);
       if(!inside && !onBtn) closeNextPopover();
     });
 
@@ -3015,12 +3015,12 @@
 
     window.addEventListener("resize", () => {
       if(nextPopover.classList.contains("open")){
-        placeNextPopover(activeInboxKey === "thisInbox" ? thisShowBtn : nextShowBtn);
+        placeNextPopover(nextShowBtn);
       }
     }, { passive: true });
     window.addEventListener("scroll", () => {
       if(nextPopover.classList.contains("open")){
-        placeNextPopover(activeInboxKey === "thisInbox" ? thisShowBtn : nextShowBtn);
+        placeNextPopover(nextShowBtn);
       }
     }, { passive: true });
 
