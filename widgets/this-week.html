@@ -1491,12 +1491,11 @@
 
         <div class="nextInboxRow" id="nextInboxRow" aria-label="Next Week Inbox">
           <div class="nextInboxLeft">
-            <span class="nextInboxTitle">Next Week Inbox</span>
+            <button class="nextInboxTitle inboxToggleTitle" id="nextInboxToggle" type="button" aria-expanded="false">Next Week Inbox</button>
             <span class="nextInboxCount" id="nextInboxCount">0</span>
           </div>
           <div class="nextInboxRight">
             <button class="btn secondary" id="nextAddBtn" type="button">Add</button>
-            <button class="btn secondary" id="nextShowBtn" type="button">Show</button>
           </div>
         </div>
 
@@ -2281,8 +2280,8 @@
     const thisInboxList = document.getElementById("thisInboxList");
     const thisAddBtn = document.getElementById("thisAddBtn");
     const nextInboxCount = document.getElementById("nextInboxCount");
+    const nextInboxToggle = document.getElementById("nextInboxToggle");
     const nextAddBtn = document.getElementById("nextAddBtn");
-    const nextShowBtn = document.getElementById("nextShowBtn");
 
     const nextPopover = document.getElementById("nextPopover");
     const nextPopTitle = document.getElementById("nextPopTitle");
@@ -2920,16 +2919,18 @@
       renderNextPopover();
       nextPopover.classList.add("open");
       nextPopover.setAttribute("aria-hidden", "false");
+      if(inboxKey === "nextInbox") nextInboxToggle.setAttribute("aria-expanded", "true");
 
       requestAnimationFrame(() => {
-        placeNextPopover(anchorEl || nextShowBtn);
-        requestAnimationFrame(() => placeNextPopover(anchorEl || nextShowBtn));
+        placeNextPopover(anchorEl || nextInboxToggle);
+        requestAnimationFrame(() => placeNextPopover(anchorEl || nextInboxToggle));
       });
     }
 
     function closeNextPopover(){
       nextPopover.classList.remove("open");
       nextPopover.setAttribute("aria-hidden", "true");
+      nextInboxToggle.setAttribute("aria-expanded", "false");
     }
 
     function openMiniAdd(inboxKey){
@@ -2990,9 +2991,9 @@
       else openNextPopover(anchorEl, inboxKey);
     }
 
-    nextShowBtn.addEventListener("click", (e) => {
+    nextInboxToggle.addEventListener("click", (e) => {
       e.stopPropagation();
-      toggleInboxPopover(nextShowBtn, "nextInbox");
+      toggleInboxPopover(nextInboxToggle, "nextInbox");
     });
 
     nextPopCloseBtn.addEventListener("click", closeNextPopover);
@@ -3018,7 +3019,7 @@
     document.addEventListener("click", (e) => {
       if(!nextPopover.classList.contains("open")) return;
       const inside = nextPopover.contains(e.target);
-      const onBtn = nextShowBtn.contains(e.target);
+      const onBtn = nextInboxToggle.contains(e.target);
       if(!inside && !onBtn) closeNextPopover();
     });
 
@@ -3030,12 +3031,12 @@
 
     window.addEventListener("resize", () => {
       if(nextPopover.classList.contains("open")){
-        placeNextPopover(nextShowBtn);
+        placeNextPopover(nextInboxToggle);
       }
     }, { passive: true });
     window.addEventListener("scroll", () => {
       if(nextPopover.classList.contains("open")){
-        placeNextPopover(nextShowBtn);
+        placeNextPopover(nextInboxToggle);
       }
     }, { passive: true });
 
