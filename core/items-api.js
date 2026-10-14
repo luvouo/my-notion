@@ -3,7 +3,9 @@ import { sbFetch } from "./supabase-rest.js";
 import { nowIso } from "./date-utils.js";
 
 export function rowToItem(row){
-  const status = row.status === "done" || row.status === "hold" ? row.status : "todo";
+  const status = ["todo","in_progress","hold","carried_over","done"].includes(row.status)
+    ? row.status
+    : "todo";
   return {
     id: row.id,
     text: row.title || "",
@@ -17,7 +19,7 @@ export function rowToItem(row){
 }
 
 export function itemToRow({ id, text, status, done, due_at, details, sort_order }, workspace_id){
-  const normalizedStatus = status === "done" || status === "hold"
+  const normalizedStatus = ["todo","in_progress","hold","carried_over","done"].includes(status)
     ? status
     : (done ? "done" : "todo");
   const row = {
