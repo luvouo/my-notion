@@ -566,42 +566,60 @@
       white-space: nowrap;
     }
 
-    .showBtn{
-      border: 1px solid rgba(140,190,232,0.35);
-      background: rgba(255,255,255,0.08);
-      color: rgba(30,30,30,0.72);
-      border-radius: 999px;
-      padding: 7px 10px;
-      font-size: 12px;
-      cursor: pointer;
-      font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
-        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-      transition: box-shadow .18s ease, border-color .18s ease, color .18s ease;
-      white-space: nowrap;
+    .daySummary{
+      display:flex;
+      align-items:center;
+      gap:5px;
+      color:rgba(30,30,30,0.46);
+      font-size:11.5px;
+      font-variant-numeric:tabular-nums;
+      white-space:nowrap;
+      flex:0 0 auto;
     }
-    .showBtn:hover{
-      border-color: rgba(140,190,232,0.70);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.22);
-      color: var(--accent-1);
+    .dayToggle{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      border:0;
+      background:transparent;
+      color:rgba(30,30,30,0.48);
+      padding:2px 0 2px 4px;
+      cursor:pointer;
+      font:inherit;
+      -webkit-tap-highlight-color:transparent;
+      transition:color .18s ease;
     }
-    .showBtn:focus-visible{ outline:none; box-shadow: 0 0 0 3px rgba(165,206,240,0.28); }
+    .dayToggle:hover{ color:var(--accent-1); }
+    .dayToggle:focus-visible{
+      outline:none;
+      border-radius:6px;
+      box-shadow:0 0 0 3px rgba(165,206,240,0.16);
+    }
+    .dayToggle svg{
+      width:11px;
+      height:11px;
+      transition:transform .18s ease;
+      flex:0 0 auto;
+    }
+    .dayToggle.open svg{ transform:rotate(180deg); }
 
     .items{
-      margin-top: 10px;
+      margin-top:6px;
       display:grid;
-      gap: 8px;
+      gap:1px;
     }
 
     .item{
       display:flex;
       align-items:center;
-      gap: 10px;
-      padding: 8px 10px;
-      border-radius: 14px;
-      border: 1px solid rgba(140,190,232,0.22);
-      background: rgba(255,255,255,0.06);
-      min-width: 0;
+      gap:9px;
+      padding:5px 2px;
+      border:0;
+      background:transparent;
+      min-width:0;
+      transition:background .16s ease;
     }
+    .item:hover{ background:rgba(165,206,240,0.055); }
 
     .check{
       width: 18px;
@@ -668,7 +686,10 @@
       outline:none;
       box-shadow:0 0 0 3px rgba(165,206,240,0.22);
     }
-    .editBtn{ font-size:15px; }
+    .editBtn{
+      font-size:15px;
+      transform:scaleX(-1);
+    }
 
     .del, .editBtn{
       flex: 0 0 auto;
@@ -687,7 +708,8 @@
       color: rgba(30,30,30,0.78);
       box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
     }
-    .del:active, .editBtn:active{ transform: scale(0.96); }
+    .del:active{ transform: scale(0.96); }
+    .editBtn:active{ transform: scaleX(-1) scale(0.96); }
     .del:focus-visible, .editBtn:focus-visible{
       outline:none;
       background: rgba(165,206,240,0.10);
@@ -703,13 +725,25 @@
     }
     .item.done .check svg{ opacity: 1; transform: scale(1); }
 
-    .holdMark{
+    .progressMark,
+    .holdMark,
+    .carriedMark{
       display:none;
       font-size:14px;
       line-height:1;
       color:rgba(30,30,30,0.60);
-      transform:translateY(-1px);
     }
+    .progressMark{ transform:translateY(-1px); font-size:16px; }
+    .holdMark{ transform:translateY(-1px); }
+    .carriedMark{ font-size:13px; }
+
+    .item.in-progress .check{
+      background:rgba(165,206,240,0.05);
+      border-color:rgba(140,190,232,0.66);
+    }
+    .item.in-progress .check .progressMark{ display:block; }
+    .item.in-progress .check svg{ display:none; }
+
     .item.hold{ opacity:0.90; }
     .item.hold .text{ color:rgba(30,30,30,0.62); }
     .item.hold .check{
@@ -718,7 +752,17 @@
     }
     .item.hold .check .holdMark{ display:block; }
     .item.hold .check svg{ display:none; }
-    .badge.hold{
+
+    .item.carried-over .check{
+      background:rgba(165,206,240,0.05);
+      border-color:rgba(140,190,232,0.66);
+    }
+    .item.carried-over .check .carriedMark{ display:block; }
+    .item.carried-over .check svg{ display:none; }
+
+    .badge.in-progress,
+    .badge.hold,
+    .badge.carried-over{
       border-color:rgba(140,190,232,0.28);
       background:rgba(255,255,255,0.30);
       color:rgba(30,30,30,0.56);
@@ -1139,34 +1183,29 @@
     }
     .pTog.on svg{ opacity: 1; }
 
-    .pHold{
-      width: 18px;
-      height: 18px;
-      border-radius: 6px;
-      border: 1px solid rgba(140,190,232,0.35);
-      background: rgba(255,255,255,0.70);
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      padding: 0;
-      flex: 0 0 auto;
-      color: rgba(120,120,120,0.78);
-      font-size: 14px;
-      line-height: 1;
-      -webkit-tap-highlight-color: transparent;
-      transition: background .18s ease, border-color .18s ease, color .18s ease, transform .08s ease, box-shadow .18s ease;
+    .pStatus{
+      min-width:22px;
+      height:18px;
+      border-radius:6px;
+      border:1px solid rgba(140,190,232,0.35);
+      background:rgba(255,255,255,0.70);
+      cursor:pointer;
+      display:grid;
+      place-items:center;
+      padding:0 4px;
+      flex:0 0 auto;
+      color:rgba(100,120,138,0.82);
+      font-size:12px;
+      line-height:1;
+      -webkit-tap-highlight-color:transparent;
+      transition:background .18s ease,border-color .18s ease,color .18s ease,transform .08s ease,box-shadow .18s ease;
     }
-    .pHold:hover{
-      border-color: rgba(140,190,232,0.60);
-      background: rgba(255,255,255,0.82);
-      box-shadow: 0 0 0 3px rgba(165,206,240,0.14);
+    .pStatus:hover{
+      border-color:rgba(140,190,232,0.60);
+      background:rgba(255,255,255,0.82);
+      box-shadow:0 0 0 3px rgba(165,206,240,0.14);
     }
-    .pHold:active{ transform: scale(0.98); }
-    .pHold.on{
-      border-color: rgba(140,190,232,0.68);
-      background: rgba(165,206,240,0.14);
-      color: rgba(80,120,155,0.86);
-    }
+    .pStatus:active{ transform:scale(0.98); }
 
     .pDel{
       width: 18px;
@@ -1637,7 +1676,9 @@
         <span>Status</span>
         <select class="weekDetailInput" id="weekDetailStatus">
           <option value="todo">Todo</option>
+          <option value="in_progress">In Progress</option>
           <option value="hold">On Hold</option>
+          <option value="carried_over">Carried Over</option>
           <option value="done">Done</option>
         </select>
       </label>
@@ -1858,7 +1899,7 @@
       });
     }
     function normalizeItemStatus(status, done = false){
-      if(status === "done" || status === "hold") return status;
+      if(["todo","in_progress","hold","carried_over","done"].includes(status)) return status;
       return done ? "done" : "todo";
     }
     function getItemStatus(item){
@@ -1868,9 +1909,37 @@
       const normalized = normalizeItemStatus(status, false);
       return { ...item, status: normalized, done: normalized === "done" };
     }
+    function statusCssClass(status){
+      if(status === "in_progress") return "in-progress";
+      if(status === "carried_over") return "carried-over";
+      return status === "todo" ? "" : status;
+    }
+    function statusLabel(status){
+      if(status === "in_progress") return "In Progress";
+      if(status === "hold") return "On Hold";
+      if(status === "carried_over") return "Carried Over";
+      if(status === "done") return "Done";
+      return "Todo";
+    }
+    function statusGlyph(status){
+      if(status === "in_progress") return "•";
+      if(status === "hold") return "–";
+      if(status === "carried_over") return "→";
+      if(status === "done") return "✓";
+      return "□";
+    }
+    function nextItemStatus(status){
+      const order = ["todo","in_progress","hold","carried_over","done"];
+      const current = normalizeItemStatus(status, false);
+      const index = order.indexOf(current);
+      return order[(index + 1) % order.length];
+    }
     function statusMark(item){
       const status = getItemStatus(item);
-      return status === "done" ? "x" : (status === "hold" ? "-" : " ");
+      if(status === "in_progress") return "•";
+      if(status === "hold") return "-";
+      if(status === "carried_over") return "→";
+      return status === "done" ? "x" : " ";
     }
     function emptyWeekState(){
       const days = {};
@@ -2688,20 +2757,34 @@
           <small>${escapeHtml(dayDateStr(i))}</small>
         `;
 
-        const toggleWrap = document.createElement("div");
+        const summary = document.createElement("div");
+        summary.className = "daySummary";
 
-        if(total >= 2){
-          const isOpen = expanded.get(i) === true;
-          const tBtn = document.createElement("button");
-          tBtn.type = "button";
-          tBtn.className = "showBtn";
-          tBtn.textContent = isOpen ? `Hide (${done}/${total})` : `Show (${done}/${total})`;
-          tBtn.dataset.toggle = "1";
-          toggleWrap.appendChild(tBtn);
+        if(total > 0){
+          if(total >= 2){
+            const isOpen = expanded.get(i) === true;
+            const tBtn = document.createElement("button");
+            tBtn.type = "button";
+            tBtn.className = "dayToggle" + (isOpen ? " open" : "");
+            tBtn.dataset.toggle = "1";
+            tBtn.setAttribute("aria-label", isOpen ? "일정 접기" : "일정 펼치기");
+            tBtn.setAttribute("aria-expanded", String(isOpen));
+            tBtn.innerHTML = `
+              <span>${done}/${total}</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            `;
+            summary.appendChild(tBtn);
+          }else{
+            const count = document.createElement("span");
+            count.textContent = `${done}/${total}`;
+            summary.appendChild(count);
+          }
         }
 
         head.appendChild(label);
-        head.appendChild(toggleWrap);
+        head.appendChild(summary);
 
         const itemsBox = document.createElement("div");
         itemsBox.className = "items";
@@ -2714,19 +2797,22 @@
 
         for(const it of visible){
           const status = getItemStatus(it);
+          const statusClass = statusCssClass(status);
           const row = document.createElement("div");
-          row.className = "item" + (status === "done" ? " done" : (status === "hold" ? " hold" : ""));
+          row.className = "item" + (statusClass ? " " + statusClass : "");
           const isEditing = weekEditingItem
             && weekEditingItem.dayIndex === i
             && String(weekEditingItem.id) === String(it.id);
           row.innerHTML = `
             <button class="check" type="button" role="checkbox" aria-checked="${status === "done"}"
-              aria-label="${status === "hold" ? "보류된 일정. 완료로 변경" : "완료 상태 변경"}"
+              aria-label="${statusLabel(status)} 일정. 완료 상태 변경"
               data-id="${it.id}" data-day="${i}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
+              <span class="progressMark" aria-hidden="true">•</span>
               <span class="holdMark" aria-hidden="true">–</span>
+              <span class="carriedMark" aria-hidden="true">→</span>
             </button>
             ${isEditing
               ? `<input class="inlineEdit" data-week-edit-input="${escapeHtml(it.id)}" data-week-edit-day="${i}" value="${escapeHtml(it.text)}" maxlength="80" aria-label="일정 제목 수정" />`
@@ -3530,14 +3616,13 @@
     });
 
     /* ✅ 프리뷰: done / hold 토글 + delete(Undo 3s) */
-    function togglePreviewHold(weekId, dayIndex, itemId){
+    function cyclePreviewStatus(weekId, dayIndex, itemId){
       const data = loadWeekStateById(weekId);
       const day = String(dayIndex);
       const arr = (data.days && data.days[day]) ? data.days[day] : [];
       data.days[day] = arr.map(it => {
         if(String(it.id) !== String(itemId)) return it;
-        const nextStatus = getItemStatus(it) === "hold" ? "todo" : "hold";
-        return applyItemStatus(it, nextStatus);
+        return applyItemStatus(it, nextItemStatus(getItemStatus(it)));
       });
       saveWeekStateById(weekId, data);
       buildWeeks();
@@ -3639,11 +3724,17 @@
         </button>
       `;
 
-      const holdBtnHtml = (weekId, dayIndex, itemId, on) => `
-        <button class="pHold ${on ? "on" : ""}" type="button" title="${on ? "Hold 해제" : "Hold"}"
-          aria-pressed="${on}" data-phold-week="${escapeHtml(weekId)}"
-          data-phold-day="${escapeHtml(dayIndex)}" data-phold-id="${escapeHtml(itemId)}">–</button>
-      `;
+      const statusBtnHtml = (weekId, dayIndex, itemId, status) => {
+        const next = nextItemStatus(status);
+        return `
+          <button class="pStatus" type="button"
+            title="${statusLabel(status)} → ${statusLabel(next)}"
+            aria-label="${statusLabel(status)}. 클릭하면 ${statusLabel(next)}"
+            data-pstatus-week="${escapeHtml(weekId)}"
+            data-pstatus-day="${escapeHtml(dayIndex)}"
+            data-pstatus-id="${escapeHtml(itemId)}">${statusGlyph(status)}</button>
+        `;
+      };
 
       const trashBtnHtml = (weekId, sec, itemId) => `
         <button class="pDel" type="button" title="삭제"
@@ -3676,8 +3767,9 @@
 
         for(const it of view){
           const status = getItemStatus(it);
-          const badgeCls = status === "done" ? "badge done" : (status === "hold" ? "badge hold" : "badge");
-          const badgeText = status === "done" ? "done" : (status === "hold" ? "hold" : "todo");
+          const statusClass = statusCssClass(status);
+          const badgeCls = "badge" + (statusClass ? " " + statusClass : "");
+          const badgeText = statusLabel(status).toLowerCase();
           const textHtml = highlight(it.text || "", q);
           rows.push(`
             <div class="pItem">
@@ -3685,8 +3777,7 @@
               <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}
               </span>
-              ${holdBtnHtml(id, String(i), it.id, status === "hold")}
-              ${togBtnHtml(id, String(i), it.id, it.done)}
+              ${statusBtnHtml(id, String(i), it.id, status)}
               ${trashBtnHtml(id, String(i), it.id)}
             </div>
           `);
@@ -3829,11 +3920,11 @@
       renderWeekPreview(btn.dataset.week);
     });
 
-    // ✅ preview interactions: hold/done toggle + delete(with undo)
+    // ✅ preview interactions: five-state schedule status + inbox done toggle + delete(with undo)
     previewBox.addEventListener("click", (e) => {
-      const hold = e.target.closest("[data-phold-week]");
-      if(hold){
-        togglePreviewHold(hold.dataset.pholdWeek, hold.dataset.pholdDay, hold.dataset.pholdId);
+      const statusBtn = e.target.closest("[data-pstatus-week]");
+      if(statusBtn){
+        cyclePreviewStatus(statusBtn.dataset.pstatusWeek, statusBtn.dataset.pstatusDay, statusBtn.dataset.pstatusId);
         return;
       }
 
