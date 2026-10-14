@@ -644,14 +644,33 @@
     .text{
       flex: 1 1 auto;
       min-width: 0;
+      display:flex;
+      align-items:center;
+      gap:6px;
       line-height: 1.45;
       font-size: 14px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
+    .textLabel{
+      flex:1 1 auto;
+      min-width:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .inlineEdit{
+      flex:1 1 auto;
+      min-width:0;
+      border:1px solid rgba(140,190,232,.58);
+      background:rgba(255,255,255,.72);
+      border-radius:9px;
+      padding:6px 8px;
+      font:inherit;
+      outline:none;
+      box-shadow:0 0 0 3px rgba(165,206,240,0.22);
+    }
+    .editBtn{ font-size:15px; }
 
-    .del{
+    .del, .editBtn{
       flex: 0 0 auto;
       border: none;
       background: transparent;
@@ -663,15 +682,16 @@
       transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .08s ease;
       -webkit-tap-highlight-color: transparent;
     }
-    .del:hover{
+    .del:hover, .editBtn:hover{
       background: rgba(165,206,240,0.12);
       color: rgba(30,30,30,0.78);
       box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
     }
-    .del:active{ transform: scale(0.96); }
-    .del:focus-visible{
+    .del:active, .editBtn:active{ transform: scale(0.96); }
+    .del:focus-visible, .editBtn:focus-visible{
       outline:none;
       background: rgba(165,206,240,0.10);
+      color: rgba(30,30,30,0.78);
       box-shadow: 0 0 0 3px rgba(165,206,240,0.28);
     }
 
@@ -1304,11 +1324,11 @@
       display:inline-block;
       width:5px;
       height:5px;
-      margin-left:6px;
+      margin-left:0;
       border-radius:999px;
       background:rgba(170,205,235,.88);
       vertical-align:middle;
-      flex:0 0 auto;
+      flex:0 0 5px;
     }
     .detailTrigger{ cursor:pointer; }
     .detailTrigger:focus-visible{
@@ -2370,6 +2390,7 @@
     let weekArchive = autoArchivePastWeeks();
     let weekState = loadWeek(getWeekKey());
     let weekDetailContext = null;
+    let weekEditingItem = null;
 
     function persistCurrentWeek(){
       saveWeek(getWeekKey(), weekState);
@@ -2385,6 +2406,35 @@
       const dayKey = String(dayIndex);
       const item = (weekState.days[dayKey] || []).find(it => String(it.id) === String(id));
       return item ? { item, dayIndex:Number(dayIndex), dateStr:dayDateStr(Number(dayIndex)) } : null;
+    }
+    function beginWeekInlineEdit(dayIndex, id){
+      const found = findWeekItem(dayIndex, id);
+      if(!found) return;
+      weekEditingItem = { dayIndex:Number(dayIndex), id:String(id) };
+      renderWeekList();
+    }
+    function cancelWeekInlineEdit(){
+      weekEditingItem = null;
+      renderWeekList();
+    }
+    function saveWeekInlineEdit(dayIndex, id, value){
+      const title = String(value || "").trim();
+      if(!title){
+        showToast("제목은 비워둘 수 없어.");
+        return;
+      }
+      const dayKey = String(dayIndex);
+      const arr = weekState.days[dayKey] || [];
+      const index = arr.findIndex(it => String(it.id) === String(id));
+      if(index < 0) return;
+
+      weekState.days[dayKey] = arr.map((it, i) => i === index
+        ? ({ ...it, text:title, updated_at:new Date().toISOString() })
+        : it
+      );
+      weekEditingItem = null;
+      persistCurrentWeek();
+      renderWeekList();
     }
     function openWeekDetail(dayIndex, id){
       const found = findWeekItem(dayIndex, id);
@@ -2666,6 +2716,9 @@
           const status = getItemStatus(it);
           const row = document.createElement("div");
           row.className = "item" + (status === "done" ? " done" : (status === "hold" ? " hold" : ""));
+          const isEditing = weekEditingItem
+            && weekEditingItem.dayIndex === i
+            && String(weekEditingItem.id) === String(it.id);
           row.innerHTML = `
             <button class="check" type="button" role="checkbox" aria-checked="${status === "done"}"
               aria-label="${status === "hold" ? "보류된 일정. 완료로 변경" : "완료 상태 변경"}"
@@ -2675,9 +2728,12 @@
               </svg>
               <span class="holdMark" aria-hidden="true">–</span>
             </button>
-            <div class="text detailTrigger" role="button" tabindex="0"
-              data-detail-id="${escapeHtml(it.id)}" data-detail-day="${i}"
-              title="${escapeHtml(it.text)}">${escapeHtml(it.text)}${String(it.details || "").trim() ? '<span class="weekNoteDot" aria-label="메모 있음" title="메모 있음"></span>' : ""}</div>
+            ${isEditing
+              ? `<input class="inlineEdit" data-week-edit-input="${escapeHtml(it.id)}" data-week-edit-day="${i}" value="${escapeHtml(it.text)}" maxlength="80" aria-label="일정 제목 수정" />`
+              : `<div class="text detailTrigger" role="button" tabindex="0"
+                  data-detail-id="${escapeHtml(it.id)}" data-detail-day="${i}"
+                  title="${escapeHtml(it.text)}"><span class="textLabel">${escapeHtml(it.text)}</span>${String(it.details || "").trim() ? '<span class="weekNoteDot" aria-label="메모 있음" title="메모 있음"></span>' : ""}</div>`}
+            <button class="editBtn" type="button" aria-label="제목 수정" data-week-edit="${escapeHtml(it.id)}" data-week-edit-day="${i}">✎</button>
             <button class="del" type="button" aria-label="삭제" data-del="${it.id}" data-day="${i}">✕</button>
           `;
           itemsBox.appendChild(row);
@@ -2699,6 +2755,15 @@
 
       countText.textContent = `${allDone}/${allTotal} done`;
       renderInboxRows();
+
+      if(weekEditingItem){
+        requestAnimationFrame(() => {
+          const input = weekList.querySelector(
+            `[data-week-edit-input="${CSS.escape(String(weekEditingItem.id))}"][data-week-edit-day="${weekEditingItem.dayIndex}"]`
+          );
+          if(input){ input.focus(); input.select(); }
+        });
+      }
     }
 
     function updateHeaderDate(){
@@ -2840,6 +2905,12 @@
         return;
       }
 
+      const edit = e.target.closest("[data-week-edit]");
+      if(edit){
+        beginWeekInlineEdit(Number(edit.dataset.weekEditDay), edit.dataset.weekEdit);
+        return;
+      }
+
       const detail = e.target.closest("[data-detail-id]");
       if(detail){
         openWeekDetail(Number(detail.dataset.detailDay), detail.dataset.detailId);
@@ -2858,6 +2929,22 @@
     });
 
     weekList.addEventListener("keydown", (e) => {
+      const editInput = e.target.closest("[data-week-edit-input]");
+      if(editInput){
+        if(e.key === "Enter"){
+          e.preventDefault();
+          saveWeekInlineEdit(
+            Number(editInput.dataset.weekEditDay),
+            editInput.dataset.weekEditInput,
+            editInput.value
+          );
+        }else if(e.key === "Escape"){
+          e.preventDefault();
+          cancelWeekInlineEdit();
+        }
+        return;
+      }
+
       const detail = e.target.closest("[data-detail-id]");
       if(detail && (e.key === "Enter" || e.key === " ")){
         e.preventDefault();
