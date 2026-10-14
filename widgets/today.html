@@ -334,7 +334,10 @@
       outline:none;
       box-shadow:var(--ring);
     }
-    .editBtn{ font-size:15px; }
+    .editBtn{
+      font-size:15px;
+      transform:scaleX(-1);
+    }
 
     .del, .editBtn{
       flex: 0 0 auto;
@@ -353,7 +356,8 @@
       color: rgba(30,30,30,0.78);
       box-shadow: var(--ring);
     }
-    .del:active, .editBtn:active{ transform: scale(0.96); }
+    .del:active{ transform: scale(0.96); }
+    .editBtn:active{ transform: scaleX(-1) scale(0.96); }
     .del:focus-visible, .editBtn:focus-visible{
       outline: none;
       background: rgba(255,192,203,0.12);
@@ -369,13 +373,25 @@
     }
     .item.done .check svg{ opacity: 1; transform: scale(1); }
 
-    .holdMark{
+    .progressMark,
+    .holdMark,
+    .carriedMark{
       display:none;
       font-size:14px;
       line-height:1;
       color:rgba(30,30,30,0.62);
-      transform:translateY(-1px);
     }
+    .progressMark{ transform:translateY(-1px); font-size:16px; }
+    .holdMark{ transform:translateY(-1px); }
+    .carriedMark{ font-size:13px; }
+
+    .item.in-progress .check{
+      background: rgba(255,192,203,0.06);
+      border-color: rgba(255,170,190,0.66);
+    }
+    .item.in-progress .check .progressMark{ display:block; }
+    .item.in-progress .check svg{ display:none; }
+
     .item.hold{ opacity: 0.90; }
     .item.hold .text{ color: rgba(30,30,30,0.62); }
     .item.hold .check{
@@ -384,7 +400,17 @@
     }
     .item.hold .check .holdMark{ display:block; }
     .item.hold .check svg{ display:none; }
-    .badge.hold{
+
+    .item.carried-over .check{
+      background: rgba(255,192,203,0.06);
+      border-color: rgba(255,170,190,0.66);
+    }
+    .item.carried-over .check .carriedMark{ display:block; }
+    .item.carried-over .check svg{ display:none; }
+
+    .badge.in-progress,
+    .badge.hold,
+    .badge.carried-over{
       border-color: rgba(255,170,190,0.34);
       background: rgba(255,255,255,0.30);
       color: rgba(30,30,30,0.56);
@@ -1216,7 +1242,9 @@
         <span>Status</span>
         <select class="detailInput" id="detailStatus">
           <option value="todo">Todo</option>
+          <option value="in_progress">In Progress</option>
           <option value="hold">On Hold</option>
+          <option value="carried_over">Carried Over</option>
           <option value="done">Done</option>
         </select>
       </label>
@@ -1384,7 +1412,7 @@
       }
 
       function normalizeItemStatus(status, done = false){
-        if(status === "done" || status === "hold") return status;
+        if(["todo","in_progress","hold","carried_over","done"].includes(status)) return status;
         return done ? "done" : "todo";
       }
       function getItemStatus(item){
@@ -1394,11 +1422,30 @@
         const normalized = normalizeItemStatus(status, false);
         return { ...item, status: normalized, done: normalized === "done" };
       }
+      function statusCssClass(status){
+        if(status === "in_progress") return "in-progress";
+        if(status === "carried_over") return "carried-over";
+        return status === "todo" ? "" : status;
+      }
+      function statusLabel(status){
+        if(status === "in_progress") return "In Progress";
+        if(status === "hold") return "On Hold";
+        if(status === "carried_over") return "Carried Over";
+        if(status === "done") return "Done";
+        return "Todo";
+      }
+      function statusCopyMark(status){
+        if(status === "in_progress") return "•";
+        if(status === "hold") return "-";
+        if(status === "carried_over") return "→";
+        if(status === "done") return "x";
+        return " ";
+      }
       function nextArchiveStatus(status){
+        const order = ["todo","in_progress","hold","carried_over","done"];
         const current = normalizeItemStatus(status, false);
-        if(current === "todo") return "hold";
-        if(current === "hold") return "done";
-        return "todo";
+        const index = order.indexOf(current);
+        return order[(index + 1) % order.length];
       }
 
       function dayRangeIso(dateStr){
@@ -1413,8 +1460,7 @@
         const lines = [`[Today | ${dateStr}]`];
         for(const it of items){
           const status = getItemStatus(it);
-          const mark = status === "done" ? "x" : (status === "hold" ? "-" : " ");
-          lines.push(`- [${mark}] ${it.text}`);
+          lines.push(`- [${statusCopyMark(status)}] ${it.text}`);
         }
         return lines.join("\n");
       }
@@ -1698,16 +1744,19 @@
 
         for(const it of state){
           const status = getItemStatus(it);
+          const statusClass = statusCssClass(status);
           const li = document.createElement("li");
-          li.className = "item" + (status === "done" ? " done" : (status === "hold" ? " hold" : ""));
+          li.className = "item" + (statusClass ? " " + statusClass : "");
           li.dataset.itemId = it.id;
           li.innerHTML = `
             <button class="dragHandle" type="button" draggable="true" aria-label="순서 변경" data-drag-id="${escapeHtml(it.id)}">⠿</button>
-            <div class="check" role="checkbox" aria-checked="${status === "done"}" aria-label="${status === "hold" ? "보류된 일정. 완료로 변경" : "완료 상태 변경"}" tabindex="0" data-id="${it.id}">
+            <div class="check" role="checkbox" aria-checked="${status === "done"}" aria-label="${statusLabel(status)} 일정. 완료 상태 변경" tabindex="0" data-id="${it.id}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
+              <span class="progressMark" aria-hidden="true">•</span>
               <span class="holdMark" aria-hidden="true">–</span>
+              <span class="carriedMark" aria-hidden="true">→</span>
             </div>
             ${editingId === it.id
               ? `<input class="inlineEdit" data-edit-input="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="80" aria-label="일정 제목 수정" />`
@@ -2014,7 +2063,7 @@
           if(!tx) continue;
           if(existing.has(tx)) continue;
 
-          const carriedStatus = getItemStatus(it) === "hold" ? "hold" : "todo";
+          const carriedStatus = getItemStatus(it);
           toAdd.push({
             id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()),
             text: tx,
@@ -2206,16 +2255,18 @@
 
         const rows = view.map(it => {
           const status = getItemStatus(it);
-          const badgeCls = status === "done" ? "badge done" : (status === "hold" ? "badge hold" : "badge");
-          const badgeText = status === "done" ? "done" : (status === "hold" ? "hold" : "todo");
+          const statusClass = statusCssClass(status);
+          const badgeCls = "badge" + (statusClass ? " " + statusClass : "");
+          const badgeText = statusLabel(status).toLowerCase();
+          const nextStatus = nextArchiveStatus(status);
           const textHtml = highlight(it.text || "", q);
           const toggleKey = `${dateStr}::${it.id}`;
           const isPending = pendingArchiveToggles.has(toggleKey);
           return `
             <div class="pItem">
               <button class="${badgeCls}" type="button" data-preview-toggle="${escapeHtml(it.id)}"
-                title="클릭: ${status === "todo" ? "On Hold" : (status === "hold" ? "Done" : "Todo")}로 변경"
-                aria-label="${escapeHtml(it.text || "할 일")} 상태를 ${status === "todo" ? "On Hold" : (status === "hold" ? "Done" : "Todo")}로 변경"
+                title="클릭: ${statusLabel(nextStatus)}로 변경"
+                aria-label="${escapeHtml(it.text || "할 일")} 상태를 ${statusLabel(nextStatus)}로 변경"
                 aria-pressed="${status === "done"}" ${isPending ? "disabled" : ""}>${badgeText}</button>
               <span class="archiveText" role="button" tabindex="0" data-archive-detail="${escapeHtml(it.id)}"
                 style="cursor:pointer; ${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
