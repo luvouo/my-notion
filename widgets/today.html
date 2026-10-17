@@ -781,6 +781,7 @@
       text-overflow: ellipsis;
       min-width: 0;
       flex: 1 1 auto;
+      padding-left:8px;
     }
 
     .previewTop > div:last-child{
@@ -1051,6 +1052,17 @@
     }
     textarea.detailInput{ min-height:110px; resize:vertical; line-height:1.45; }
     .detailInput:focus{ box-shadow:var(--ring); border-color:rgba(255,170,190,.72); }
+    #detailStatus{
+      appearance:none;
+      -webkit-appearance:none;
+      padding-right:36px;
+      font:13px ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%23656565' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:right 12px center;
+      background-size:12px 12px;
+    }
     .detailActions{ display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
     .detailActions .moveTomorrow{ margin-right:auto; }
 
@@ -1156,7 +1168,7 @@
       transition:color .16s ease;
     }
     .item:hover .textLabel{
-      color:rgba(170,95,115,.88);
+      color:#fcb3c4;
     }
 
     /* Undo toast typography */
