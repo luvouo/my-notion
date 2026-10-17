@@ -1140,6 +1140,31 @@
       }
     }
 
+
+    /* ===== Archive/detail typography + subtle row hover ===== */
+    #clearSearchBtn,
+    #closeModalBtn,
+    .dateBtn,
+    .dateBtn small,
+    .picked,
+    .badge,
+    .detailField > span{
+      font-family:var(--font-display);
+    }
+
+    .item .textLabel{
+      transition:color .16s ease;
+    }
+    .item:hover .textLabel{
+      color:rgba(170,95,115,.88);
+    }
+
+    /* Undo toast typography */
+    .toast,
+    .toastUndo{
+      font-family:var(--font-display);
+    }
+
   </style>
 </head>
 
