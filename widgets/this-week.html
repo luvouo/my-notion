@@ -1511,6 +1511,55 @@
       .weekdays { flex-basis: 100%; }
     }
 
+
+    /* ===== Compact schedules + inbox edit/check polish ===== */
+    .items{
+      margin-top:4px;
+      gap:0;
+    }
+    .item{
+      gap:6px;
+      padding:3px 2px;
+    }
+    .item .text{
+      font-size:12px;
+    }
+    .item .editBtn,
+    .item .del{
+      padding:4px 4px;
+    }
+
+    .thisInboxItem.done .check,
+    .popItem.done .check{
+      background:rgba(165,206,240,0.18);
+      border-color:rgba(140,190,232,1);
+    }
+    .thisInboxItem.done .check svg,
+    .popItem.done .check svg{
+      opacity:1;
+      transform:scale(1);
+    }
+
+    .inboxInlineEdit{
+      flex:1 1 auto;
+      min-width:0;
+      border:1px solid rgba(140,190,232,.58);
+      background:rgba(255,255,255,.74);
+      border-radius:9px;
+      padding:5px 7px;
+      font:12px ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      outline:none;
+      box-shadow:0 0 0 3px rgba(165,206,240,.18);
+    }
+
+    .badge,
+    .mToastMsg,
+    .mUndoBtn{
+      font-family:"EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+
   </style>
 </head>
 
@@ -2476,6 +2525,7 @@
     let weekState = loadWeek(getWeekKey());
     let weekDetailContext = null;
     let weekEditingItem = null;
+    let inboxEditingItem = null;
 
     function persistCurrentWeek(){
       saveWeek(getWeekKey(), weekState);
@@ -2685,6 +2735,40 @@
       return key === "thisInbox" ? "This Week Inbox" : "Next Week Inbox";
     }
 
+    function beginInboxInlineEdit(key, id){
+      const arr = weekState[key] || [];
+      if(!arr.some(it => String(it.id) === String(id))) return;
+      inboxEditingItem = { key, id:String(id) };
+      renderInboxRows();
+      if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
+    }
+
+    function cancelInboxInlineEdit(){
+      const key = inboxEditingItem && inboxEditingItem.key;
+      inboxEditingItem = null;
+      renderInboxRows();
+      if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
+    }
+
+    function saveInboxInlineEdit(key, id, value){
+      const title = String(value || "").trim();
+      if(!title){
+        showToast("제목은 비워둘 수 없어.");
+        return;
+      }
+      const arr = weekState[key] || [];
+      const index = arr.findIndex(it => String(it.id) === String(id));
+      if(index < 0) return;
+      weekState[key] = arr.map((it, i) => i === index
+        ? ({ ...it, text:title })
+        : it
+      );
+      inboxEditingItem = null;
+      persistCurrentWeek();
+      renderInboxRows();
+      if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
+    }
+
     function renderThisInboxList(){
       const arr = weekState.thisInbox || [];
       thisInboxList.classList.toggle("collapsed", thisInboxCollapsed);
@@ -2701,6 +2785,9 @@
       for(const it of arr){
         const row = document.createElement("div");
         row.className = "thisInboxItem" + (it.done ? " done" : "");
+        const isEditing = inboxEditingItem
+          && inboxEditingItem.key === "thisInbox"
+          && String(inboxEditingItem.id) === String(it.id);
         row.innerHTML = `
           <button class="check" type="button" role="checkbox" aria-checked="${it.done}"
             data-this-inbox-id="${escapeHtml(it.id)}">
@@ -2708,10 +2795,22 @@
               <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
-          <div class="thisInboxText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+          ${isEditing
+            ? `<input class="inboxInlineEdit" data-inbox-edit-input="thisInbox" data-inbox-edit-id="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="120" aria-label="Inbox 제목 수정" />`
+            : `<div class="thisInboxText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>`}
+          <button class="editBtn" type="button" aria-label="제목 수정" data-inbox-edit-key="thisInbox" data-inbox-edit-id="${escapeHtml(it.id)}">✎</button>
           <button class="del" type="button" aria-label="삭제" data-this-inbox-del="${escapeHtml(it.id)}">✕</button>
         `;
         thisInboxList.appendChild(row);
+      }
+
+      if(inboxEditingItem && inboxEditingItem.key === "thisInbox"){
+        requestAnimationFrame(() => {
+          const input = thisInboxList.querySelector(
+            `[data-inbox-edit-input="thisInbox"][data-inbox-edit-id="${CSS.escape(String(inboxEditingItem.id))}"]`
+          );
+          if(input){ input.focus(); input.select(); }
+        });
       }
     }
 
@@ -2734,16 +2833,31 @@
       for(const it of arr){
         const row = document.createElement("div");
         row.className = "popItem" + (it.done ? " done" : "");
+        const isEditing = inboxEditingItem
+          && inboxEditingItem.key === "nextInbox"
+          && String(inboxEditingItem.id) === String(it.id);
         row.innerHTML = `
           <button class="check" type="button" role="checkbox" aria-checked="${it.done}" data-nx-id="${escapeHtml(it.id)}">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
-          <div class="popText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>
+          ${isEditing
+            ? `<input class="inboxInlineEdit" data-inbox-edit-input="nextInbox" data-inbox-edit-id="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="120" aria-label="Inbox 제목 수정" />`
+            : `<div class="popText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>`}
+          <button class="editBtn" type="button" aria-label="제목 수정" data-inbox-edit-key="nextInbox" data-inbox-edit-id="${escapeHtml(it.id)}">✎</button>
           <button class="del" type="button" aria-label="삭제" data-nx-del="${escapeHtml(it.id)}">✕</button>
         `;
         nextPopList.appendChild(row);
+      }
+
+      if(inboxEditingItem && inboxEditingItem.key === "nextInbox"){
+        requestAnimationFrame(() => {
+          const input = nextPopList.querySelector(
+            `[data-inbox-edit-input="nextInbox"][data-inbox-edit-id="${CSS.escape(String(inboxEditingItem.id))}"]`
+          );
+          if(input){ input.focus(); input.select(); }
+        });
       }
     }
 
@@ -2777,26 +2891,20 @@
         summary.className = "daySummary";
 
         if(total > 0){
-          if(total >= 2){
-            const isOpen = expanded.get(i) === true;
-            const tBtn = document.createElement("button");
-            tBtn.type = "button";
-            tBtn.className = "dayToggle" + (isOpen ? " open" : "");
-            tBtn.dataset.toggle = "1";
-            tBtn.setAttribute("aria-label", isOpen ? "일정 접기" : "일정 펼치기");
-            tBtn.setAttribute("aria-expanded", String(isOpen));
-            tBtn.innerHTML = `
-              <span>${done}/${total}</span>
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            `;
-            summary.appendChild(tBtn);
-          }else{
-            const count = document.createElement("span");
-            count.textContent = `${done}/${total}`;
-            summary.appendChild(count);
-          }
+          const isOpen = expanded.get(i) === true;
+          const tBtn = document.createElement("button");
+          tBtn.type = "button";
+          tBtn.className = "dayToggle" + (isOpen ? " open" : "");
+          tBtn.dataset.toggle = "1";
+          tBtn.setAttribute("aria-label", isOpen ? "일정 접기" : "일정 펼치기");
+          tBtn.setAttribute("aria-expanded", String(isOpen));
+          tBtn.innerHTML = `
+            <span>${done}/${total}</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          `;
+          summary.appendChild(tBtn);
         }
 
         head.appendChild(label);
@@ -2808,8 +2916,7 @@
         const list = weekState.days[String(i)] || [];
         const isOpen = expanded.get(i) === true;
 
-        let visible = list;
-        if(total >= 2 && !isOpen) visible = list.slice(0, 1);
+        const visible = isOpen ? list : [];
 
         for(const it of visible){
           const status = getItemStatus(it);
@@ -3163,14 +3270,31 @@
     });
 
     thisInboxList.addEventListener("click", (e) => {
+      const edit = e.target.closest("[data-inbox-edit-key]");
       const check = e.target.closest("[data-this-inbox-id]");
       const del = e.target.closest("[data-this-inbox-del]");
+      if(edit){
+        beginInboxInlineEdit(edit.dataset.inboxEditKey, edit.dataset.inboxEditId);
+        return;
+      }
       if(check){
         toggleInboxForKey("thisInbox", check.dataset.thisInboxId);
         return;
       }
       if(del){
         deleteInboxForKey("thisInbox", del.dataset.thisInboxDel);
+      }
+    });
+
+    thisInboxList.addEventListener("keydown", (e) => {
+      const input = e.target.closest("[data-inbox-edit-input]");
+      if(!input) return;
+      if(e.key === "Enter"){
+        e.preventDefault();
+        saveInboxInlineEdit(input.dataset.inboxEditInput, input.dataset.inboxEditId, input.value);
+      }else if(e.key === "Escape"){
+        e.preventDefault();
+        cancelInboxInlineEdit();
       }
     });
 
@@ -3188,8 +3312,13 @@
     nextPopCloseBtn.addEventListener("click", closeNextPopover);
 
     nextPopList.addEventListener("click", (e) => {
+      const edit = e.target.closest("[data-inbox-edit-key]");
       const check = e.target.closest("[data-nx-id]");
       const del = e.target.closest("[data-nx-del]");
+      if(edit){
+        beginInboxInlineEdit(edit.dataset.inboxEditKey, edit.dataset.inboxEditId);
+        return;
+      }
       if(check){
         toggleInbox(check.dataset.nxId);
         return;
@@ -3197,6 +3326,18 @@
       if(del){
         deleteInbox(del.dataset.nxDel);
         return;
+      }
+    });
+
+    nextPopList.addEventListener("keydown", (e) => {
+      const input = e.target.closest("[data-inbox-edit-input]");
+      if(!input) return;
+      if(e.key === "Enter"){
+        e.preventDefault();
+        saveInboxInlineEdit(input.dataset.inboxEditInput, input.dataset.inboxEditId, input.value);
+      }else if(e.key === "Escape"){
+        e.preventDefault();
+        cancelInboxInlineEdit();
       }
     });
 
