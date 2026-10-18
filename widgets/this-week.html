@@ -1560,6 +1560,23 @@
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
 
+
+    /* ===== Five-state This Week Inbox ===== */
+    .thisInboxItem.in-progress .check,
+    .thisInboxItem.hold .check,
+    .thisInboxItem.carried-over .check{
+      background:rgba(165,206,240,0.06);
+      border-color:rgba(140,190,232,0.72);
+    }
+    .thisInboxItem.in-progress .check svg,
+    .thisInboxItem.hold .check svg,
+    .thisInboxItem.carried-over .check svg{
+      display:none;
+    }
+    .thisInboxItem.in-progress .progressMark{ display:block; }
+    .thisInboxItem.hold .holdMark{ display:block; }
+    .thisInboxItem.carried-over .carriedMark{ display:block; }
+
   </style>
 </head>
 
@@ -2006,6 +2023,11 @@
       if(status === "carried_over") return "→";
       return status === "done" ? "x" : " ";
     }
+    function getInboxStatus(item, bucket){
+      return bucket === "this_week"
+        ? getItemStatus(item)
+        : (item && item.done ? "done" : "todo");
+    }
     function emptyWeekState(){
       const days = {};
       for(let i=0;i<7;i++) days[String(i)] = [];
@@ -2101,7 +2123,7 @@
         week_start: range.startStr.replaceAll(".", "-"),
         bucket,
         title: (item.text || "").trim(),
-        status: item.done ? "done" : "todo",
+        status: getInboxStatus(item, bucket),
         deleted: false,
         updated_at: updatedAt
       };
@@ -2166,7 +2188,15 @@
         updated_at:row.updated_at ?? null
       };
     }
-    function remoteInboxToLocal(row){ return { id:String(row.id), text:row.title || "", done:row.status === "done" }; }
+    function remoteInboxToLocal(row){
+      const status = normalizeItemStatus(row.status, false);
+      return {
+        id:String(row.id),
+        text:row.title || "",
+        status,
+        done:status === "done"
+      };
+    }
     function chooseMergedItem(localItem, remoteRow, kind){
       if(!localItem) return remoteRow.deleted ? null : (kind === "item" ? remoteItemToLocal(remoteRow) : remoteInboxToLocal(remoteRow));
       const localAt = getLocalUpdatedAt(kind, localItem.id);
@@ -2313,8 +2343,12 @@
       for(const [id, entry] of currentInboxes){
         const old = previousInboxes.get(id);
         const remote = remoteInboxes.get(id);
-        const localChanged = !old || old.bucket !== entry.bucket || old.item.text !== entry.item.text || !!old.item.done !== !!entry.item.done;
-        const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.bucket !== entry.bucket || remote.title !== entry.item.text || (remote.status === "done") !== !!entry.item.done);
+        const localStatus = getInboxStatus(entry.item, entry.bucket);
+        const oldStatus = old ? getInboxStatus(old.item, old.bucket) : null;
+        const remoteStatus = remote ? normalizeItemStatus(remote.status, false) : null;
+        const expectedRemoteStatus = entry.bucket === "this_week" ? localStatus : (entry.item.done ? "done" : "todo");
+        const localChanged = !old || old.bucket !== entry.bucket || old.item.text !== entry.item.text || oldStatus !== localStatus;
+        const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.bucket !== entry.bucket || remote.title !== entry.item.text || remoteStatus !== expectedRemoteStatus);
         if(localChanged || remoteDiffers){
           const updatedAt = localChanged ? now : getLocalUpdatedAt("inbox", entry.item.id);
           setLocalUpdatedAt("inbox", entry.item.id, updatedAt);
@@ -2783,17 +2817,23 @@
       }
 
       for(const it of arr){
+        const status = getItemStatus(it);
+        const statusClass = statusCssClass(status);
         const row = document.createElement("div");
-        row.className = "thisInboxItem" + (it.done ? " done" : "");
+        row.className = "thisInboxItem" + (statusClass ? " " + statusClass : "");
         const isEditing = inboxEditingItem
           && inboxEditingItem.key === "thisInbox"
           && String(inboxEditingItem.id) === String(it.id);
         row.innerHTML = `
-          <button class="check" type="button" role="checkbox" aria-checked="${it.done}"
+          <button class="check" type="button" role="checkbox" aria-checked="${status === "done"}"
+            aria-label="${statusLabel(status)}. 클릭하면 ${statusLabel(nextItemStatus(status))}"
             data-this-inbox-id="${escapeHtml(it.id)}">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
+            <span class="progressMark" aria-hidden="true">•</span>
+            <span class="holdMark" aria-hidden="true">–</span>
+            <span class="carriedMark" aria-hidden="true">→</span>
           </button>
           ${isEditing
             ? `<input class="inboxInlineEdit" data-inbox-edit-input="thisInbox" data-inbox-edit-id="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="120" aria-label="Inbox 제목 수정" />`
@@ -3053,6 +3093,7 @@
       arr.unshift({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
+        ...(activeInboxKey === "thisInbox" ? { status:"todo" } : {}),
         done: false
       });
       persistCurrentWeek();
@@ -3063,7 +3104,13 @@
 
     function toggleInboxForKey(key, id){
       const arr = weekState[key] || [];
-      weekState[key] = arr.map(it => String(it.id) === String(id) ? ({ ...it, done: !it.done }) : it);
+      weekState[key] = arr.map(it => {
+        if(String(it.id) !== String(id)) return it;
+        if(key === "thisInbox"){
+          return applyItemStatus(it, nextItemStatus(getItemStatus(it)));
+        }
+        return { ...it, done: !it.done };
+      });
       persistCurrentWeek();
       renderInboxRows();
       if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
@@ -3775,12 +3822,19 @@
     /* ✅ 프리뷰: done / hold 토글 + delete(Undo 3s) */
     function cyclePreviewStatus(weekId, dayIndex, itemId){
       const data = loadWeekStateById(weekId);
-      const day = String(dayIndex);
-      const arr = (data.days && data.days[day]) ? data.days[day] : [];
-      data.days[day] = arr.map(it => {
-        if(String(it.id) !== String(itemId)) return it;
-        return applyItemStatus(it, nextItemStatus(getItemStatus(it)));
-      });
+      if(String(dayIndex) === "tx"){
+        data.thisInbox = (data.thisInbox || []).map(it => {
+          if(String(it.id) !== String(itemId)) return it;
+          return applyItemStatus(it, nextItemStatus(getItemStatus(it)));
+        });
+      }else{
+        const day = String(dayIndex);
+        const arr = (data.days && data.days[day]) ? data.days[day] : [];
+        data.days[day] = arr.map(it => {
+          if(String(it.id) !== String(itemId)) return it;
+          return applyItemStatus(it, nextItemStatus(getItemStatus(it)));
+        });
+      }
       saveWeekStateById(weekId, data);
       buildWeeks();
       renderWeekPreview(weekId);
@@ -3949,8 +4003,9 @@
         const viewTx = q ? tx.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase())) : tx;
         for(const it of viewTx){
           const status = getItemStatus(it);
-          const badgeCls = status === "done" ? "badge done" : (status === "hold" ? "badge hold" : "badge");
-          const badgeText = status === "done" ? "done" : (status === "hold" ? "hold" : "todo");
+          const statusClass = statusCssClass(status);
+          const badgeCls = "badge" + (statusClass ? " " + statusClass : "");
+          const badgeText = statusLabel(status).toLowerCase();
           const textHtml = highlight(it.text || "", q);
           rows.push(`
             <div class="pItem">
@@ -3958,7 +4013,7 @@
               <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}
               </span>
-              ${togBtnHtml(id, "tx", it.id, it.done)}
+              ${statusBtnHtml(id, "tx", it.id, status)}
               ${trashBtnHtml(id, "tx", it.id)}
             </div>
           `);
