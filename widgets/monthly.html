@@ -208,15 +208,67 @@
       border-radius: 14px;
       background: rgba(255,255,255,.08);
     }
+    .monthNoteHead{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
     .monthNoteTitle{
       color: rgba(54,46,65,.66);
       font: 12px var(--display);
     }
+    .todoStrikeBtn{
+      width: 28px;
+      height: 26px;
+      padding: 0;
+      border: 1px solid var(--border-soft);
+      border-radius: 9px;
+      color: rgba(67,58,78,.62);
+      background: rgba(255,255,255,.16);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .todoStrikeBtn:hover{
+      border-color: rgba(174,156,214,.62);
+      color: rgba(126,99,181,.88);
+      box-shadow: 0 0 0 3px rgba(194,181,226,.14);
+    }
+    .todoStrikeBtn span{ text-decoration: line-through; }
     .monthNoteInput{
       min-height: 74px;
       resize: vertical;
       line-height: 1.45;
       background: rgba(255,255,255,.14);
+    }
+    .monthTodoEditor{
+      width: 100%;
+      min-height: 74px;
+      max-height: 240px;
+      overflow-y: auto;
+      border: 1px solid var(--border-soft);
+      border-radius: 11px;
+      outline: 0;
+      color: var(--text);
+      padding: 9px 10px;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .monthTodoEditor:focus{
+      border-color: rgba(174,156,214,.78);
+      box-shadow: 0 0 0 3px rgba(194,181,226,.20);
+    }
+    .monthTodoEditor:empty::before{
+      content: attr(data-placeholder);
+      color: rgba(30,28,34,.28);
+      pointer-events: none;
+    }
+    .fieldHint{
+      margin-top: -1px;
+      color: rgba(30,28,34,.34);
+      font-size: 10px;
+      line-height: 1.25;
     }
 
     .monthPicker{
@@ -391,8 +443,14 @@
 
         <section class="monthNotes" aria-label="이번 달 계획">
           <div class="monthNoteCard">
-            <div class="monthNoteTitle">To do</div>
-            <textarea class="monthNoteInput" id="monthTodo" maxlength="1200" placeholder="이번 달 해야 할 일을 적어보세요."></textarea>
+            <div class="monthNoteHead">
+              <div class="monthNoteTitle">To do</div>
+              <button class="todoStrikeBtn" id="todoStrike" type="button" aria-label="선택한 텍스트에 취소선 적용">
+                <span>S</span>
+              </button>
+            </div>
+            <div class="monthNoteInput monthTodoEditor" id="monthTodo" contenteditable="true" role="textbox"
+              aria-multiline="true" spellcheck="true" data-placeholder="이번 달 해야 할 일을 적어보세요."></div>
           </div>
           <div class="monthNoteCard">
             <div class="monthNoteTitle">Goal</div>
@@ -426,7 +484,8 @@
           <form class="form" id="eventForm">
             <div class="field">
               <label for="eventTime">Time</label>
-              <input id="eventTime" type="time" />
+              <input id="eventTime" type="text" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="HH:MM" />
+              <div class="fieldHint">24-hour · 00:00–23:59</div>
             </div>
             <div class="field">
               <label for="eventTitle">Title</label>
@@ -442,6 +501,7 @@
                 <button class="colorSwatch" type="button" data-color="peach" style="--swatch: #ffebeb" aria-label="Peach" aria-pressed="false"></button>
                 <button class="colorSwatch" type="button" data-color="yellow" style="--swatch: #fef8e5" aria-label="yellow" aria-pressed="false"></button>
                 <button class="colorSwatch" type="button" data-color="gray" style="--swatch: #e6e6e6" aria-label="Gray" aria-pressed="false"></button>
+                <button class="colorSwatch" type="button" data-color="white" style="--swatch: #f7f7f7" aria-label="White" aria-pressed="false"></button>
               </div>
             </div>
             <div class="field full">
@@ -538,7 +598,8 @@
         mint: { accent: "rgba(102,183,156,.82)", text: "rgba(62,135,111,.86)", tint: "#e8fdec" },
         peach: { accent: "rgba(218,151,151,.82)", text: "rgba(161,92,92,.86)", tint: "#ffebeb" },
         yellow: { accent: "rgba(242, 229, 184,.82)", text: "rgba(219, 203, 145, 0.96)", tint: "#fdf8e6" },
-        gray: { accent: "rgba(166,166,166,.82)", text: "rgba(93,93,93,.86)", tint: "#eeeeee" }
+        gray: { accent: "rgba(166,166,166,.82)", text: "rgba(93,93,93,.86)", tint: "#eeeeee" },
+        white: { accent: "#f7f7f7", text: "rgba(112,112,112,.82)", tint: "#fcfcfc" }
       };
       const MONTH_NAMES = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
       const today = startOfDay(new Date());
@@ -571,6 +632,7 @@
       const deleteButton = document.getElementById("deleteEvent");
       const monthTodoInput = document.getElementById("monthTodo");
       const monthGoalInput = document.getElementById("monthGoal");
+      const todoStrikeButton = document.getElementById("todoStrike");
       const toast = document.getElementById("toast");
 
       document.getElementById("prevMonth").addEventListener("click", () => moveMonth(-1));
@@ -608,6 +670,18 @@
           persist();
         });
       });
+      todoStrikeButton.addEventListener("pointerdown", event => event.preventDefault());
+      todoStrikeButton.addEventListener("click", () => {
+        monthTodoInput.focus();
+        document.execCommand("strikeThrough", false, null);
+        updateMonthNoteDraft();
+        persist();
+      });
+      timeInput.addEventListener("input", () => timeInput.setCustomValidity(""));
+      timeInput.addEventListener("blur", () => {
+        const normalized = normalizeTime24(timeInput.value);
+        if (normalized !== null) timeInput.value = normalized;
+      });
       eventOverlay.addEventListener("click", event => {
         if (event.target === eventOverlay) closeEventModal();
       });
@@ -618,6 +692,55 @@
         else closeMonthPicker();
       });
 
+      function sanitizeTodoHtml(html){
+        const template = document.createElement("template");
+        template.innerHTML = String(html || "");
+        const cleanNode = node => {
+          if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.nodeValue || "");
+          if (node.nodeType !== Node.ELEMENT_NODE) return document.createDocumentFragment();
+          const tag = node.tagName.toUpperCase();
+          let output;
+          if (tag === "S" || tag === "STRIKE") {
+            output = document.createElement("s");
+          } else if (tag === "BR") {
+            return document.createElement("br");
+          } else if (tag === "DIV") {
+            output = document.createElement("div");
+          } else if (tag === "SPAN" && /line-through/i.test(node.style.textDecoration || node.style.textDecorationLine || "")) {
+            output = document.createElement("s");
+          } else {
+            output = document.createDocumentFragment();
+          }
+          [...node.childNodes].forEach(child => output.append(cleanNode(child)));
+          return output;
+        };
+        const fragment = document.createDocumentFragment();
+        [...template.content.childNodes].forEach(node => fragment.append(cleanNode(node)));
+        const wrapper = document.createElement("div");
+        wrapper.append(fragment);
+        return wrapper.innerHTML;
+      }
+      function normalizeTime24(value){
+        const raw = String(value || "").trim();
+        if (!raw) return "";
+        let hour;
+        let minute;
+        let match = raw.match(/^(\d{1,2}):(\d{1,2})$/);
+        if (match) {
+          hour = Number(match[1]);
+          minute = Number(match[2]);
+        } else if (/^\d{3,4}$/.test(raw)) {
+          hour = Number(raw.slice(0, -2));
+          minute = Number(raw.slice(-2));
+        } else if (/^\d{1,2}$/.test(raw)) {
+          hour = Number(raw);
+          minute = 0;
+        } else {
+          return null;
+        }
+        if (!Number.isInteger(hour) || !Number.isInteger(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+        return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+      }
       function startOfDay(date){ return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
       function toDateKey(date){
         const year = date.getFullYear();
@@ -842,12 +965,18 @@
       }
       function renderMonthNotes(){
         const note = monthNotes[monthKey()] || {};
-        monthTodoInput.value = typeof note.todo === "string" ? note.todo : "";
+        if (typeof note.todoHtml === "string") {
+          monthTodoInput.innerHTML = sanitizeTodoHtml(note.todoHtml);
+        } else {
+          monthTodoInput.textContent = typeof note.todo === "string" ? note.todo : "";
+        }
         monthGoalInput.value = typeof note.goal === "string" ? note.goal : "";
       }
       function updateMonthNoteDraft(){
+        const plainTodo = (monthTodoInput.innerText || "").slice(0, 1200);
         monthNotes[monthKey()] = {
-          todo: monthTodoInput.value.slice(0, 1200),
+          todo: plainTodo,
+          todoHtml: sanitizeTodoHtml(monthTodoInput.innerHTML),
           goal: monthGoalInput.value.slice(0, 1200)
         };
       }
@@ -992,7 +1121,16 @@
         event.preventDefault();
         const title = titleInput.value.trim();
         if (!title) { titleInput.focus(); return; }
-        const values = { date: selectedDate, title, time: timeInput.value, memo: memoInput.value.trim(), color: selectedColor };
+        const normalizedTime = normalizeTime24(timeInput.value);
+        if (normalizedTime === null) {
+          timeInput.setCustomValidity("시간은 00:00부터 23:59까지의 24시간 형식으로 입력해 주세요.");
+          timeInput.reportValidity();
+          timeInput.focus();
+          return;
+        }
+        timeInput.setCustomValidity("");
+        timeInput.value = normalizedTime;
+        const values = { date: selectedDate, title, time: normalizedTime, memo: memoInput.value.trim(), color: selectedColor };
         if (editingId) {
           events = events.map(item => item.id === editingId ? { ...item, ...values } : item);
           showToast(`“${title}” 일정을 수정했어요.`);
