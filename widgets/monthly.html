@@ -104,7 +104,13 @@
     .btn:active, .iconBtn:active{ transform: scale(.97); }
     .btn{ min-height: 34px; padding: 7px 12px; border-radius: 12px; font: 12px var(--display); }
     .btn.primary{ background: rgba(210,198,237,.42); }
-    .btn.danger{ border-color: rgba(210,150,164,.46); color: rgba(135,65,82,.78); }
+    .btn.danger{ border-color:#ffe0e9; color:#ffe0e9; background:rgba(255,224,233,.08); }
+    .btn.danger:hover{
+      border-color:#ffc8d8;
+      color:#ffe0e9;
+      text-shadow:0 0 7px rgba(255,192,210,.42);
+      box-shadow:0 0 0 3px rgba(255,224,233,.34);
+    }
     .iconBtn{
       display: inline-grid;
       place-items: center;
@@ -330,7 +336,7 @@
     .modalDate{ color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 
     .form{ display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 9px; }
-    .field{ display: grid; gap: 5px; }
+    .field{ display: grid; gap: 5px; align-content: start; }
     .field.full{ grid-column: 1 / -1; }
     .colorPicker{ display: flex; align-items: center; gap: 8px; min-height: 32px; }
     .colorSwatch{
@@ -495,9 +501,9 @@
               <label id="colorLabel">Color</label>
               <div class="colorPicker" id="colorPicker" role="group" aria-labelledby="colorLabel">
                 <button class="colorSwatch" type="button" data-color="lavender" style="--swatch: #ddd0f7" aria-label="Lavender" aria-pressed="true"></button>
-                <button class="colorSwatch" type="button" data-color="pink" style="--swatch: #ffc8d8" aria-label="Baby pink" aria-pressed="false"></button>
+                <button class="colorSwatch" type="button" data-color="pink" style="--swatch: #ffdbf8" aria-label="Baby pink" aria-pressed="false"></button>
                 <button class="colorSwatch" type="button" data-color="sky" style="--swatch: #c5e2ff" aria-label="Sky blue" aria-pressed="false"></button>
-                <button class="colorSwatch" type="button" data-color="mint" style="--swatch: #a0e4cd" aria-label="Mint blue" aria-pressed="false"></button>
+                <button class="colorSwatch" type="button" data-color="mint" style="--swatch: #e8fdec" aria-label="Mint blue" aria-pressed="false"></button>
                 <button class="colorSwatch" type="button" data-color="peach" style="--swatch: #ffebeb" aria-label="Peach" aria-pressed="false"></button>
                 <button class="colorSwatch" type="button" data-color="yellow" style="--swatch: #fef8e5" aria-label="yellow" aria-pressed="false"></button>
                 <button class="colorSwatch" type="button" data-color="gray" style="--swatch: #e6e6e6" aria-label="Gray" aria-pressed="false"></button>
