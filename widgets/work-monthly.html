@@ -398,9 +398,9 @@
       var DEFAULT_COLOR="lavender";
       var PALETTE={
         lavender:{label:"Lavender",swatch:"#ddd0f7",accent:"rgba(174,156,214,.72)",text:"rgba(115,92,158,.78)",tint:"rgba(242,238,249,.46)"},
-        pink:{label:"Baby pink",swatch:"#ffc8d8",accent:"rgba(222,157,179,.72)",text:"rgba(166,93,118,.78)",tint:"rgba(252,238,243,.46)"},
+        pink:{label:"Baby pink",swatch:"#ffdbf8",accent:"rgba(222,157,179,.72)",text:"rgba(166,93,118,.78)",tint:"rgba(252,238,243,.46)"},
         sky:{label:"Sky blue",swatch:"#c5e2ff",accent:"rgba(142,190,222,.74)",text:"rgba(79,131,168,.80)",tint:"rgba(237,247,252,.48)"},
-        mint:{label:"Mint blue",swatch:"#a0e4cd",accent:"rgba(102,183,156,.82)",text:"rgba(62,135,111,.86)",tint:"#e8fdec"},
+        mint:{label:"Mint blue",swatch:"#e8fdec",accent:"rgba(102,183,156,.82)",text:"rgba(62,135,111,.86)",tint:"#e8fdec"},
         peach:{label:"Peach",swatch:"#ffebeb",accent:"rgba(218,151,151,.82)",text:"rgba(161,92,92,.86)",tint:"#ffebeb"},
         yellow:{label:"Yellow",swatch:"#fef8e5",accent:"rgba(242,229,184,.82)",text:"rgba(219,203,145,.96)",tint:"#fdf8e6"},
         gray:{label:"Gray",swatch:"#e6e6e6",accent:"rgba(166,166,166,.82)",text:"rgba(93,93,93,.86)",tint:"#e6e6e6"},
@@ -698,7 +698,10 @@
           var b=document.createElement("button");
           b.type="button";b.className="colorSwatch";b.style.setProperty("--swatch",PALETTE[key].swatch);
           b.setAttribute("aria-label",PALETTE[key].label);b.setAttribute("aria-pressed",String(key===selected));
-          b.addEventListener("click",function(){onSelect(key);});
+          b.addEventListener("click",function(event){
+            event.stopPropagation();
+            onSelect(key);
+          });
           container.append(b);
         });
       }
