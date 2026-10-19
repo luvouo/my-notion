@@ -61,7 +61,11 @@
     .btn:active,.iconBtn:active{transform:scale(.97)}
     .btn{min-height:34px;padding:7px 12px;border-radius:12px;font:12px var(--display)}
     .btn.primary{background:rgba(210,198,237,.42)}
-    .btn.danger{border-color:rgba(210,150,164,.46);color:rgba(135,65,82,.78)}
+    .btn.danger{border-color:#ffe0e9;color:#ffe0e9;background:rgba(255,224,233,.08)}
+    .btn.danger:hover{
+      border-color:#ffc8d8;color:#ffe0e9;text-shadow:0 0 7px rgba(255,192,210,.42);
+      box-shadow:0 0 0 3px rgba(255,224,233,.34);
+    }
     .iconBtn{display:inline-grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%}
     .iconBtn svg{display:block;width:13px;height:13px}
 
@@ -180,7 +184,8 @@
     .tag{padding:2px 7px;border-radius:999px;background:rgba(235,229,247,.42);color:rgba(84,68,111,.74);font-size:11px}
     .colorValue{display:inline-flex;align-items:center;gap:7px}
     .colorDot{width:11px;height:11px;border-radius:50%;background:var(--dot);border:1px solid rgba(40,35,48,.08)}
-    .detailFooter{display:flex;justify-content:space-between;gap:8px;margin-top:13px}
+    .detailFooter{display:flex;align-items:center;gap:8px;margin-top:13px}
+    .detailFooter .danger{margin-right:auto}
     .inlinePalette{display:flex;gap:8px;flex-wrap:wrap;padding:2px 0}
 
     .toast{
@@ -328,6 +333,7 @@
           <div class="detailBody" id="detailBody"></div>
           <div class="detailFooter">
             <button class="btn danger" id="deleteItem" type="button">Delete</button>
+            <button class="btn primary" id="saveDetail" type="button">Save</button>
             <button class="btn" id="detailDone" type="button">Close</button>
           </div>
         </section>
@@ -397,7 +403,8 @@
         mint:{label:"Mint blue",swatch:"#a0e4cd",accent:"rgba(102,183,156,.82)",text:"rgba(62,135,111,.86)",tint:"#e8fdec"},
         peach:{label:"Peach",swatch:"#ffebeb",accent:"rgba(218,151,151,.82)",text:"rgba(161,92,92,.86)",tint:"#ffebeb"},
         yellow:{label:"Yellow",swatch:"#fef8e5",accent:"rgba(242,229,184,.82)",text:"rgba(219,203,145,.96)",tint:"#fdf8e6"},
-        gray:{label:"Gray",swatch:"#e6e6e6",accent:"rgba(166,166,166,.82)",text:"rgba(93,93,93,.86)",tint:"#e6e6e6"}
+        gray:{label:"Gray",swatch:"#e6e6e6",accent:"rgba(166,166,166,.82)",text:"rgba(93,93,93,.86)",tint:"#e6e6e6"},
+        white:{label:"White",swatch:"#f7f7f7",accent:"#f7f7f7",text:"rgba(112,112,112,.82)",tint:"#fcfcfc"}
       };
       var STATUS={
         not_started:"시작 전",
@@ -417,6 +424,8 @@
       var items=loadItems();
       var activeItemId=null;
       var inlineEditing=null;
+      var detailDraft=null;
+      var detailDirty=false;
       var toastTimer;
 
       var monthGrid=document.getElementById("monthGrid");
@@ -440,6 +449,7 @@
       var addColorPicker=document.getElementById("addColorPicker");
       var addDateLabel=document.getElementById("addDateLabel");
       var detailBody=document.getElementById("detailBody");
+      var saveDetailButton=document.getElementById("saveDetail");
       var toast=document.getElementById("toast");
 
       fillSelect(addStatus,STATUS,"not_started");
@@ -469,6 +479,7 @@
       document.getElementById("closeDetail").addEventListener("click",closeDetail);
       document.getElementById("detailDone").addEventListener("click",closeDetail);
       document.getElementById("deleteItem").addEventListener("click",deleteActiveItem);
+      saveDetailButton.addEventListener("click",saveDetailChanges);
       addOverlay.addEventListener("click",function(event){if(event.target===addOverlay)closeAddModal();});
       detailOverlay.addEventListener("click",function(event){if(event.target===detailOverlay)closeDetail();});
       addForm.addEventListener("submit",createItem);
@@ -731,14 +742,55 @@
       }
 
       function getActiveItem(){return items.find(function(item){return item.id===activeItemId;})||null;}
-      function openDetail(id){
-        activeItemId=id;inlineEditing=null;detailOverlay.hidden=false;renderDetail();
+      function cloneItem(item){
+        return item ? Object.assign({},item,{tags:Array.isArray(item.tags)?item.tags.slice():[]}) : null;
       }
-      function closeDetail(){detailOverlay.hidden=true;activeItemId=null;inlineEditing=null;}
+      function getDetailItem(){return detailDraft||getActiveItem();}
+      function openDetail(id){
+        activeItemId=id;
+        inlineEditing=null;
+        detailDraft=cloneItem(getActiveItem());
+        detailDirty=false;
+        detailOverlay.hidden=false;
+        renderDetail();
+      }
+      function closeDetail(){
+        detailOverlay.hidden=true;
+        activeItemId=null;
+        inlineEditing=null;
+        detailDraft=null;
+        detailDirty=false;
+      }
       function deleteActiveItem(){
         var item=getActiveItem();if(!item)return;
         items=items.filter(function(x){return x.id!==item.id;});
         persist();closeDetail();render();showToast("작업을 삭제했어요.");
+      }
+      function saveDetailChanges(){
+        var original=getActiveItem();
+        var draft=getDetailItem();
+        if(!original||!draft)return;
+        if(!detailDirty){
+          showToast("변경사항이 없어요.");
+          return;
+        }
+        var saved=cloneItem(draft);
+        saved.id=original.id;
+        saved.createdAt=original.createdAt;
+        saved.updatedAt=nowIso();
+        if(saved.scheduleDate!==original.scheduleDate)saved.order=nextOrder(saved.scheduleDate);
+        items=items.map(function(item){return item.id===original.id?saved:item;});
+        activeItemId=saved.id;
+        detailDraft=cloneItem(saved);
+        detailDirty=false;
+        inlineEditing=null;
+        selectedDate=saved.scheduleDate;
+        var d=parseDateKey(saved.scheduleDate);
+        visibleMonth=new Date(d.getFullYear(),d.getMonth(),1);
+        persist();
+        render();
+        renderDetail();
+        showToast("저장했어요.");
       }
       function formatDate(dateKey){
         if(!dateKey)return"";
@@ -785,8 +837,9 @@
       }
       function renderDetail(){
         inlineEditing=null;
-        var item=getActiveItem();if(!item){closeDetail();return;}
+        var item=getDetailItem();if(!item){closeDetail();return;}
         document.getElementById("detailTitle").textContent=item.name;
+        saveDetailButton.setAttribute("aria-disabled",String(!detailDirty));
         detailBody.replaceChildren();
         FIELD_DEFS.forEach(function(def){
           var row=document.createElement("div");
@@ -805,6 +858,7 @@
           if(editable){
             row.addEventListener("click",function(){beginInlineEdit(row,value,def);});
             row.addEventListener("keydown",function(event){
+              if(event.target!==row)return;
               if(event.key==="Enter"||event.key===" "){
                 event.preventDefault();
                 beginInlineEdit(row,value,def);
@@ -816,14 +870,14 @@
       }
       function beginInlineEdit(row,valueEl,def){
         if(inlineEditing)return;
-        var item=getActiveItem();if(!item)return;
+        var item=getDetailItem();if(!item)return;
         inlineEditing=def.key;
         row.classList.remove("editable");
         valueEl.replaceChildren();
 
         if(def.type==="color"){
           var palette=document.createElement("div");palette.className="inlinePalette";
-          renderColorPicker(palette,item.color,function(color){saveField(def.key,color);});
+          renderColorPicker(palette,item.color,function(color){stageField(def.key,color);});
           valueEl.append(palette);return;
         }
 
@@ -831,27 +885,28 @@
         if(def.type==="select"){
           control=document.createElement("select");control.className="inlineSelect";
           fillSelect(control,def.options,item[def.key]);
-          control.addEventListener("change",function(){saveField(def.key,control.value);});
+          control.addEventListener("change",function(){stageField(def.key,control.value);});
         }else if(def.type==="textarea"){
           control=document.createElement("textarea");control.className="inlineTextarea";control.value=item[def.key]||"";control.maxLength=3000;
-          control.addEventListener("blur",function(){saveField(def.key,control.value);},{once:true});
+          control.addEventListener("blur",function(){stageField(def.key,control.value);},{once:true});
         }else{
           control=document.createElement("input");control.className="inlineInput";
           control.type=def.type==="date"?"date":def.type==="url"?"url":"text";
           control.value=def.type==="tags"?item.tags.join(", "):(item[def.key]||"");
           control.maxLength=def.key==="name"?120:def.key==="link"?500:def.key==="type"?80:240;
-          control.addEventListener("blur",function(){saveField(def.key,control.value);},{once:true});
+          control.addEventListener("blur",function(){stageField(def.key,control.value);},{once:true});
         }
         control.addEventListener("click",function(e){e.stopPropagation();});
         control.addEventListener("keydown",function(e){
+          e.stopPropagation();
           if(e.key==="Escape"){e.preventDefault();renderDetail();}
-          else if(e.key==="Enter"&&def.type!=="textarea"){e.preventDefault();saveField(def.key,control.value);}
+          else if(e.key==="Enter"&&def.type!=="textarea"){e.preventDefault();stageField(def.key,control.value);}
         });
         valueEl.append(control);control.focus();
         if(control.select)control.select();
       }
-      function saveField(field,value){
-        var item=getActiveItem();if(!item)return;
+      function stageField(field,value){
+        var item=getDetailItem();if(!item)return;
         var next=value;
         if(field==="tags")next=parseTags(value);
         if(field==="color")next=normalizeColor(value);
@@ -868,17 +923,11 @@
           next=/^\d{4}-\d{2}-\d{2}$/.test(String(value||""))?String(value):"";
           if(field==="scheduleDate"&&!next){renderDetail();return;}
         }
-        items=items.map(function(x){
-          if(x.id!==item.id)return x;
-          var updated=Object.assign({},x);updated[field]=next;updated.updatedAt=nowIso();
-          if(field==="scheduleDate"&&next!==x.scheduleDate)updated.order=nextOrder(next);
-          return updated;
-        });
-        if(field==="scheduleDate"){
-          selectedDate=next;
-          var d=parseDateKey(next);visibleMonth=new Date(d.getFullYear(),d.getMonth(),1);
-        }
-        persist();render();renderDetail();showToast("수정했어요.");
+        detailDraft=cloneItem(item);
+        detailDraft[field]=next;
+        detailDirty=true;
+        inlineEditing=null;
+        renderDetail();
       }
 
       function openMonthPicker(){
