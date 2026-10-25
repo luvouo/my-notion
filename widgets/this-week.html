@@ -2217,52 +2217,88 @@
     async function bootstrapWeekSync(expectedMutationVersion = null){
       const remote = await loadRemoteRows();
       if(expectedMutationVersion !== null && expectedMutationVersion !== localMutationVersion) return false;
+
       const localIds = [];
       for(let i=0;i<localStorage.length;i++){
         const key = localStorage.key(i);
-        if(key && key.startsWith(WEEK_PREFIX) && parseWeekRangeId(key.slice(WEEK_PREFIX.length))) localIds.push(key.slice(WEEK_PREFIX.length));
+        if(key && key.startsWith(WEEK_PREFIX) && parseWeekRangeId(key.slice(WEEK_PREFIX.length))){
+          localIds.push(key.slice(WEEK_PREFIX.length));
+        }
       }
+
       const remoteByWeek = new Map();
       const ensureRemoteWeek = id => {
         if(!remoteByWeek.has(id)) remoteByWeek.set(id, { items:[], inboxes:[] });
         return remoteByWeek.get(id);
       };
+
       for(const row of remote.items){
         const weekId = weekIdForDueAt(row.due_at);
         const dayIndex = dayIndexForDueAt(row.due_at);
-        if(weekId && dayIndex >= 0 && dayIndex < 7) ensureRemoteWeek(weekId).items.push({...row, dayIndex});
+        if(weekId && dayIndex >= 0 && dayIndex < 7){
+          ensureRemoteWeek(weekId).items.push({ ...row, dayIndex });
+        }
       }
       for(const row of remote.inboxes){
         const weekId = weekIdForInboxRow(row);
-        if(weekId && (row.bucket === "this_week" || row.bucket === "next_week")) ensureRemoteWeek(weekId).inboxes.push(row);
+        if(weekId && (row.bucket === "this_week" || row.bucket === "next_week")){
+          ensureRemoteWeek(weekId).inboxes.push(row);
+        }
       }
+
       const remoteItemById = new Map(remote.items.map(row => [String(row.id), row]));
+      const remoteInboxById = new Map(remote.inboxes.map(row => [String(row.id), row]));
       const weekIds = new Set([...localIds, ...remoteByWeek.keys()]);
+      const reconciliationErrors = [];
+
       for(const weekId of weekIds){
         if(expectedMutationVersion !== null && expectedMutationVersion !== localMutationVersion) return false;
+
         const key = WEEK_PREFIX + weekId;
         const hasLocal = localStorage.getItem(key) !== null;
         const resolved = hasLocal ? loadWeek(key) : emptyWeekState();
         const remoteWeek = remoteByWeek.get(weekId) || { items:[], inboxes:[] };
-        // A Today date edit can move the same row to another day or week. Remove
-        // the stale local placement before merging the authoritative remote row.
+
+        // Supabase is the source of truth for cached rows. A local-only row is
+        // retained only when v3 sync metadata proves it was genuinely edited
+        // locally and still needs to be retried. Old cache rows with no v3
+        // mutation timestamp must not be uploaded back to the server.
         for(let day=0;day<7;day++){
           resolved.days[String(day)] = resolved.days[String(day)].filter(item => {
+            const localAt = getLocalUpdatedAt("item", item.id);
             const remoteRow = remoteItemById.get(String(item.id));
-            if(!remoteRow) return true;
+            if(!remoteRow) return Boolean(localAt);
+
             const remoteWeekId = weekIdForDueAt(remoteRow.due_at);
-            const remoteIsNewer = (remoteRow.updated_at || "") > getLocalUpdatedAt("item", item.id);
+            const remoteIsNewer = (remoteRow.updated_at || "") > localAt;
             return !(remoteIsNewer && (remoteRow.deleted || remoteWeekId !== weekId));
           });
         }
+
+        // Apply the same rule to inbox cache rows, including rows that moved
+        // between This Week Inbox and Next Week Inbox.
+        for(const target of ["thisInbox","nextInbox"]){
+          resolved[target] = (resolved[target] || []).filter(item => {
+            const localAt = getLocalUpdatedAt("inbox", item.id);
+            const remoteRow = remoteInboxById.get(String(item.id));
+            if(!remoteRow) return Boolean(localAt);
+
+            const remoteTarget = remoteRow.bucket === "this_week" ? "thisInbox" : "nextInbox";
+            const remoteIsNewer = (remoteRow.updated_at || "") > localAt;
+            return !(remoteIsNewer && (remoteRow.deleted || remoteTarget !== target));
+          });
+        }
+
         for(const row of remoteWeek.items){
           const day = String(row.dayIndex);
           let keepNewerLocalPlacement = false;
+
           for(let otherDay=0;otherDay<7;otherDay++){
             if(String(otherDay) === day) continue;
             const otherItems = resolved.days[String(otherDay)];
             const otherIndex = otherItems.findIndex(item => String(item.id) === String(row.id));
             if(otherIndex < 0) continue;
+
             const localItem = otherItems[otherIndex];
             if((row.updated_at || "") <= getLocalUpdatedAt("item", localItem.id)){
               otherItems[otherIndex] = chooseMergedItem(localItem, row, "item");
@@ -2271,30 +2307,69 @@
               otherItems.splice(otherIndex, 1);
             }
           }
+
           if(keepNewerLocalPlacement) continue;
+
           const index = resolved.days[day].findIndex(item => String(item.id) === String(row.id));
           const local = index >= 0 ? resolved.days[day][index] : null;
           const merged = chooseMergedItem(local, row, "item");
-          if(index >= 0){ if(merged) resolved.days[day][index] = merged; else resolved.days[day].splice(index, 1); }
-          else if(merged) resolved.days[day].push(merged);
-          if((row.updated_at || "") > getLocalUpdatedAt("item", row.id)) setLocalUpdatedAt("item", row.id, row.updated_at);
+
+          if(index >= 0){
+            if(merged) resolved.days[day][index] = merged;
+            else resolved.days[day].splice(index, 1);
+          }else if(merged){
+            resolved.days[day].push(merged);
+          }
+
+          if((row.updated_at || "") > getLocalUpdatedAt("item", row.id)){
+            setLocalUpdatedAt("item", row.id, row.updated_at);
+          }
         }
+
         for(const row of remoteWeek.inboxes){
           const target = row.bucket === "this_week" ? "thisInbox" : "nextInbox";
           const index = resolved[target].findIndex(item => String(item.id) === String(row.id));
           const local = index >= 0 ? resolved[target][index] : null;
           const merged = chooseMergedItem(local, row, "inbox");
-          if(index >= 0){ if(merged) resolved[target][index] = merged; else resolved[target].splice(index, 1); }
-          else if(merged) resolved[target].push(merged);
-          if((row.updated_at || "") > getLocalUpdatedAt("inbox", row.id)) setLocalUpdatedAt("inbox", row.id, row.updated_at);
+
+          if(index >= 0){
+            if(merged) resolved[target][index] = merged;
+            else resolved[target].splice(index, 1);
+          }else if(merged){
+            resolved[target].push(merged);
+          }
+
+          if((row.updated_at || "") > getLocalUpdatedAt("inbox", row.id)){
+            setLocalUpdatedAt("inbox", row.id, row.updated_at);
+          }
         }
-        for(let day=0;day<7;day++) resolved.days[String(day)] = sortDayItems(resolved.days[String(day)]);
+
+        for(let day=0;day<7;day++){
+          resolved.days[String(day)] = sortDayItems(resolved.days[String(day)]);
+        }
+
         saveWeek(key, resolved, false);
         syncedWeekStates.set(weekId, cloneWeekState(resolved));
-        await syncWeekState(weekId, resolved, remoteWeek);
+
+        // Reconciliation writes are not "server loading". If one pending local
+        // retry fails, keep the successfully loaded remote state and let later
+        // polling/user mutations retry it instead of failing the whole widget.
+        try{
+          await syncWeekState(weekId, resolved, remoteWeek);
+        }catch(err){
+          reconciliationErrors.push({ weekId, err });
+          describeSupabaseError(`bootstrap reconciliation failed for ${weekId}`, err);
+        }
+
         syncedWeekStates.set(weekId, cloneWeekState(resolved));
       }
+
       saveSyncMeta();
+
+      if(reconciliationErrors.length){
+        console.warn("[This Week Widget] remote load succeeded; some pending local reconciliation writes will retry.", reconciliationErrors);
+      }
+
       return true;
     }
     async function syncWeekState(weekId, state, knownRemote = null){
