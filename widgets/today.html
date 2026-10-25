@@ -809,6 +809,15 @@
       color: rgba(30,30,30,0.86);
       line-height: 1.25;
     }
+    .archiveText{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+    }
+    .archiveTextLabel{
+      min-width:0;
+    }
 
     .badge{
       appearance: none;
@@ -1584,6 +1593,12 @@
       let dragId = null;
       let deletedSnapshot = null;
 
+      // Cross-client refresh guards. Today writes directly to Supabase, so
+      // remote refresh must not replace optimistic UI while a write is pending.
+      let pendingServerMutations = 0;
+      let todayMutationVersion = 0;
+      let todayRemoteRefreshPromise = null;
+
       function showToast(msg, undoFn = null, duration = 1600){
         toast.replaceChildren(document.createTextNode(msg));
         if(undoFn){
@@ -1756,19 +1771,29 @@
         return grouped;
       }
 
+      async function runServerMutation(work){
+        pendingServerMutations += 1;
+        todayMutationVersion += 1;
+        try{
+          return await work();
+        }finally{
+          pendingServerMutations = Math.max(0, pendingServerMutations - 1);
+        }
+      }
+
       async function sbUpsertRow(row){
-        await sbFetch("items?on_conflict=id", {
+        return runServerMutation(() => sbFetch("items?on_conflict=id", {
           method: "POST",
           body: [row],
           prefer: "return=representation,resolution=merge-duplicates"
-        });
+        }));
       }
 
       async function sbPatchRow(id, patch){
-        await sbFetch(`items?id=eq.${id}`, {
+        return runServerMutation(() => sbFetch(`items?id=eq.${id}`, {
           method: "PATCH",
           body: patch
-        });
+        }));
       }
 
       async function sbSoftDelete(id){
@@ -1776,6 +1801,37 @@
           deleted: true,
           updated_at: nowIso()
         });
+      }
+
+      async function refreshTodayFromRemote(){
+        if(!USE_SUPABASE || pendingServerMutations > 0) return;
+        if(todayRemoteRefreshPromise) return todayRemoteRefreshPromise;
+
+        const expectedMutationVersion = todayMutationVersion;
+        todayRemoteRefreshPromise = (async () => {
+          try{
+            const nextState = await sbLoadDay(todayStr);
+            if(expectedMutationVersion !== todayMutationVersion || pendingServerMutations > 0) return;
+
+            state = nextState;
+            saveDay(KEY_TODAY, state);
+            render();
+
+            if(modalOverlay.classList.contains("open")){
+              const nextArchive = await sbLoadArchiveAll();
+              if(expectedMutationVersion !== todayMutationVersion || pendingServerMutations > 0) return;
+              archive = nextArchive;
+              buildDates();
+              if(pickedDate && archive[pickedDate]) renderPreview(pickedDate);
+            }
+          }catch(err){
+            console.error("[Today Widget] remote refresh failed:", err);
+          }finally{
+            todayRemoteRefreshPromise = null;
+          }
+        })();
+
+        return todayRemoteRefreshPromise;
       }
 
       // =====================
@@ -2312,7 +2368,7 @@
                 aria-pressed="${status === "done"}" ${isPending ? "disabled" : ""}>${badgeText}</button>
               <span class="archiveText" role="button" tabindex="0" data-archive-detail="${escapeHtml(it.id)}"
                 style="cursor:pointer; ${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
-                ${textHtml}${String(it.details || "").trim() ? `<span class="noteDot" title="Details 있음" aria-label="Details 있음"></span>` : ""}
+                <span class="archiveTextLabel">${textHtml}</span>${String(it.details || "").trim() ? `<span class="noteDot" title="Details 있음" aria-label="Details 있음"></span>` : ""}
               </span>
             </div>
           `;
@@ -2587,21 +2643,32 @@
       try{
         if(USE_SUPABASE){
           state = await sbLoadDay(todayStr);
+          saveDay(KEY_TODAY, state);
         }else{
           archive = autoArchivePastDays(todayStr);
           state = loadDay(KEY_TODAY);
         }
       }catch(err){
         console.error("[Today Widget] initial load failed:", err);
-        USE_SUPABASE = false;
         archive = autoArchivePastDays(todayStr);
         state = loadDay(KEY_TODAY);
-        showToast("서버 연결 실패. 로컬 모드로 열었어.");
+        showToast("서버 로딩 실패. 로컬 캐시를 보여주고 다시 동기화할게.");
       }
 
       render();
       syncAddButtonState();
       metaText.textContent = todayStr;
+
+      // Keep Chrome / Notion desktop / another open Today instance converged.
+      const REMOTE_REFRESH_INTERVAL_MS = 15000;
+      setInterval(() => {
+        if(document.visibilityState === "visible") refreshTodayFromRemote();
+      }, REMOTE_REFRESH_INTERVAL_MS);
+      document.addEventListener("visibilitychange", () => {
+        if(document.visibilityState === "visible") refreshTodayFromRemote();
+      });
+      window.addEventListener("focus", refreshTodayFromRemote);
+      window.addEventListener("pageshow", refreshTodayFromRemote);
     })();
   </script>
 
