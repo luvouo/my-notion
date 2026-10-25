@@ -2052,7 +2052,6 @@
     const WEEK_SYNC_META_KEY = `soft_schedule_week_row_sync_${workspace_id}_v2`;
     const syncTimers = new Map();
     const syncedWeekStates = new Map();
-    const bootstrapStartedAt = new Date().toISOString();
     let remoteRefreshPromise = null;
     let localMutationVersion = 0;
 
@@ -2065,7 +2064,7 @@
     let syncMeta = loadSyncMeta();
     function saveSyncMeta(){ localStorage.setItem(WEEK_SYNC_META_KEY, JSON.stringify(syncMeta)); }
     function syncMetaKey(kind, id){ return `${kind}:${String(id)}`; }
-    function getLocalUpdatedAt(kind, id){ return syncMeta[syncMetaKey(kind, id)] || bootstrapStartedAt; }
+    function getLocalUpdatedAt(kind, id){ return syncMeta[syncMetaKey(kind, id)] || ""; }
     function setLocalUpdatedAt(kind, id, updatedAt){
       syncMeta[syncMetaKey(kind, id)] = updatedAt || new Date().toISOString();
     }
@@ -2317,7 +2316,9 @@
         const localChanged = !old || old.day !== entry.day || old.item.text !== entry.item.text || getItemStatus(old.item) !== getItemStatus(entry.item);
         const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.title !== entry.item.text || normalizeItemStatus(remote.status, false) !== getItemStatus(entry.item) || Number(remote.dayIndex) !== entry.day);
         if(localChanged || remoteDiffers){
-          const updatedAt = localChanged ? now : getLocalUpdatedAt("item", entry.item.id);
+          const updatedAt = localChanged
+            ? now
+            : (getLocalUpdatedAt("item", entry.item.id) || entry.item.updated_at || now);
           setLocalUpdatedAt("item", entry.item.id, updatedAt);
           if(old && localChanged){
             const patch = { updated_at: updatedAt };
@@ -2350,7 +2351,9 @@
         const localChanged = !old || old.bucket !== entry.bucket || old.item.text !== entry.item.text || oldStatus !== localStatus;
         const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.bucket !== entry.bucket || remote.title !== entry.item.text || remoteStatus !== expectedRemoteStatus);
         if(localChanged || remoteDiffers){
-          const updatedAt = localChanged ? now : getLocalUpdatedAt("inbox", entry.item.id);
+          const updatedAt = localChanged
+            ? now
+            : (getLocalUpdatedAt("inbox", entry.item.id) || now);
           setLocalUpdatedAt("inbox", entry.item.id, updatedAt);
           await upsertInbox(inboxRow(entry.item, weekId, entry.bucket, updatedAt));
         }
@@ -2367,9 +2370,15 @@
       const snapshot = cloneWeekState(state);
       clearTimeout(syncTimers.get(weekId));
       syncTimers.set(weekId, setTimeout(async () => {
-        try{ await syncWeekState(weekId, snapshot); }
-        catch(err){ describeSupabaseError("row sync failed", err); showToast("서버 저장 실패. 로컬에는 저장했어."); }
-        finally{ syncTimers.delete(weekId); }
+        try{
+          await syncWeekState(weekId, snapshot);
+        }catch(err){
+          saveSyncMeta();
+          describeSupabaseError("row sync failed", err);
+          showToast("서버 저장 실패. 로컬에는 저장했고 다시 동기화할게.");
+        }finally{
+          syncTimers.delete(weekId);
+        }
       }, 250));
     }
 
@@ -2547,11 +2556,11 @@
     function getWeekKey(){ return WEEK_PREFIX + getWeekId(); }
 
     if(USE_SUPABASE){
-      try{ await bootstrapWeekSync(); }
-      catch(err){
+      try{
+        await bootstrapWeekSync();
+      }catch(err){
         describeSupabaseError("initial sync failed", err);
-        USE_SUPABASE = false;
-        setTimeout(() => showToast("서버 연결 실패. 로컬 모드로 열었어."), 0);
+        setTimeout(() => showToast("서버 로딩 실패. 로컬 캐시를 보여주고 다시 동기화할게."), 0);
       }
     }
 
