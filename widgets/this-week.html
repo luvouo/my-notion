@@ -2167,6 +2167,15 @@
       syncMeta[syncMetaKey(kind, id)] = updatedAt || new Date().toISOString();
     }
     function cloneWeekState(state){ return normalizeWeekState(JSON.parse(JSON.stringify(state))); }
+    function updateSyncedInboxBaseline(weekId, key, item){
+      const baseline = cloneWeekState(syncedWeekStates.get(weekId) || emptyWeekState());
+      const arr = baseline[key] || [];
+      const index = arr.findIndex(it => String(it.id) === String(item.id));
+      if(index >= 0) arr[index] = { ...arr[index], ...item };
+      else arr.unshift({ ...item });
+      baseline[key] = arr;
+      syncedWeekStates.set(weekId, baseline);
+    }
     function isoForWeekDay(weekId, dayIndex){
       const range = parseWeekRangeId(weekId);
       if(!range) throw new Error(`Invalid week id: ${weekId}`);
@@ -2267,10 +2276,14 @@
         prefer:"return=representation,resolution=merge-duplicates"
       });
     }
-    async function patchInboxDeleted(id, updatedAt){
+    async function patchInboxFields(id, patch){
       return sbFetch(`weekly_inbox_items?workspace_id=eq.${encodeURIComponent(workspace_id)}&id=eq.${encodeURIComponent(String(id))}`, {
-        method:"PATCH", body:{ deleted:true, updated_at:updatedAt }
+        method:"PATCH",
+        body:patch
       });
+    }
+    async function patchInboxDeleted(id, updatedAt){
+      return patchInboxFields(id, { deleted:true, updated_at:updatedAt });
     }
     function remoteItemToLocal(row){
       const status = normalizeItemStatus(row.status, false);
@@ -3402,7 +3415,7 @@
       showToast(`${inboxLabel(activeInboxKey)}에 추가했어.`);
     }
 
-    function ensureCarriedIntoNextWeek(sourceWeekId, sourceItem){
+    async function ensureCarriedIntoNextWeek(sourceWeekId, sourceItem){
       const sourceRange = parseWeekRangeId(sourceWeekId);
       if(!sourceRange || !sourceItem) return null;
 
@@ -3428,11 +3441,67 @@
         targetState.thisInbox.unshift(carriedItem);
       }
 
-      saveWeek(targetKey, targetState);
+      // Do not queue a full target-week sync just to create/update one carried row.
+      saveWeek(targetKey, targetState, false);
+
+      if(USE_SUPABASE){
+        const updatedAt = new Date().toISOString();
+        localMutationVersion += 1;
+        setLocalUpdatedAt("inbox", carriedId, updatedAt);
+        try{
+          await upsertInbox(inboxRow(carriedItem, targetWeekId, "this_week", updatedAt));
+          updateSyncedInboxBaseline(targetWeekId, "thisInbox", carriedItem);
+          saveSyncMeta();
+        }catch(err){
+          saveSyncMeta();
+          describeSupabaseError("carried inbox save failed", err);
+          throw err;
+        }
+      }
+
       return targetWeekId;
     }
 
-    function toggleInboxForKey(key, id){
+    async function saveSingleInboxStatus(key, item){
+      const weekId = getWeekId();
+      const bucket = key === "thisInbox" ? "this_week" : "next_week";
+
+      // Save local state without triggering a full-week sync.
+      saveWeek(getWeekKey(), weekState, false);
+
+      if(!USE_SUPABASE){
+        syncedWeekStates.set(weekId, cloneWeekState(weekState));
+        return;
+      }
+
+      const updatedAt = new Date().toISOString();
+      localMutationVersion += 1;
+      setLocalUpdatedAt("inbox", item.id, updatedAt);
+
+      try{
+        // Existing rows should only need the changed status. This avoids
+        // re-writing unrelated rows in the same week and prevents a stale row
+        // elsewhere from turning one Next Week status click into a full-sync error.
+        const patched = await patchInboxFields(item.id, {
+          status: getInboxStatus(item, bucket),
+          updated_at: updatedAt
+        });
+
+        // A local-only row may not exist remotely yet. Fall back to one-row upsert.
+        if(!Array.isArray(patched) || patched.length === 0){
+          await upsertInbox(inboxRow(item, weekId, bucket, updatedAt));
+        }
+
+        updateSyncedInboxBaseline(weekId, key, item);
+        saveSyncMeta();
+      }catch(err){
+        saveSyncMeta();
+        describeSupabaseError("inbox status save failed", err);
+        throw err;
+      }
+    }
+
+    async function toggleInboxForKey(key, id){
       const arr = weekState[key] || [];
       let changedItem = null;
 
@@ -3443,11 +3512,25 @@
         return next;
       });
 
-      persistCurrentWeek();
+      if(!changedItem) return;
 
-      if(key === "nextInbox" && changedItem && getItemStatus(changedItem) === "carried_over"){
-        ensureCarriedIntoNextWeek(getWeekId(), changedItem);
-        showToast("다음 주 This Week Inbox에 이월했어.");
+      renderInboxRows();
+      if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
+
+      try{
+        if(key === "nextInbox"){
+          await saveSingleInboxStatus(key, changedItem);
+        }else{
+          persistCurrentWeek();
+        }
+
+        if(key === "nextInbox" && getItemStatus(changedItem) === "carried_over"){
+          await ensureCarriedIntoNextWeek(getWeekId(), changedItem);
+          showToast("다음 주 This Week Inbox에 이월했어.");
+        }
+      }catch(err){
+        // Keep the local state so the user does not lose the status change.
+        showToast("서버 저장 실패. 로컬에는 저장했어.");
       }
 
       renderInboxRows();
