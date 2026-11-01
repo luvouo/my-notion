@@ -1564,18 +1564,27 @@
     /* ===== Five-state This Week Inbox ===== */
     .thisInboxItem.in-progress .check,
     .thisInboxItem.hold .check,
-    .thisInboxItem.carried-over .check{
+    .thisInboxItem.carried-over .check,
+    .popItem.in-progress .check,
+    .popItem.hold .check,
+    .popItem.carried-over .check{
       background:rgba(165,206,240,0.06);
       border-color:rgba(140,190,232,0.72);
     }
     .thisInboxItem.in-progress .check svg,
     .thisInboxItem.hold .check svg,
-    .thisInboxItem.carried-over .check svg{
+    .thisInboxItem.carried-over .check svg,
+    .popItem.in-progress .check svg,
+    .popItem.hold .check svg,
+    .popItem.carried-over .check svg{
       display:none;
     }
-    .thisInboxItem.in-progress .progressMark{ display:block; }
-    .thisInboxItem.hold .holdMark{ display:block; }
-    .thisInboxItem.carried-over .carriedMark{ display:block; }
+    .thisInboxItem.in-progress .progressMark,
+    .popItem.in-progress .progressMark{ display:block; }
+    .thisInboxItem.hold .holdMark,
+    .popItem.hold .holdMark{ display:block; }
+    .thisInboxItem.carried-over .carriedMark,
+    .popItem.carried-over .carriedMark{ display:block; }
 
   </style>
 </head>
@@ -1758,10 +1767,10 @@
         <span>Status</span>
         <select class="weekDetailInput" id="weekDetailStatus">
           <option value="todo">Todo</option>
+          <option value="done">Done</option>
           <option value="in_progress">In Progress</option>
           <option value="hold">On Hold</option>
           <option value="carried_over">Carried Over</option>
-          <option value="done">Done</option>
         </select>
       </label>
       <div class="weekDetailActions">
@@ -2011,7 +2020,7 @@
       return "";
     }
     function nextItemStatus(status){
-      const order = ["todo","in_progress","hold","carried_over","done"];
+      const order = ["todo","done","in_progress","hold","carried_over"];
       const current = normalizeItemStatus(status, false);
       const index = order.indexOf(current);
       return order[(index + 1) % order.length];
@@ -2024,9 +2033,7 @@
       return status === "done" ? "x" : " ";
     }
     function getInboxStatus(item, bucket){
-      return bucket === "this_week"
-        ? getItemStatus(item)
-        : (item && item.done ? "done" : "todo");
+      return getItemStatus(item);
     }
     function emptyWeekState(){
       const days = {};
@@ -2422,7 +2429,7 @@
         const localStatus = getInboxStatus(entry.item, entry.bucket);
         const oldStatus = old ? getInboxStatus(old.item, old.bucket) : null;
         const remoteStatus = remote ? normalizeItemStatus(remote.status, false) : null;
-        const expectedRemoteStatus = entry.bucket === "this_week" ? localStatus : (entry.item.done ? "done" : "todo");
+        const expectedRemoteStatus = localStatus;
         const localChanged = !old || old.bucket !== entry.bucket || old.item.text !== entry.item.text || oldStatus !== localStatus;
         const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.bucket !== entry.bucket || remote.title !== entry.item.text || remoteStatus !== expectedRemoteStatus);
         if(localChanged || remoteDiffers){
@@ -2955,16 +2962,23 @@
       }
 
       for(const it of arr){
+        const status = getItemStatus(it);
+        const statusClass = statusCssClass(status);
         const row = document.createElement("div");
-        row.className = "popItem" + (it.done ? " done" : "");
+        row.className = "popItem" + (statusClass ? " " + statusClass : "");
         const isEditing = inboxEditingItem
           && inboxEditingItem.key === "nextInbox"
           && String(inboxEditingItem.id) === String(it.id);
         row.innerHTML = `
-          <button class="check" type="button" role="checkbox" aria-checked="${it.done}" data-nx-id="${escapeHtml(it.id)}">
+          <button class="check" type="button" role="checkbox" aria-checked="${status === "done"}"
+            aria-label="${statusLabel(status)}. 클릭하면 ${statusLabel(nextItemStatus(status))}"
+            data-nx-id="${escapeHtml(it.id)}">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
+            <span class="progressMark" aria-hidden="true">•</span>
+            <span class="holdMark" aria-hidden="true">–</span>
+            <span class="carriedMark" aria-hidden="true">→</span>
           </button>
           ${isEditing
             ? `<input class="inboxInlineEdit" data-inbox-edit-input="nextInbox" data-inbox-edit-id="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="120" aria-label="Inbox 제목 수정" />`
@@ -3176,7 +3190,7 @@
       arr.unshift({
         id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random())),
         text: t,
-        ...(activeInboxKey === "thisInbox" ? { status:"todo" } : {}),
+        status: "todo",
         done: false
       });
       persistCurrentWeek();
@@ -3185,16 +3199,54 @@
       showToast(`${inboxLabel(activeInboxKey)}에 추가했어.`);
     }
 
+    function ensureCarriedIntoNextWeek(sourceWeekId, sourceItem){
+      const sourceRange = parseWeekRangeId(sourceWeekId);
+      if(!sourceRange || !sourceItem) return null;
+
+      const targetMonday = addDays(sourceRange.start, 7);
+      const targetWeekId = weekIdFromMonday(targetMonday);
+      const targetKey = WEEK_PREFIX + targetWeekId;
+      const targetState = loadWeek(targetKey);
+      const carriedId = `carried::${String(sourceItem.id)}::${dateToYmd(targetMonday)}`;
+      const existingIndex = (targetState.thisInbox || []).findIndex(it => String(it.id) === carriedId);
+      const carriedItem = {
+        id: carriedId,
+        text: sourceItem.text || "",
+        status: "carried_over",
+        done: false
+      };
+
+      if(existingIndex >= 0){
+        targetState.thisInbox[existingIndex] = {
+          ...targetState.thisInbox[existingIndex],
+          ...carriedItem
+        };
+      }else{
+        targetState.thisInbox.unshift(carriedItem);
+      }
+
+      saveWeek(targetKey, targetState);
+      return targetWeekId;
+    }
+
     function toggleInboxForKey(key, id){
       const arr = weekState[key] || [];
+      let changedItem = null;
+
       weekState[key] = arr.map(it => {
         if(String(it.id) !== String(id)) return it;
-        if(key === "thisInbox"){
-          return applyItemStatus(it, nextItemStatus(getItemStatus(it)));
-        }
-        return { ...it, done: !it.done };
+        const next = applyItemStatus(it, nextItemStatus(getItemStatus(it)));
+        changedItem = next;
+        return next;
       });
+
       persistCurrentWeek();
+
+      if(key === "nextInbox" && changedItem && getItemStatus(changedItem) === "carried_over"){
+        ensureCarriedIntoNextWeek(getWeekId(), changedItem);
+        showToast("다음 주 This Week Inbox에 이월했어.");
+      }
+
       renderInboxRows();
       if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
     }
@@ -3905,20 +3957,34 @@
     /* ✅ 프리뷰: done / hold 토글 + delete(Undo 3s) */
     function cyclePreviewStatus(weekId, dayIndex, itemId){
       const data = loadWeekStateById(weekId);
-      if(String(dayIndex) === "tx"){
-        data.thisInbox = (data.thisInbox || []).map(it => {
+      let changedItem = null;
+      const section = String(dayIndex);
+
+      if(section === "tx" || section === "nx"){
+        const key = section === "tx" ? "thisInbox" : "nextInbox";
+        data[key] = (data[key] || []).map(it => {
           if(String(it.id) !== String(itemId)) return it;
-          return applyItemStatus(it, nextItemStatus(getItemStatus(it)));
+          const next = applyItemStatus(it, nextItemStatus(getItemStatus(it)));
+          changedItem = next;
+          return next;
         });
       }else{
         const day = String(dayIndex);
         const arr = (data.days && data.days[day]) ? data.days[day] : [];
         data.days[day] = arr.map(it => {
           if(String(it.id) !== String(itemId)) return it;
-          return applyItemStatus(it, nextItemStatus(getItemStatus(it)));
+          const next = applyItemStatus(it, nextItemStatus(getItemStatus(it)));
+          changedItem = next;
+          return next;
         });
       }
+
       saveWeekStateById(weekId, data);
+
+      if(section === "nx" && changedItem && getItemStatus(changedItem) === "carried_over"){
+        ensureCarriedIntoNextWeek(weekId, changedItem);
+      }
+
       buildWeeks();
       renderWeekPreview(weekId);
     }
@@ -4111,8 +4177,9 @@
         const viewNx = q ? nx.filter(it => String(it.text||"").toLowerCase().includes(q.toLowerCase())) : nx;
         for(const it of viewNx){
           const status = getItemStatus(it);
-          const badgeCls = status === "done" ? "badge done" : (status === "hold" ? "badge hold" : "badge");
-          const badgeText = status === "done" ? "done" : (status === "hold" ? "hold" : "todo");
+          const statusClass = statusCssClass(status);
+          const badgeCls = "badge" + (statusClass ? " " + statusClass : "");
+          const badgeText = statusLabel(status).toLowerCase();
           const textHtml = highlight(it.text || "", q);
           rows.push(`
             <div class="pItem">
@@ -4120,7 +4187,7 @@
               <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}
               </span>
-              ${togBtnHtml(id, "nx", it.id, it.done)}
+              ${statusBtnHtml(id, "nx", it.id, status)}
               ${trashBtnHtml(id, "nx", it.id)}
             </div>
           `);

@@ -1301,10 +1301,10 @@
         <span>Status</span>
         <select class="detailInput" id="detailStatus">
           <option value="todo">Todo</option>
+          <option value="done">Done</option>
           <option value="in_progress">In Progress</option>
           <option value="hold">On Hold</option>
           <option value="carried_over">Carried Over</option>
-          <option value="done">Done</option>
         </select>
       </label>
       <div class="detailActions">
@@ -1501,7 +1501,7 @@
         return " ";
       }
       function nextArchiveStatus(status){
-        const order = ["todo","in_progress","hold","carried_over","done"];
+        const order = ["todo","done","in_progress","hold","carried_over"];
         const current = normalizeItemStatus(status, false);
         const index = order.indexOf(current);
         return order[(index + 1) % order.length];
