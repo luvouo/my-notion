@@ -792,6 +792,85 @@
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
       font-variant-numeric:tabular-nums;
     }
+    .footerStats{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+      flex-wrap:wrap;
+    }
+    .statusReviewChip{
+      appearance:none;
+      -webkit-appearance:none;
+      border:0;
+      background:transparent;
+      padding:1px 2px;
+      margin:0;
+      color:rgba(30,30,30,0.46);
+      cursor:pointer;
+      font-family:"EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      font-size:11.5px;
+      line-height:1;
+      transition:color .16s ease, background .16s ease;
+      border-radius:6px;
+    }
+    .statusReviewChip:hover,
+    .statusReviewChip.active{
+      color:rgba(70,120,158,0.88);
+      background:rgba(165,206,240,0.08);
+    }
+    .statusReviewChip:focus-visible{
+      outline:none;
+      box-shadow:0 0 0 3px rgba(165,206,240,0.16);
+    }
+    .reviewPopover{
+      width:min(330px, calc(100vw - 24px));
+    }
+    .reviewList{
+      gap:3px;
+      padding:8px 10px;
+      max-height:38vh;
+    }
+    .reviewItem{
+      width:100%;
+      display:grid;
+      grid-template-columns:auto minmax(0,1fr);
+      align-items:center;
+      gap:8px;
+      border:0;
+      background:transparent;
+      padding:6px 4px;
+      border-radius:8px;
+      cursor:pointer;
+      text-align:left;
+      color:rgba(30,30,30,0.78);
+      font:12px ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    }
+    .reviewItem:hover{ background:rgba(165,206,240,0.07); }
+    .reviewItem:focus-visible{
+      outline:none;
+      box-shadow:0 0 0 3px rgba(165,206,240,0.15);
+    }
+    .reviewMeta{
+      font-family:"EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
+        "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      color:rgba(30,30,30,0.40);
+      font-size:10.5px;
+      white-space:nowrap;
+    }
+    .reviewText{
+      min-width:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .reviewEmpty{
+      color:rgba(30,30,30,0.44);
+      font-size:12px;
+      padding:5px 3px;
+    }
 
     .toast{
       display: inline-flex;
@@ -1653,7 +1732,11 @@
 
         <div class="footer">
           <div class="footerLeft">
-            <span id="countText">0/0 done</span>
+            <div class="footerStats">
+              <span id="countText">0/0 done</span>
+              <button class="statusReviewChip" id="progressReviewBtn" type="button" title="In Progress만 보기">• <span id="progressReviewCount">0</span></button>
+              <button class="statusReviewChip" id="holdReviewBtn" type="button" title="On Hold만 보기">– <span id="holdReviewCount">0</span></button>
+            </div>
             <div class="toast" id="toast"></div>
           </div>
 
@@ -1665,6 +1748,14 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="popover reviewPopover" id="statusReviewPopover" aria-hidden="true">
+    <div class="popHead">
+      <div class="popTitle" id="statusReviewTitle">In Progress</div>
+      <button class="popClose" id="statusReviewCloseBtn" type="button" aria-label="닫기">✕</button>
+    </div>
+    <div class="popList reviewList" id="statusReviewList"></div>
   </div>
 
   <div class="popover" id="nextPopover" aria-hidden="true">
@@ -2548,6 +2639,14 @@
     const weekList = document.getElementById("weekList");
 
     const countText = document.getElementById("countText");
+    const progressReviewBtn = document.getElementById("progressReviewBtn");
+    const progressReviewCount = document.getElementById("progressReviewCount");
+    const holdReviewBtn = document.getElementById("holdReviewBtn");
+    const holdReviewCount = document.getElementById("holdReviewCount");
+    const statusReviewPopover = document.getElementById("statusReviewPopover");
+    const statusReviewTitle = document.getElementById("statusReviewTitle");
+    const statusReviewList = document.getElementById("statusReviewList");
+    const statusReviewCloseBtn = document.getElementById("statusReviewCloseBtn");
     const historyBtn = document.getElementById("historyBtn");
     const copyBtn = document.getElementById("copyBtn");
     const clearDoneBtn = document.getElementById("clearDoneBtn");
@@ -2651,6 +2750,7 @@
     let weekDetailContext = null;
     let weekEditingItem = null;
     let inboxEditingItem = null;
+    let activeReviewStatus = null;
 
     function persistCurrentWeek(){
       saveWeek(getWeekKey(), weekState);
@@ -2949,6 +3049,8 @@
       thisInboxCount.textContent = String((weekState.thisInbox || []).length);
       nextInboxCount.textContent = String((weekState.nextInbox || []).length);
       renderThisInboxList();
+      updateStatusReviewCounts();
+      if(statusReviewPopover.classList.contains("open")) renderStatusReviewList();
     }
 
     function renderNextPopover(){
@@ -2997,6 +3099,106 @@
           if(input){ input.focus(); input.select(); }
         });
       }
+    }
+
+    function collectReviewItems(status){
+      const out = [];
+      for(let day=0;day<7;day++){
+        for(const item of (weekState.days[String(day)] || [])){
+          if(getItemStatus(item) === status){
+            out.push({ source:"day", dayIndex:day, item });
+          }
+        }
+      }
+      for(const item of (weekState.thisInbox || [])){
+        if(getItemStatus(item) === status){
+          out.push({ source:"inbox", item });
+        }
+      }
+      return out;
+    }
+
+    function updateStatusReviewCounts(){
+      progressReviewCount.textContent = String(collectReviewItems("in_progress").length);
+      holdReviewCount.textContent = String(collectReviewItems("hold").length);
+      progressReviewBtn.classList.toggle("active", activeReviewStatus === "in_progress" && statusReviewPopover.classList.contains("open"));
+      holdReviewBtn.classList.toggle("active", activeReviewStatus === "hold" && statusReviewPopover.classList.contains("open"));
+    }
+
+    function renderStatusReviewList(){
+      if(!activeReviewStatus) return;
+      const items = collectReviewItems(activeReviewStatus);
+      statusReviewTitle.textContent = `${statusLabel(activeReviewStatus)} · ${items.length}`;
+      statusReviewList.innerHTML = "";
+
+      if(items.length === 0){
+        statusReviewList.innerHTML = '<div class="reviewEmpty">(empty)</div>';
+        return;
+      }
+
+      for(const entry of items){
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "reviewItem";
+        if(entry.source === "day"){
+          btn.dataset.reviewDay = String(entry.dayIndex);
+          btn.dataset.reviewId = String(entry.item.id);
+          btn.innerHTML = `
+            <span class="reviewMeta">${DOW_LABEL[entry.dayIndex]} · ${escapeHtml(dayDateStr(entry.dayIndex))}</span>
+            <span class="reviewText">${escapeHtml(entry.item.text || "")}</span>
+          `;
+        }else{
+          btn.dataset.reviewInbox = String(entry.item.id);
+          btn.innerHTML = `
+            <span class="reviewMeta">Inbox</span>
+            <span class="reviewText">${escapeHtml(entry.item.text || "")}</span>
+          `;
+        }
+        statusReviewList.appendChild(btn);
+      }
+    }
+
+    function placeStatusReviewPopover(anchorEl){
+      if(!anchorEl || !cardEl) return;
+      const popRect = statusReviewPopover.getBoundingClientRect();
+      const btnRect = anchorEl.getBoundingClientRect();
+      const cardRect = cardEl.getBoundingClientRect();
+      const gap = 7;
+      const pad = 10;
+      let top = btnRect.top - popRect.height - gap;
+      let left = btnRect.left;
+      const minLeft = cardRect.left + pad;
+      const maxLeft = cardRect.right - popRect.width - pad;
+      const minTop = cardRect.top + pad;
+      const maxTop = cardRect.bottom - popRect.height - pad;
+      left = Math.max(minLeft, Math.min(left, maxLeft));
+      top = Math.max(minTop, Math.min(top, maxTop));
+      statusReviewPopover.style.left = `${left}px`;
+      statusReviewPopover.style.top = `${top}px`;
+    }
+
+    function closeStatusReviewPopover(){
+      statusReviewPopover.classList.remove("open");
+      statusReviewPopover.setAttribute("aria-hidden", "true");
+      activeReviewStatus = null;
+      updateStatusReviewCounts();
+    }
+
+    function openStatusReviewPopover(status, anchorEl){
+      activeReviewStatus = status;
+      renderStatusReviewList();
+      statusReviewPopover.classList.add("open");
+      statusReviewPopover.setAttribute("aria-hidden", "false");
+      updateStatusReviewCounts();
+      requestAnimationFrame(() => placeStatusReviewPopover(anchorEl));
+    }
+
+    function toggleStatusReviewPopover(status, anchorEl){
+      if(statusReviewPopover.classList.contains("open") && activeReviewStatus === status){
+        closeStatusReviewPopover();
+        return;
+      }
+      openStatusReviewPopover(status, anchorEl);
     }
 
     function renderWeekList(){
@@ -3066,7 +3268,7 @@
             && String(weekEditingItem.id) === String(it.id);
           row.innerHTML = `
             <button class="check" type="button" role="checkbox" aria-checked="${status === "done"}"
-              aria-label="${statusLabel(status)} 일정. 완료 상태 변경"
+              aria-label="${statusLabel(status)} 일정. 상태 변경"
               data-id="${it.id}" data-day="${i}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -3102,6 +3304,8 @@
 
       countText.textContent = `${allDone}/${allTotal} done`;
       renderInboxRows();
+      updateStatusReviewCounts();
+      if(statusReviewPopover.classList.contains("open")) renderStatusReviewList();
 
       if(weekEditingItem){
         requestAnimationFrame(() => {
@@ -3157,8 +3361,7 @@
       const arr = weekState.days[dayKey] || [];
       weekState.days[dayKey] = arr.map(it => {
         if(it.id !== id) return it;
-        const nextStatus = getItemStatus(it) === "done" ? "todo" : "done";
-        return applyItemStatus(it, nextStatus);
+        return applyItemStatus(it, nextItemStatus(getItemStatus(it)));
       });
       persistCurrentWeek();
       renderWeekList();
@@ -3367,6 +3570,36 @@
       showToast("이번 주 오늘로 이동했어.");
     });
 
+    progressReviewBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleStatusReviewPopover("in_progress", progressReviewBtn);
+    });
+    holdReviewBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleStatusReviewPopover("hold", holdReviewBtn);
+    });
+    statusReviewCloseBtn.addEventListener("click", closeStatusReviewPopover);
+    statusReviewPopover.addEventListener("click", (e) => e.stopPropagation());
+    statusReviewList.addEventListener("click", (e) => {
+      const row = e.target.closest(".reviewItem");
+      if(!row) return;
+
+      if(row.dataset.reviewDay !== undefined && row.dataset.reviewId){
+        const day = Number(row.dataset.reviewDay);
+        const id = row.dataset.reviewId;
+        closeStatusReviewPopover();
+        openWeekDetail(day, id);
+        return;
+      }
+
+      if(row.dataset.reviewInbox){
+        thisInboxCollapsed = false;
+        renderInboxRows();
+        closeStatusReviewPopover();
+        document.getElementById("thisInboxRow")?.scrollIntoView({ block:"center", behavior:"smooth" });
+      }
+    });
+
     function placeNextPopover(anchorEl){
       if(!anchorEl || !cardEl) return;
 
@@ -3529,26 +3762,39 @@
     nextPopover.addEventListener("click", (e)=> e.stopPropagation());
 
     document.addEventListener("click", (e) => {
-      if(!nextPopover.classList.contains("open")) return;
-      const inside = nextPopover.contains(e.target);
-      const onBtn = nextInboxToggle.contains(e.target);
-      if(!inside && !onBtn) closeNextPopover();
+      if(nextPopover.classList.contains("open")){
+        const inside = nextPopover.contains(e.target);
+        const onBtn = nextInboxToggle.contains(e.target);
+        if(!inside && !onBtn) closeNextPopover();
+      }
+      if(statusReviewPopover.classList.contains("open")){
+        const insideReview = statusReviewPopover.contains(e.target);
+        const onReviewBtn = progressReviewBtn.contains(e.target) || holdReviewBtn.contains(e.target);
+        if(!insideReview && !onReviewBtn) closeStatusReviewPopover();
+      }
     });
 
     document.addEventListener("keydown", (e) => {
       if(e.key !== "Escape") return;
       if(miniOverlay.classList.contains("open")) return;
       closeNextPopover();
+      closeStatusReviewPopover();
     });
 
     window.addEventListener("resize", () => {
       if(nextPopover.classList.contains("open")){
         placeNextPopover(nextInboxToggle);
       }
+      if(statusReviewPopover.classList.contains("open")){
+        placeStatusReviewPopover(activeReviewStatus === "hold" ? holdReviewBtn : progressReviewBtn);
+      }
     }, { passive: true });
     window.addEventListener("scroll", () => {
       if(nextPopover.classList.contains("open")){
         placeNextPopover(nextInboxToggle);
+      }
+      if(statusReviewPopover.classList.contains("open")){
+        placeStatusReviewPopover(activeReviewStatus === "hold" ? holdReviewBtn : progressReviewBtn);
       }
     }, { passive: true });
 
@@ -3989,25 +4235,6 @@
       renderWeekPreview(weekId);
     }
 
-    function togglePreviewDone(weekId, sec, itemId){
-      const data = loadWeekStateById(weekId);
-      if(sec === "tx" || sec === "nx"){
-        const key = sec === "tx" ? "thisInbox" : "nextInbox";
-        data[key] = (data[key] || []).map(it => it.id === itemId ? ({...it, done: !it.done}) : it);
-      }else{
-        const day = String(sec);
-        const arr = (data.days && data.days[day]) ? data.days[day] : [];
-        data.days[day] = arr.map(it => {
-          if(it.id !== itemId) return it;
-          const nextStatus = getItemStatus(it) === "done" ? "todo" : "done";
-          return applyItemStatus(it, nextStatus);
-        });
-      }
-      saveWeekStateById(weekId, data);
-      buildWeeks();
-      renderWeekPreview(weekId);
-    }
-
     function deletePreviewItemWithUndo(weekId, sec, itemId){
       const data = loadWeekStateById(weekId);
 
@@ -4074,15 +4301,6 @@
       const q = (searchQuery || "").trim();
       const days = data.days || {};
       const rows = [];
-
-      const togBtnHtml = (weekId, sec, itemId, on) => `
-        <button class="pTog ${on ? "on" : ""}" type="button" title="done 토글"
-          data-ptog-week="${escapeHtml(weekId)}" data-ptog-sec="${escapeHtml(sec)}" data-ptog-id="${escapeHtml(itemId)}">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M20 7L10 17l-5-5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      `;
 
       const statusBtnHtml = (weekId, dayIndex, itemId, status) => {
         const next = nextItemStatus(status);
@@ -4287,12 +4505,6 @@
       const statusBtn = e.target.closest("[data-pstatus-week]");
       if(statusBtn){
         cyclePreviewStatus(statusBtn.dataset.pstatusWeek, statusBtn.dataset.pstatusDay, statusBtn.dataset.pstatusId);
-        return;
-      }
-
-      const tog = e.target.closest("[data-ptog-week]");
-      if(tog){
-        togglePreviewDone(tog.dataset.ptogWeek, tog.dataset.ptogSec, tog.dataset.ptogId);
         return;
       }
 
