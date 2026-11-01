@@ -2167,6 +2167,15 @@
       syncMeta[syncMetaKey(kind, id)] = updatedAt || new Date().toISOString();
     }
     function cloneWeekState(state){ return normalizeWeekState(JSON.parse(JSON.stringify(state))); }
+    function updateSyncedInboxBaseline(weekId, key, item){
+      const baseline = cloneWeekState(syncedWeekStates.get(weekId) || emptyWeekState());
+      const arr = baseline[key] || [];
+      const index = arr.findIndex(it => String(it.id) === String(item.id));
+      if(index >= 0) arr[index] = { ...arr[index], ...item };
+      else arr.unshift({ ...item });
+      baseline[key] = arr;
+      syncedWeekStates.set(weekId, baseline);
+    }
     function isoForWeekDay(weekId, dayIndex){
       const range = parseWeekRangeId(weekId);
       if(!range) throw new Error(`Invalid week id: ${weekId}`);
@@ -3441,7 +3450,7 @@
         setLocalUpdatedAt("inbox", carriedId, updatedAt);
         try{
           await upsertInbox(inboxRow(carriedItem, targetWeekId, "this_week", updatedAt));
-          syncedWeekStates.set(targetWeekId, cloneWeekState(targetState));
+          updateSyncedInboxBaseline(targetWeekId, "thisInbox", carriedItem);
           saveSyncMeta();
         }catch(err){
           saveSyncMeta();
@@ -3483,7 +3492,7 @@
           await upsertInbox(inboxRow(item, weekId, bucket, updatedAt));
         }
 
-        syncedWeekStates.set(weekId, cloneWeekState(weekState));
+        updateSyncedInboxBaseline(weekId, key, item);
         saveSyncMeta();
       }catch(err){
         saveSyncMeta();
@@ -3504,6 +3513,9 @@
       });
 
       if(!changedItem) return;
+
+      renderInboxRows();
+      if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
 
       try{
         if(key === "nextInbox"){
