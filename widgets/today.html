@@ -1922,8 +1922,7 @@
       async function toggleItem(id){
         state = state.map(it => {
           if(it.id !== id) return it;
-          const nextStatus = getItemStatus(it) === "done" ? "todo" : "done";
-          return applyItemStatus(it, nextStatus);
+          return applyItemStatus(it, nextArchiveStatus(getItemStatus(it)));
         });
         render();
 
