@@ -78,6 +78,14 @@ export function createUpcomingStore({ workspaceId, sbFetch, storage = localStora
     commitLocal({ ...item, done: !item.done });
     afterMutation();
   }
+  function updateText(id, text) {
+    const item = records.get(id);
+    const value = String(text || "").trim().slice(0, 80);
+    if (!item || item.deleted || !value || value === item.text) return false;
+    commitLocal({ ...item, text: value });
+    afterMutation();
+    return true;
+  }
   function remove(ids) {
     let changed = false;
     for (const id of ids) {
@@ -147,5 +155,6 @@ export function createUpcomingStore({ workspaceId, sbFetch, storage = localStora
     running = synchronize().finally(() => { running = null; });
     return running;
   }
-  return { items, add, toggle, remove, sync, getStatus: () => status };
+  return { items, add, updateText, toggle, remove, sync, getStatus: () => status };
 }
+

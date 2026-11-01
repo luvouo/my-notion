@@ -496,6 +496,23 @@
       text-overflow: ellipsis;
     }
 
+    .text[data-edit]{ cursor: pointer; }
+    .editBtn{ display: inline-flex; align-items: center; padding: 6px; }
+    .item.editing{ flex-wrap: wrap; }
+    .editRow{
+      display: flex;
+      flex: 1 1 100%;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .editInput{ flex: 1 1 0; width: 0; padding: 8px; border-radius: 10px; }
+    .editAction{ padding: 8px; border-radius: 10px; font-size: 12px; }
+    .empty, .archiveHint{ margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .empty{ padding: 12px 0; }
+    [hidden]{ display: none !important; }
+    #archiveBtn[aria-pressed="true"]{ background: rgba(165,210,235,0.30); }
+
     .del{
       flex: 0 0 auto;
       border: none;
@@ -605,7 +622,7 @@
 
     
     /* ✅ footer buttons font (Copy/Clear done) */
-    #copyBtn, #clearDoneBtn{
+    #copyBtn, #archiveBtn{
       font-family: "EnterSanChaek", ui-sans-serif, system-ui, -apple-system,
         "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     }
@@ -656,7 +673,8 @@
           <button class="btn" id="addUpcomingBtn" type="button" title="할 일 추가" aria-label="할 일 추가"></button>
         </div>
 
-        <ul class="list" id="list"></ul>
+        <p class="archiveHint" id="archiveHint" hidden>Archive · 체크를 해제하면 예정 목록으로 돌아갑니다.</p>
+        <ul class="list" id="list" aria-label="예정 일정"></ul>
 
         <div class="footer">
           <span id="countText">0/0 done</span>
@@ -665,9 +683,9 @@
               style="padding:10px 12px; border-radius:12px; font-size:12px; background: rgba(255,255,255,0.08); border-color: rgba(150,190,220,0.45);">
               Copy
             </button>
-            <button class="btn" id="clearDoneBtn" type="button"
+            <button class="btn" id="archiveBtn" type="button" aria-pressed="false" aria-controls="list"
               style="padding:10px 12px; border-radius:12px; font-size:12px; background: rgba(255,255,255,0.08); border-color: rgba(150,190,220,0.45);">
-              Clear done
+              Archive (0)
             </button>
           </span>
         </div>
@@ -736,7 +754,7 @@
       document.getElementById("retryConnection").addEventListener("click", () => location.reload());
       return;
     }
-    const { createUpcomingStore } = await import("../core/upcoming-sync.js?v=20261011-2");
+    const { createUpcomingStore } = await import("../core/upcoming-sync.js?v=20261101-1");
 
     // ===== Helpers =====
     function pad2(n){ return String(n).padStart(2,"0"); }
@@ -787,8 +805,13 @@
     const countText = document.getElementById("countText");
     const toast = document.getElementById("toast");
     const copyBtn = document.getElementById("copyBtn");
-    const clearDoneBtn = document.getElementById("clearDoneBtn");
+    const archiveBtn = document.getElementById("archiveBtn");
+    const archiveHint = document.getElementById("archiveHint");
+    const inputRow = document.querySelector(".inputRow");
     const cardEl = document.getElementById("card");
+    let showArchive = false;
+    let editingId = null;
+    let editingDraft = "";
 
     // Add button icon
     addBtn.innerHTML = `
@@ -996,9 +1019,13 @@
 
     function render(){
       state = sortUpcoming(state);
-
+      const focusedInput = listEl.querySelector(".editInput");
+      const restoreFocus = focusedInput && document.activeElement === focusedInput;
+      const selection = restoreFocus ? [focusedInput.selectionStart, focusedInput.selectionEnd] : null;
+      const visible = state.filter(it => Boolean(it.done) === showArchive);
+      if(editingId && !visible.some(it => it.id === editingId)) editingId = null;
       listEl.innerHTML = "";
-      for(const it of state){
+      for(const it of visible){
         const li = document.createElement("li");
         li.className = "item" + (it.done ? " done" : "");
 
@@ -1006,23 +1033,80 @@
         const badgeCls = "badgeDate" + (it.date ? "" : " someday");
 
         li.innerHTML = `
-          <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" data-id="${it.id}">
+          <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" aria-label="${it.done ? "예정 목록으로 복원" : "완료하고 Archive에 보관"}">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
           <span class="${badgeCls}" title="${badgeText}">${badgeText}</span>
           <div class="text"></div>
-          <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
+          <button class="del editBtn" type="button" aria-label="일정 텍스트 수정" title="일정 텍스트 수정">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="del" type="button" aria-label="삭제">✕</button>
         `;
+        li.querySelector(".check").dataset.id = it.id;
+        li.querySelector(".editBtn").dataset.edit = it.id;
+        li.querySelector("button[aria-label='삭제']").dataset.del = it.id;
         li.querySelector(".text").textContent = String(it.text || "");
         li.querySelector(".text").title = String(it.text || "");
+        li.querySelector(".text").dataset.edit = it.id;
+        if(editingId === it.id){
+          li.classList.add("editing");
+          li.querySelector(".editBtn").hidden = true;
+          const editor = document.createElement("div");
+          editor.className = "editRow";
+          editor.innerHTML = `
+            <input class="input editInput" type="text" maxlength="80" aria-label="일정 텍스트 수정" />
+            <button class="btn editAction" type="button" data-save>저장</button>
+            <button class="btn editAction" type="button" data-cancel>취소</button>`;
+          editor.querySelector("input").value = editingDraft;
+          editor.querySelector("[data-save]").disabled = !editingDraft.trim();
+          li.appendChild(editor);
+        }
         listEl.appendChild(li);
       }
-
-      const total = state.length;
+      if(!visible.length){
+        const empty = document.createElement("li");
+        empty.className = "empty";
+        empty.textContent = showArchive ? "보관된 완료 일정이 없습니다." : "예정된 일정이 없습니다.";
+        listEl.appendChild(empty);
+      }
       const done = state.filter(x => x.done).length;
-      countText.textContent = `${done}/${total} done`;
+      countText.textContent = showArchive ? `${done} archived` : `${state.length - done} upcoming`;
+      archiveBtn.textContent = `Archive (${done})`;
+      archiveBtn.setAttribute("aria-pressed", String(showArchive));
+      archiveBtn.title = showArchive ? "예정 목록으로 돌아가기" : "완료 일정 보기";
+      archiveHint.hidden = !showArchive;
+      inputRow.hidden = showArchive;
+      listEl.setAttribute("aria-label", showArchive ? "보관된 완료 일정" : "예정 일정");
+      if(restoreFocus && editingId){
+        const editor = listEl.querySelector(".editInput");
+        editor.focus({preventScroll: true});
+        editor.setSelectionRange(...selection);
+      }
+    }
+
+    function startEditing(id){
+      const item = state.find(it => it.id === id);
+      if(!item) return;
+      editingId = id;
+      editingDraft = item.text;
+      render();
+      const editor = listEl.querySelector(".editInput");
+      editor.focus();
+      editor.select();
+    }
+
+    function finishEditing(save){
+      const id = editingId;
+      const text = editingDraft.trim();
+      if(save && !text) return;
+      editingId = null;
+      if(save) store.updateText(id, text);
+      render();
+      const editButton = [...listEl.querySelectorAll(".editBtn")].find(btn => btn.dataset.edit === id);
+      (editButton || archiveBtn).focus({preventScroll: true});
     }
 
     function addItem(){
@@ -1049,24 +1133,20 @@
     }
 
     function toggleItem(id){
+      if(editingId === id) editingId = null;
       store.toggle(id);
+      showToast(showArchive ? "예정 목록으로 복원했습니다." : "Archive에 보관했습니다.");
     }
 
     function deleteItem(id){
       store.remove([id]);
     }
 
-    function clearDone(){
-      const before = state.length;
-      store.remove(state.filter(it => it.done).map(it => it.id));
-      showToast(before === state.length ? "완료된 항목이 없어." : "완료 항목을 지웠어.");
-    }
-
     // ===== Events =====
     addBtn.addEventListener("click", addItem);
 
     inputEl.addEventListener("keydown", (e)=>{
-      if(e.key === "Enter"){
+      if(e.key === "Enter" && !e.isComposing){
         e.preventDefault();
         if(!addBtn.disabled) addBtn.click();
       }
@@ -1075,11 +1155,29 @@
     listEl.addEventListener("click", (e)=>{
       const check = e.target.closest(".check");
       const del = e.target.closest("[data-del]");
-      if(check) toggleItem(check.dataset.id);
+      const edit = e.target.closest("[data-edit]");
+      if(e.target.closest("[data-save]")) finishEditing(true);
+      else if(e.target.closest("[data-cancel]")) finishEditing(false);
+      else if(check) toggleItem(check.dataset.id);
       else if(del) deleteItem(del.dataset.del);
+      else if(edit && edit.dataset.edit !== editingId) startEditing(edit.dataset.edit);
+    });
+
+    listEl.addEventListener("input", (e)=>{
+      if(!e.target.matches(".editInput")) return;
+      editingDraft = e.target.value;
+      e.target.closest(".editRow").querySelector("[data-save]").disabled = !editingDraft.trim();
     });
 
     listEl.addEventListener("keydown", (e)=>{
+      if(e.isComposing) return;
+      if(e.target.matches(".editInput")){
+        if(e.key === "Enter" || e.key === "Escape"){
+          e.preventDefault();
+          finishEditing(e.key === "Enter");
+        }
+        return;
+      }
       const check = e.target.closest(".check");
       if(!check) return;
       if(e.key === "Enter" || e.key === " "){
@@ -1088,12 +1186,17 @@
       }
     });
 
-    clearDoneBtn.addEventListener("click", clearDone);
+    archiveBtn.addEventListener("click", ()=>{
+      editingId = null;
+      showArchive = !showArchive;
+      closeDP();
+      render();
+    });
 
     copyBtn.addEventListener("click", async ()=>{
       const lines = [];
-      lines.push("[Upcoming]");
-      for(const it of state){
+      lines.push(showArchive ? "[Upcoming Archive]" : "[Upcoming]");
+      for(const it of state.filter(it => Boolean(it.done) === showArchive)){
         const dateLabel = it.date ? (ymdDotFromDash(it.date) || it.date) : "Someday";
         lines.push(`- [${it.done ? "x" : " "}] (${dateLabel}) ${it.text}`);
       }
@@ -1113,3 +1216,4 @@
   </script>
 </body>
 </html>
+
