@@ -3530,7 +3530,11 @@
         }
       }catch(err){
         // Keep the local state so the user does not lose the status change.
-        showToast("서버 저장 실패. 로컬에는 저장했어.");
+        if(err && err.code === "23514"){
+          showToast("DB status 설정이 아직 Todo/Done 전용이야.");
+        }else{
+          showToast("서버 저장 실패. 로컬에는 저장했어.");
+        }
       }
 
       renderInboxRows();
