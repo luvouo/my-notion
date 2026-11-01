@@ -1856,7 +1856,7 @@
           li.dataset.itemId = it.id;
           li.innerHTML = `
             <button class="dragHandle" type="button" draggable="true" aria-label="순서 변경" data-drag-id="${escapeHtml(it.id)}">⠿</button>
-            <div class="check" role="checkbox" aria-checked="${status === "done"}" aria-label="${statusLabel(status)} 일정. 완료 상태 변경" tabindex="0" data-id="${it.id}">
+            <div class="check" role="checkbox" aria-checked="${status === "done"}" aria-label="${statusLabel(status)} 일정. 상태 변경" tabindex="0" data-id="${it.id}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
