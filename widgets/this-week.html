@@ -4235,25 +4235,6 @@
       renderWeekPreview(weekId);
     }
 
-    function togglePreviewDone(weekId, sec, itemId){
-      const data = loadWeekStateById(weekId);
-      if(sec === "tx" || sec === "nx"){
-        const key = sec === "tx" ? "thisInbox" : "nextInbox";
-        data[key] = (data[key] || []).map(it => it.id === itemId ? ({...it, done: !it.done}) : it);
-      }else{
-        const day = String(sec);
-        const arr = (data.days && data.days[day]) ? data.days[day] : [];
-        data.days[day] = arr.map(it => {
-          if(it.id !== itemId) return it;
-          const nextStatus = getItemStatus(it) === "done" ? "todo" : "done";
-          return applyItemStatus(it, nextStatus);
-        });
-      }
-      saveWeekStateById(weekId, data);
-      buildWeeks();
-      renderWeekPreview(weekId);
-    }
-
     function deletePreviewItemWithUndo(weekId, sec, itemId){
       const data = loadWeekStateById(weekId);
 
@@ -4320,15 +4301,6 @@
       const q = (searchQuery || "").trim();
       const days = data.days || {};
       const rows = [];
-
-      const togBtnHtml = (weekId, sec, itemId, on) => `
-        <button class="pTog ${on ? "on" : ""}" type="button" title="done 토글"
-          data-ptog-week="${escapeHtml(weekId)}" data-ptog-sec="${escapeHtml(sec)}" data-ptog-id="${escapeHtml(itemId)}">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M20 7L10 17l-5-5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      `;
 
       const statusBtnHtml = (weekId, dayIndex, itemId, status) => {
         const next = nextItemStatus(status);
@@ -4533,12 +4505,6 @@
       const statusBtn = e.target.closest("[data-pstatus-week]");
       if(statusBtn){
         cyclePreviewStatus(statusBtn.dataset.pstatusWeek, statusBtn.dataset.pstatusDay, statusBtn.dataset.pstatusId);
-        return;
-      }
-
-      const tog = e.target.closest("[data-ptog-week]");
-      if(tog){
-        togglePreviewDone(tog.dataset.ptogWeek, tog.dataset.ptogSec, tog.dataset.ptogId);
         return;
       }
 
