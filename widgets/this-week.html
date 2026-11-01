@@ -2429,7 +2429,7 @@
         const localStatus = getInboxStatus(entry.item, entry.bucket);
         const oldStatus = old ? getInboxStatus(old.item, old.bucket) : null;
         const remoteStatus = remote ? normalizeItemStatus(remote.status, false) : null;
-        const expectedRemoteStatus = entry.bucket === "this_week" ? localStatus : (entry.item.done ? "done" : "todo");
+        const expectedRemoteStatus = localStatus;
         const localChanged = !old || old.bucket !== entry.bucket || old.item.text !== entry.item.text || oldStatus !== localStatus;
         const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.bucket !== entry.bucket || remote.title !== entry.item.text || remoteStatus !== expectedRemoteStatus);
         if(localChanged || remoteDiffers){
