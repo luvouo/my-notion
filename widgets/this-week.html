@@ -3049,6 +3049,8 @@
       thisInboxCount.textContent = String((weekState.thisInbox || []).length);
       nextInboxCount.textContent = String((weekState.nextInbox || []).length);
       renderThisInboxList();
+      updateStatusReviewCounts();
+      if(statusReviewPopover.classList.contains("open")) renderStatusReviewList();
     }
 
     function renderNextPopover(){
@@ -3266,7 +3268,7 @@
             && String(weekEditingItem.id) === String(it.id);
           row.innerHTML = `
             <button class="check" type="button" role="checkbox" aria-checked="${status === "done"}"
-              aria-label="${statusLabel(status)} 일정. 완료 상태 변경"
+              aria-label="${statusLabel(status)} 일정. 상태 변경"
               data-id="${it.id}" data-day="${i}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
