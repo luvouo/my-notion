@@ -358,7 +358,7 @@
       const todaySubtitle = document.getElementById("todaySubtitle");
       const todayButton = document.getElementById("todayButton");
       const calendarDates = document.getElementById("calendarDates");
-      const today = startOfDay(new Date());
+      let today = startOfDay(new Date());
       const weekdayNames = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
       let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       let selectedDate = null;
@@ -382,6 +382,16 @@
         const month = String(today.getMonth() + 1).padStart(2, "0");
         const day = String(today.getDate()).padStart(2, "0");
         return `Today is ${month}/${day}/${weekdayNames[today.getDay()]}`;
+      }
+
+      function refreshToday(){
+        const next = startOfDay(new Date());
+        if(sameDay(today, next)) return;
+        const followingToday = !selectedDate && sameDay(visibleMonth, new Date(today.getFullYear(), today.getMonth(), 1));
+        today = next;
+        todaySubtitle.textContent = todayText();
+        if(followingToday) visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        render();
       }
 
       function render(){
@@ -445,6 +455,8 @@
       });
 
       todayButton.addEventListener("click", () => {
+        today = startOfDay(new Date());
+        todaySubtitle.textContent = todayText();
         visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         selectedDate = startOfDay(today);
         render();
@@ -452,6 +464,11 @@
 
       todaySubtitle.textContent = todayText();
       render();
+      setInterval(refreshToday, 60000);
+      window.addEventListener("focus", refreshToday);
+      document.addEventListener("visibilitychange", () => {
+        if(!document.hidden) refreshToday();
+      });
     })();
   </script>
 </body>

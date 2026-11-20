@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Today — Soft Schedule</title>
 
+  <link rel="stylesheet" href="../core/widget-list.css?v=1" />
   <style>
     :root{
       /* Pastel Pink */
@@ -240,22 +241,7 @@
       min-width: 0;
       box-sizing: border-box;
     }
-    .item.dragging{ opacity: .48; }
-    .item.drop-before{ box-shadow: 0 -3px 0 rgba(255,170,190,.75); }
-    .item.drop-after{ box-shadow: 0 3px 0 rgba(255,170,190,.75); }
-
-    .dragHandle{
-      flex: 0 0 auto;
-      border: 0;
-      background: transparent;
-      color: rgba(30,30,30,.34);
-      padding: 5px 2px;
-      cursor: grab;
-      font-size: 16px;
-      line-height: 1;
-      touch-action: none;
-    }
-    .dragHandle:active{ cursor: grabbing; }
+    .item, .pItem{ --order-marker: rgba(255,170,190,.75); }
 
     .check{
       width: 18px;
@@ -335,8 +321,8 @@
       box-shadow:var(--ring);
     }
     .editBtn{
-      font-size:15px;
-      transform:scaleX(-1);
+      display:inline-flex;
+      align-items:center;
     }
 
     .del, .editBtn{
@@ -356,8 +342,7 @@
       color: rgba(30,30,30,0.78);
       box-shadow: var(--ring);
     }
-    .del:active{ transform: scale(0.96); }
-    .editBtn:active{ transform: scaleX(-1) scale(0.96); }
+    .del:active, .editBtn:active{ transform: scale(0.96); }
     .del:focus-visible, .editBtn:focus-visible{
       outline: none;
       background: rgba(255,192,203,0.12);
@@ -1317,6 +1302,7 @@
 
   <script src="../env.js"></script>
   <script type="module">
+    import { pencilIcon, dragHandle, enableListReordering, moveItem, rankDayItems, captureInlineInput, restoreInlineCaret } from "../core/widget-list.js?v=1";
     (async function main(){
       // =====================
       // 0) Optional Supabase integration
@@ -1549,9 +1535,8 @@
       // =====================
       // 2) DOM
       // =====================
-      const todayStr = ymd(new Date());
-      const yesterdayStr = ymd(new Date(Date.now() - 86400000));
-      const KEY_TODAY = `${PREFIX_DAY}${todayStr}`;
+      let todayStr = ymd();
+      let todayKey = `${PREFIX_DAY}${todayStr}`;
 
       const metaText = document.getElementById("metaText");
       const listEl = document.getElementById("list");
@@ -1598,8 +1583,13 @@
       const pendingArchiveToggles = new Set();
       let editingId = null;
       let detailContext = null;
-      let dragId = null;
       let deletedSnapshot = null;
+      let orderWrites = Promise.resolve();
+      const draggingToday = enableListReordering(listEl, (from, to, after) => reorderDayItems(todayStr, from, to, after));
+      const draggingArchive = enableListReordering(previewBox, (from, to, after) => {
+        if(pickedDate) reorderDayItems(pickedDate, from, to, after);
+      });
+      const isEditingOrDragging = () => editingId !== null || draggingToday() || draggingArchive();
 
       // Cross-client refresh guards. Today writes directly to Supabase, so
       // remote refresh must not replace optimistic UI while a write is pending.
@@ -1678,32 +1668,43 @@
           if(!k.startsWith(PREFIX_DAY)) continue;
 
           const dateStr = k.slice(PREFIX_DAY.length);
-          if(dateStr === todayStr) continue;
-          if(!parseYmd(dateStr)) continue;
+          if(!parseYmd(dateStr) || dateStr >= todayStr) continue;
 
           keys.push({ k, dateStr });
         }
 
-        let moved = 0;
+        const archivedKeys = [];
         for(const { k, dateStr } of keys){
-          if(nextArchive[dateStr]){
-            localStorage.removeItem(k);
-            continue;
-          }
-
           try{
-            const raw = localStorage.getItem(k);
-            const items = raw ? JSON.parse(raw) : null;
-            if(Array.isArray(items)){
-              nextArchive[dateStr] = items;
-              moved++;
-            }
-            localStorage.removeItem(k);
+            const items = JSON.parse(localStorage.getItem(k));
+            if(!Array.isArray(items)) continue;
+            nextArchive[dateStr] = mergeLocalDay(items, nextArchive[dateStr]);
+            archivedKeys.push(k);
           }catch(e){}
         }
 
-        if(moved > 0) saveArchive(nextArchive);
+        if(archivedKeys.length){
+          saveArchive(nextArchive);
+          for(const key of archivedKeys) localStorage.removeItem(key);
+        }
         return nextArchive;
+      }
+
+      function mergeLocalDay(dayItems, archivedItems = []){
+        if(!Array.isArray(archivedItems)) return sortItems(dayItems);
+        const ids = new Set(dayItems.map(item => String(item.id)));
+        return sortItems([...dayItems, ...archivedItems.filter(item => !ids.has(String(item.id)))]);
+      }
+
+      function loadLocalToday(){
+        archive = autoArchivePastDays(todayStr);
+        const cached = loadDay(todayKey);
+        if(!Array.isArray(archive[todayStr])) return cached;
+        const items = mergeLocalDay(cached, archive[todayStr]);
+        saveDay(todayKey, items);
+        delete archive[todayStr];
+        saveArchive(archive);
+        return items;
       }
 
       // =====================
@@ -1811,26 +1812,38 @@
         });
       }
 
+      function refreshDisplayedDay(){
+        const date = ymd();
+        if(date === todayStr || pendingServerMutations || isEditingOrDragging() || detailContext || modalOverlay.classList.contains("open")) return;
+        todayStr = date;
+        todayKey = `${PREFIX_DAY}${todayStr}`;
+        todayMutationVersion += 1;
+        state = USE_SUPABASE ? loadDay(todayKey) : loadLocalToday();
+        metaText.textContent = todayStr;
+        deletedSnapshot = null;
+        render();
+      }
+
       async function refreshTodayFromRemote(){
-        if(!USE_SUPABASE || pendingServerMutations > 0) return;
+        refreshDisplayedDay();
+        if(!USE_SUPABASE || pendingServerMutations > 0 || isEditingOrDragging()) return;
         if(todayRemoteRefreshPromise) return todayRemoteRefreshPromise;
 
         const expectedMutationVersion = todayMutationVersion;
         todayRemoteRefreshPromise = (async () => {
           try{
             const nextState = await sbLoadDay(todayStr);
-            if(expectedMutationVersion !== todayMutationVersion || pendingServerMutations > 0) return;
+            if(expectedMutationVersion !== todayMutationVersion || pendingServerMutations > 0 || isEditingOrDragging()) return;
 
             state = nextState;
-            saveDay(KEY_TODAY, state);
+            saveDay(todayKey, state);
             render();
 
             if(modalOverlay.classList.contains("open")){
               const nextArchive = await sbLoadArchiveAll();
-              if(expectedMutationVersion !== todayMutationVersion || pendingServerMutations > 0) return;
+              if(expectedMutationVersion !== todayMutationVersion || pendingServerMutations > 0 || isEditingOrDragging()) return;
               archive = nextArchive;
               buildDates();
-              if(pickedDate && archive[pickedDate]) renderPreview(pickedDate);
             }
           }catch(err){
             console.error("[Today Widget] remote refresh failed:", err);
@@ -1846,6 +1859,9 @@
       // 5) Render
       // =====================
       function render(){
+        if(editingId && !state.some(item => item.id === editingId)) editingId = null;
+        const editorSelector = editingId && `[data-edit-input="${CSS.escape(editingId)}"]`;
+        const draft = editorSelector && captureInlineInput(listEl.querySelector(editorSelector));
         listEl.innerHTML = "";
 
         for(const it of state){
@@ -1853,9 +1869,9 @@
           const statusClass = statusCssClass(status);
           const li = document.createElement("li");
           li.className = "item" + (statusClass ? " " + statusClass : "");
-          li.dataset.itemId = it.id;
+          li.dataset.orderId = it.id;
           li.innerHTML = `
-            <button class="dragHandle" type="button" draggable="true" aria-label="순서 변경" data-drag-id="${escapeHtml(it.id)}">⠿</button>
+            ${editingId === it.id ? "" : dragHandle}
             <div class="check" role="checkbox" aria-checked="${status === "done"}" aria-label="${statusLabel(status)} 일정. 상태 변경" tabindex="0" data-id="${it.id}">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1865,20 +1881,15 @@
               <span class="carriedMark" aria-hidden="true">→</span>
             </div>
             ${editingId === it.id
-              ? `<input class="inlineEdit" data-edit-input="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="80" aria-label="일정 제목 수정" />`
+              ? `<input class="inlineEdit" data-edit-input="${escapeHtml(it.id)}" value="${escapeHtml(draft?.value ?? it.text)}" maxlength="80" aria-label="일정 제목 수정" />`
               : `<div class="text" role="button" tabindex="0" data-detail-id="${escapeHtml(it.id)}" title="${escapeHtml(it.text)}"><span class="textLabel">${escapeHtml(it.text)}</span>${String(it.details || "").trim() ? `<span class="noteDot" title="Details 있음" aria-label="Details 있음"></span>` : ""}</div>`}
-            <button class="editBtn" type="button" aria-label="제목 수정" data-edit="${escapeHtml(it.id)}">✎</button>
+            <button class="editBtn" type="button" aria-label="제목 수정" data-edit="${escapeHtml(it.id)}">${pencilIcon}</button>
             <button class="del" type="button" aria-label="삭제" data-del="${it.id}">✕</button>
           `;
           listEl.appendChild(li);
         }
 
-        if(editingId){
-          requestAnimationFrame(() => {
-            const input = listEl.querySelector(`[data-edit-input="${CSS.escape(editingId)}"]`);
-            if(input){ input.focus(); input.select(); }
-          });
-        }
+        if(editorSelector) restoreInlineCaret(listEl.querySelector(editorSelector), draft);
 
         const total = state.length;
         const done = state.filter(x => x.done).length;
@@ -1911,11 +1922,11 @@
             await sbUpsertRow(itemToRow(it, todayStr));
           }catch(err){
             console.error("[Today Widget] add sync failed:", err);
-            saveDay(KEY_TODAY, state);
+            saveDay(todayKey, state);
             showToast("서버 저장 실패. 로컬에 임시 저장했어.");
           }
         }else{
-          saveDay(KEY_TODAY, state);
+          saveDay(todayKey, state);
         }
       }
 
@@ -1940,7 +1951,7 @@
             showToast("서버 반영 실패.");
           }
         }else{
-          saveDay(KEY_TODAY, state);
+          saveDay(todayKey, state);
         }
       }
 
@@ -1962,7 +1973,7 @@
             return;
           }
         }else{
-          saveDay(KEY_TODAY, state);
+          saveDay(todayKey, state);
         }
 
         deletedSnapshot = { item, index };
@@ -1980,14 +1991,18 @@
               render();
               showToast("복구하지 못했어.");
             }
-          }else saveDay(KEY_TODAY, state);
+          }else saveDay(todayKey, state);
         }, 5000);
       }
 
       function beginInlineEdit(id){
         if(!state.some(it => it.id === id)) return;
+        const alreadyEditing = id === editingId;
         editingId = id;
-        render();
+        if(!alreadyEditing) render();
+        const editor = listEl.querySelector("[data-edit-input]");
+        editor.focus();
+        if(!alreadyEditing) editor.select();
       }
 
       async function saveInlineEdit(id, value){
@@ -2007,48 +2022,55 @@
             render();
             showToast("제목을 저장하지 못했어.");
           }
-        }else saveDay(KEY_TODAY, state);
+        }else saveDay(todayKey, state);
       }
 
       function clearDone(){
         state = state.filter(it => !it.done);
         render();
-        if(!USE_SUPABASE) saveDay(KEY_TODAY, state);
+        if(!USE_SUPABASE) saveDay(todayKey, state);
       }
 
       function resetAll(){
         state = [];
         render();
-        if(!USE_SUPABASE) saveDay(KEY_TODAY, state);
+        if(!USE_SUPABASE) saveDay(todayKey, state);
       }
 
-      async function persistOrder(){
-        const base = Date.now() + state.length;
-        state = state.map((it, index) => ({ ...it, sort_order: base - index }));
-        render();
-        if(USE_SUPABASE){
-          try{
-            await Promise.all(state.map(it => sbPatchRow(it.id, {
-              sort_order: it.sort_order,
-              updated_at: nowIso()
-            })));
-          }catch(err){
-            console.error("[Today Widget] reorder sync failed:", err);
-            showToast("순서를 저장하지 못했어.");
-          }
-        }else saveDay(KEY_TODAY, state);
-      }
+      function reorderDayItems(dateStr, from, to, after){
+        const isToday = dateStr === todayStr;
+        const items = isToday ? state : archive[dateStr] || [];
+        const moved = moveItem(items, from, to, after);
+        if(moved === items) return;
+        const ranked = rankDayItems(moved);
 
-      function reorderItem(sourceId, targetId, placeAfter){
-        if(!sourceId || !targetId || sourceId === targetId) return;
-        const from = state.findIndex(it => it.id === sourceId);
-        const target = state.findIndex(it => it.id === targetId);
-        if(from < 0 || target < 0) return;
-        const [moved] = state.splice(from, 1);
-        let insertAt = state.findIndex(it => it.id === targetId);
-        if(placeAfter) insertAt += 1;
-        state.splice(insertAt, 0, moved);
-        persistOrder();
+        if(isToday){
+          state = ranked;
+          render();
+        }
+        if(!isToday || archive[dateStr]) archive[dateStr] = ranked;
+        if(pickedDate === dateStr) renderPreview(dateStr);
+
+        if(!USE_SUPABASE){
+          if(isToday) saveDay(todayKey, state);
+          else saveArchive(archive);
+          return;
+        }
+
+        const previousWrite = orderWrites;
+        orderWrites = runServerMutation(async () => {
+          await previousWrite;
+          const updatedAt = nowIso();
+          const results = await Promise.allSettled(ranked.map(item => sbPatchRow(item.id, {
+            sort_order: item.sort_order,
+            updated_at: updatedAt
+          })));
+          const failed = results.find(result => result.status === "rejected" || !result.value?.length);
+          if(failed) throw failed.reason || new Error("순서를 저장할 일정을 찾지 못했습니다.");
+        }).catch(err => {
+          console.error("[Today Widget] reorder sync failed:", err);
+          showToast("순서를 서버에 저장하지 못했어.");
+        });
       }
 
       function findItemContext(id, dateStr = todayStr){
@@ -2117,7 +2139,7 @@
         try{
           if(USE_SUPABASE) await sbPatchRow(context.id, patch);
           else{
-            saveDay(KEY_TODAY, state);
+            saveDay(todayKey, state);
             saveArchive(archive);
           }
           showToast(newDate === oldDate ? "상세를 저장했어." : `${formatDateLabel(newDate)}로 이동했어.`);
@@ -2196,18 +2218,21 @@
             }
           }catch(err){
             console.error("[Today Widget] carry sync failed:", err);
-            saveDay(KEY_TODAY, state);
+            saveDay(todayKey, state);
             showToast("서버 저장 실패. 로컬에 임시 저장했어.");
           }
         }else{
-          saveDay(KEY_TODAY, state);
+          saveDay(todayKey, state);
         }
 
         showToast(`${dateStr} 미완료 ${toAdd.length}개 가져왔어.`);
       }
 
       async function carryOverYesterday(){
-        await carryOverUnfinishedFromDate(yesterdayStr);
+        refreshDisplayedDay();
+        const yesterday = ymdToDate(todayStr);
+        yesterday.setDate(yesterday.getDate() - 1);
+        await carryOverUnfinishedFromDate(ymd(yesterday));
       }
 
       async function copyToday(mode = "all"){
@@ -2368,7 +2393,8 @@
           const toggleKey = `${dateStr}::${it.id}`;
           const isPending = pendingArchiveToggles.has(toggleKey);
           return `
-            <div class="pItem">
+            <div class="pItem" data-order-id="${escapeHtml(it.id)}">
+              ${dragHandle}
               <button class="${badgeCls}" type="button" data-preview-toggle="${escapeHtml(it.id)}"
                 title="클릭: ${statusLabel(nextStatus)}로 변경"
                 aria-label="${escapeHtml(it.text || "할 일")} 상태를 ${statusLabel(nextStatus)}로 변경"
@@ -2469,6 +2495,7 @@
       addBtn.addEventListener("click", async () => {
         if(addBtn.disabled) return;
 
+        refreshDisplayedDay();
         await addItem(inputEl.value);
         inputEl.value = "";
         inputEl.focus();
@@ -2476,7 +2503,7 @@
       });
 
       inputEl.addEventListener("keydown", (e) => {
-        if(e.key === "Enter"){
+        if(e.key === "Enter" && !e.isComposing && e.keyCode !== 229){
           e.preventDefault();
           if(!addBtn.disabled) addBtn.click();
         }
@@ -2496,6 +2523,7 @@
       listEl.addEventListener("keydown", async (e) => {
         const editInput = e.target.closest("[data-edit-input]");
         if(editInput){
+          if(e.isComposing || e.keyCode === 229) return;
           if(e.key === "Enter"){
             e.preventDefault();
             await saveInlineEdit(editInput.dataset.editInput, editInput.value);
@@ -2518,36 +2546,6 @@
           e.preventDefault();
           await toggleItem(check.dataset.id);
         }
-      });
-
-      listEl.addEventListener("dragstart", (e) => {
-        const handle = e.target.closest("[data-drag-id]");
-        if(!handle){ e.preventDefault(); return; }
-        dragId = handle.dataset.dragId;
-        handle.closest(".item")?.classList.add("dragging");
-        e.dataTransfer.effectAllowed = "move";
-        try{ e.dataTransfer.setData("text/plain", dragId); }catch(_){}
-      });
-      listEl.addEventListener("dragover", (e) => {
-        if(!dragId) return;
-        const row = e.target.closest(".item");
-        if(!row || row.dataset.itemId === dragId) return;
-        e.preventDefault();
-        listEl.querySelectorAll(".drop-before,.drop-after").forEach(el => el.classList.remove("drop-before", "drop-after"));
-        const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
-        row.classList.add(after ? "drop-after" : "drop-before");
-        e.dataTransfer.dropEffect = "move";
-      });
-      listEl.addEventListener("drop", (e) => {
-        const row = e.target.closest(".item");
-        if(!row || !dragId) return;
-        e.preventDefault();
-        const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
-        reorderItem(dragId, row.dataset.itemId, after);
-      });
-      listEl.addEventListener("dragend", () => {
-        dragId = null;
-        listEl.querySelectorAll(".dragging,.drop-before,.drop-after").forEach(el => el.classList.remove("dragging", "drop-before", "drop-after"));
       });
 
       if(clearDoneBtn) clearDoneBtn.addEventListener("click", clearDone);
@@ -2650,15 +2648,13 @@
       try{
         if(USE_SUPABASE){
           state = await sbLoadDay(todayStr);
-          saveDay(KEY_TODAY, state);
+          saveDay(todayKey, state);
         }else{
-          archive = autoArchivePastDays(todayStr);
-          state = loadDay(KEY_TODAY);
+          state = loadLocalToday();
         }
       }catch(err){
         console.error("[Today Widget] initial load failed:", err);
-        archive = autoArchivePastDays(todayStr);
-        state = loadDay(KEY_TODAY);
+        state = loadLocalToday();
         showToast("서버 로딩 실패. 로컬 캐시를 보여주고 다시 동기화할게.");
       }
 

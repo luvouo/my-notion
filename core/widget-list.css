@@ -1,0 +1,13 @@
+.dragHandle {
+  flex: 0 0 auto;
+  color: rgba(30, 30, 30, .34);
+  padding: 5px 2px;
+  cursor: grab;
+  font-size: 16px;
+  line-height: 1;
+  user-select: none;
+}
+.dragHandle:active { cursor: grabbing; }
+[data-order-id].dragging { opacity: .48; }
+[data-order-id].drop-before { box-shadow: 0 -3px 0 var(--order-marker, rgba(150, 190, 220, .75)); }
+[data-order-id].drop-after { box-shadow: 0 3px 0 var(--order-marker, rgba(150, 190, 220, .75)); }
