@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>This Week — Soft Schedule</title>
 
+  <link rel="stylesheet" href="../core/widget-list.css?v=1" />
   <style>
     :root{
       --accent-1: rgba(165, 206, 240, 0.88);
@@ -689,8 +690,8 @@
       box-shadow:0 0 0 3px rgba(165,206,240,0.22);
     }
     .editBtn{
-      font-size:15px;
-      transform:scaleX(-1);
+      display:inline-flex;
+      align-items:center;
     }
 
     .del, .editBtn{
@@ -710,8 +711,7 @@
       color: rgba(30,30,30,0.78);
       box-shadow: 0 0 0 3px rgba(165,206,240,0.20);
     }
-    .del:active{ transform: scale(0.96); }
-    .editBtn:active{ transform: scaleX(-1) scale(0.96); }
+    .del:active, .editBtn:active{ transform: scale(0.96); }
     .del:focus-visible, .editBtn:focus-visible{
       outline:none;
       background: rgba(165,206,240,0.10);
@@ -1874,6 +1874,8 @@
 
   <script src="../env.js"></script>
   <script type="module">
+  import { pencilIcon, dragHandle, enableListReordering, moveItem, rankDayItems, captureInlineInput, restoreInlineCaret } from "../core/widget-list.js?v=1";
+  import { createWeeklyInboxOrder } from "../core/weekly-inbox-order.js?v=1";
   (async function main(){
     /* ========= optional Supabase sync (same passcode/workspace as Today) ========= */
     let USE_SUPABASE = false;
@@ -2149,7 +2151,9 @@
     /* ========= Supabase item-per-row sync ========= */
     const WEEK_SYNC_META_KEY = `soft_schedule_week_row_sync_${workspace_id}_v3`;
     const syncTimers = new Map();
+    const runningWeekSyncs = new Map();
     const syncedWeekStates = new Map();
+    const inboxOrder = createWeeklyInboxOrder({ workspaceId: workspace_id, sbFetch });
     let remoteRefreshPromise = null;
     let localMutationVersion = 0;
 
@@ -2248,9 +2252,18 @@
           workspace_id: `eq.${workspace_id}`,
           order: "updated_at.asc",
           limit: "5000"
-        }})
+        }}),
+        syncInboxOrders()
       ]);
       return { items: items || [], inboxes: inboxes || [] };
+    }
+    async function syncInboxOrders(showError = false){
+      try{
+        await inboxOrder.sync();
+      }catch(err){
+        describeSupabaseError("inbox order sync failed", err);
+        if(showError) showToast("Inbox 순서는 로컬에 저장했고 다시 동기화할게.");
+      }
     }
     async function upsertItem(row){
       return sbFetch("items?on_conflict=id", {
@@ -2458,6 +2471,7 @@
         for(let day=0;day<7;day++){
           resolved.days[String(day)] = sortDayItems(resolved.days[String(day)]);
         }
+        applyInboxOrders(weekId, resolved);
 
         saveWeek(key, resolved, false);
         syncedWeekStates.set(weekId, cloneWeekState(resolved));
@@ -2499,8 +2513,12 @@
       for(const [id, entry] of currentItems){
         const old = previousItems.get(id);
         const remote = remoteItems.get(id);
-        const localChanged = !old || old.day !== entry.day || old.item.text !== entry.item.text || getItemStatus(old.item) !== getItemStatus(entry.item);
-        const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.title !== entry.item.text || normalizeItemStatus(remote.status, false) !== getItemStatus(entry.item) || Number(remote.dayIndex) !== entry.day);
+        const order = entry.item.sort_order ?? null;
+        const localChanged = !old || old.day !== entry.day || old.item.text !== entry.item.text
+          || getItemStatus(old.item) !== getItemStatus(entry.item) || (old.item.sort_order ?? null) !== order;
+        const remoteDiffers = knownRemote && (!remote || remote.deleted || remote.title !== entry.item.text
+          || normalizeItemStatus(remote.status, false) !== getItemStatus(entry.item)
+          || Number(remote.dayIndex) !== entry.day || (remote.sort_order ?? null) !== order);
         if(localChanged || remoteDiffers){
           const updatedAt = localChanged
             ? now
@@ -2511,6 +2529,7 @@
             if(old.item.text !== entry.item.text) patch.title = (entry.item.text || "").trim();
             if(getItemStatus(old.item) !== getItemStatus(entry.item)) patch.status = getItemStatus(entry.item);
             if(old.day !== entry.day) patch.due_at = isoForWeekDay(weekId, entry.day);
+            if((old.item.sort_order ?? null) !== order) patch.sort_order = order;
             await patchItemFields(entry.item.id, patch);
           }else{
             await upsertItem(itemRow(entry.item, weekId, entry.day, updatedAt));
@@ -2556,32 +2575,33 @@
       const snapshot = cloneWeekState(state);
       clearTimeout(syncTimers.get(weekId));
       syncTimers.set(weekId, setTimeout(async () => {
-        try{
-          await syncWeekState(weekId, snapshot);
-        }catch(err){
+        syncTimers.delete(weekId);
+        const previous = runningWeekSyncs.get(weekId) || Promise.resolve();
+        const write = previous.then(() => syncWeekState(weekId, snapshot)).catch(err => {
           saveSyncMeta();
           describeSupabaseError("row sync failed", err);
           showToast("서버 저장 실패. 로컬에는 저장했고 다시 동기화할게.");
-        }finally{
-          syncTimers.delete(weekId);
-        }
+        });
+        runningWeekSyncs.set(weekId, write);
+        try{ await write; }
+        finally{ if(runningWeekSyncs.get(weekId) === write) runningWeekSyncs.delete(weekId); }
       }, 250));
     }
 
     async function refreshFromRemote(){
-      if(!USE_SUPABASE || syncTimers.size > 0) return;
+      refreshDefaultWeekday();
+      if(!USE_SUPABASE || syncTimers.size || runningWeekSyncs.size || isEditingOrDragging()) return;
       if(remoteRefreshPromise) return remoteRefreshPromise;
       remoteRefreshPromise = (async () => {
         try{
           const expectedMutationVersion = localMutationVersion;
           const applied = await bootstrapWeekSync(expectedMutationVersion);
-          if(!applied) return;
+          if(!applied || expectedMutationVersion !== localMutationVersion || isEditingOrDragging()) return;
           weekState = loadWeek(getWeekKey());
           renderWeekList();
           if(nextPopover.classList.contains("open")) renderNextPopover();
           if(modalOverlay.classList.contains("open")){
             buildWeeks();
-            if(pickedWeekId) renderWeekPreview(pickedWeekId);
           }
         }catch(err){
           describeSupabaseError("remote refresh failed", err);
@@ -2592,12 +2612,18 @@
       return remoteRefreshPromise;
     }
 
+    function applyInboxOrders(weekId, data){
+      for(const inbox of ["thisInbox", "nextInbox"]){
+        data[inbox] = inboxOrder.apply(weekId, inbox, data[inbox]);
+      }
+      return data;
+    }
     function loadWeek(key){
       try{
         const raw = localStorage.getItem(key);
         if(!raw) return emptyWeekState();
         const parsed = JSON.parse(raw);
-        return normalizeWeekState(parsed);
+        return applyInboxOrders(key.slice(WEEK_PREFIX.length), normalizeWeekState(parsed));
       }catch(e){ return emptyWeekState(); }
     }
     function saveWeek(key, data, sync = true){
@@ -2736,18 +2762,35 @@
     const WK = ["M","T","W","T","F","S","S"];
     const DOW_LABEL = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
-    let viewMonday = mondayOfWeek(new Date());
-    let selectedDayIndex = (() => {
-      const today = new Date();
-      const mon = mondayOfWeek(today);
-      const diff = Math.round((today - mon) / 86400000);
-      return Math.min(6, Math.max(0, diff));
-    })();
+    let lastLocalDate = new Date();
+    let viewMonday = mondayOfWeek(lastLocalDate);
+    function weekdayIndex(date){ return (date.getDay() + 6) % 7; }
+    let selectedDayIndex = weekdayIndex(lastLocalDate);
 
     const expanded = new Map();
 
     function getWeekId(){ return weekIdFromMonday(viewMonday); }
     function getWeekKey(){ return WEEK_PREFIX + getWeekId(); }
+
+    function refreshDefaultWeekday(){
+      const today = new Date();
+      if(ymd(today) === ymd(lastLocalDate) || isEditingOrDragging() || weekDetailContext
+        || modalOverlay.classList.contains("open") || miniOverlay.classList.contains("open")) return;
+      const followingToday = viewMonday.getTime() === mondayOfWeek(lastLocalDate).getTime()
+        && selectedDayIndex === weekdayIndex(lastLocalDate);
+      lastLocalDate = today;
+      if(!followingToday) return;
+
+      const monday = mondayOfWeek(today);
+      selectedDayIndex = weekdayIndex(today);
+      if(monday.getTime() !== viewMonday.getTime()){
+        viewMonday = monday;
+        loadCurrentViewWeek();
+      }else{
+        buildWeekdayPills();
+        renderWeekList();
+      }
+    }
 
     if(USE_SUPABASE){
       try{
@@ -2764,6 +2807,15 @@
     let weekEditingItem = null;
     let inboxEditingItem = null;
     let activeReviewStatus = null;
+    const draggingInbox = enableListReordering(thisInboxList, (from, to, after) => {
+      reorderWeekItems(getWeekId(), "tx", from, to, after);
+    });
+    const draggingArchive = enableListReordering(previewBox, (from, to, after, section) => {
+      if(pickedWeekId) reorderWeekItems(pickedWeekId, section, from, to, after);
+    });
+    const isEditingOrDragging = () => Boolean(currentWeekEditor() || currentInboxEditor("thisInbox")
+      || (nextPopover.classList.contains("open") && currentInboxEditor("nextInbox"))
+      || draggingInbox() || draggingArchive());
 
     function persistCurrentWeek(){
       saveWeek(getWeekKey(), weekState);
@@ -2780,11 +2832,22 @@
       const item = (weekState.days[dayKey] || []).find(it => String(it.id) === String(id));
       return item ? { item, dayIndex:Number(dayIndex), dateStr:dayDateStr(Number(dayIndex)) } : null;
     }
+    function currentWeekEditor(){
+      if(!weekEditingItem) return null;
+      const { id, dayIndex } = weekEditingItem;
+      return weekList.querySelector(`[data-week-edit-input="${CSS.escape(id)}"][data-week-edit-day="${dayIndex}"]`);
+    }
     function beginWeekInlineEdit(dayIndex, id){
       const found = findWeekItem(dayIndex, id);
       if(!found) return;
-      weekEditingItem = { dayIndex:Number(dayIndex), id:String(id) };
-      renderWeekList();
+      const alreadyEditing = weekEditingItem?.dayIndex === found.dayIndex && weekEditingItem.id === String(id);
+      if(!alreadyEditing){
+        weekEditingItem = { dayIndex:found.dayIndex, id:String(id), draft:found.item.text };
+        renderWeekList();
+      }
+      const input = currentWeekEditor();
+      input?.focus();
+      if(!alreadyEditing) input?.select();
     }
     function cancelWeekInlineEdit(){
       weekEditingItem = null;
@@ -2973,12 +3036,24 @@
       return key === "thisInbox" ? "This Week Inbox" : "Next Week Inbox";
     }
 
+    function currentInboxEditor(key){
+      if(inboxEditingItem?.key !== key) return null;
+      const list = key === "thisInbox" ? thisInboxList : nextPopList;
+      return list.querySelector(`[data-inbox-edit-input="${key}"][data-inbox-edit-id="${CSS.escape(inboxEditingItem.id)}"]`);
+    }
+
     function beginInboxInlineEdit(key, id){
-      const arr = weekState[key] || [];
-      if(!arr.some(it => String(it.id) === String(id))) return;
-      inboxEditingItem = { key, id:String(id) };
-      renderInboxRows();
-      if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
+      const item = (weekState[key] || []).find(it => String(it.id) === String(id));
+      if(!item) return;
+      const alreadyEditing = inboxEditingItem?.key === key && inboxEditingItem.id === String(id);
+      if(!alreadyEditing){
+        inboxEditingItem = { key, id:String(id), draft:item.text };
+        renderInboxRows();
+        if(key === "nextInbox" && nextPopover.classList.contains("open")) renderNextPopover();
+      }
+      const input = currentInboxEditor(key);
+      input?.focus();
+      if(!alreadyEditing) input?.select();
     }
 
     function cancelInboxInlineEdit(){
@@ -3009,6 +3084,8 @@
 
     function renderThisInboxList(){
       const arr = weekState.thisInbox || [];
+      const draft = captureInlineInput(currentInboxEditor("thisInbox"));
+      if(draft) inboxEditingItem.draft = draft.value;
       thisInboxList.classList.toggle("collapsed", thisInboxCollapsed);
       thisInboxToggle.setAttribute("aria-expanded", String(!thisInboxCollapsed));
       thisInboxToggle.title = thisInboxCollapsed ? "클릭해서 펼치기" : "클릭해서 접기";
@@ -3025,10 +3102,12 @@
         const statusClass = statusCssClass(status);
         const row = document.createElement("div");
         row.className = "thisInboxItem" + (statusClass ? " " + statusClass : "");
+        row.dataset.orderId = it.id;
         const isEditing = inboxEditingItem
           && inboxEditingItem.key === "thisInbox"
           && String(inboxEditingItem.id) === String(it.id);
         row.innerHTML = `
+          ${isEditing ? "" : dragHandle}
           <button class="check" type="button" role="checkbox" aria-checked="${status === "done"}"
             aria-label="${statusLabel(status)}. 클릭하면 ${statusLabel(nextItemStatus(status))}"
             data-this-inbox-id="${escapeHtml(it.id)}">
@@ -3040,22 +3119,15 @@
             <span class="carriedMark" aria-hidden="true">→</span>
           </button>
           ${isEditing
-            ? `<input class="inboxInlineEdit" data-inbox-edit-input="thisInbox" data-inbox-edit-id="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="120" aria-label="Inbox 제목 수정" />`
+            ? `<input class="inboxInlineEdit" data-inbox-edit-input="thisInbox" data-inbox-edit-id="${escapeHtml(it.id)}" value="${escapeHtml(inboxEditingItem.draft)}" maxlength="120" aria-label="Inbox 제목 수정" />`
             : `<div class="thisInboxText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>`}
-          <button class="editBtn" type="button" aria-label="제목 수정" data-inbox-edit-key="thisInbox" data-inbox-edit-id="${escapeHtml(it.id)}">✎</button>
+          <button class="editBtn" type="button" aria-label="제목 수정" data-inbox-edit-key="thisInbox" data-inbox-edit-id="${escapeHtml(it.id)}">${pencilIcon}</button>
           <button class="del" type="button" aria-label="삭제" data-this-inbox-del="${escapeHtml(it.id)}">✕</button>
         `;
         thisInboxList.appendChild(row);
       }
 
-      if(inboxEditingItem && inboxEditingItem.key === "thisInbox"){
-        requestAnimationFrame(() => {
-          const input = thisInboxList.querySelector(
-            `[data-inbox-edit-input="thisInbox"][data-inbox-edit-id="${CSS.escape(String(inboxEditingItem.id))}"]`
-          );
-          if(input){ input.focus(); input.select(); }
-        });
-      }
+      restoreInlineCaret(currentInboxEditor("thisInbox"), draft);
     }
 
     function renderInboxRows(){
@@ -3068,6 +3140,8 @@
 
     function renderNextPopover(){
       const arr = weekState[activeInboxKey] || [];
+      const draft = captureInlineInput(currentInboxEditor("nextInbox"));
+      if(draft) inboxEditingItem.draft = draft.value;
       nextPopTitle.textContent = inboxLabel(activeInboxKey);
       nextPopList.innerHTML = "";
 
@@ -3096,22 +3170,15 @@
             <span class="carriedMark" aria-hidden="true">→</span>
           </button>
           ${isEditing
-            ? `<input class="inboxInlineEdit" data-inbox-edit-input="nextInbox" data-inbox-edit-id="${escapeHtml(it.id)}" value="${escapeHtml(it.text)}" maxlength="120" aria-label="Inbox 제목 수정" />`
+            ? `<input class="inboxInlineEdit" data-inbox-edit-input="nextInbox" data-inbox-edit-id="${escapeHtml(it.id)}" value="${escapeHtml(inboxEditingItem.draft)}" maxlength="120" aria-label="Inbox 제목 수정" />`
             : `<div class="popText" title="${escapeHtml(it.text)}">${escapeHtml(it.text)}</div>`}
-          <button class="editBtn" type="button" aria-label="제목 수정" data-inbox-edit-key="nextInbox" data-inbox-edit-id="${escapeHtml(it.id)}">✎</button>
+          <button class="editBtn" type="button" aria-label="제목 수정" data-inbox-edit-key="nextInbox" data-inbox-edit-id="${escapeHtml(it.id)}">${pencilIcon}</button>
           <button class="del" type="button" aria-label="삭제" data-nx-del="${escapeHtml(it.id)}">✕</button>
         `;
         nextPopList.appendChild(row);
       }
 
-      if(inboxEditingItem && inboxEditingItem.key === "nextInbox"){
-        requestAnimationFrame(() => {
-          const input = nextPopList.querySelector(
-            `[data-inbox-edit-input="nextInbox"][data-inbox-edit-id="${CSS.escape(String(inboxEditingItem.id))}"]`
-          );
-          if(input){ input.focus(); input.select(); }
-        });
-      }
+      restoreInlineCaret(currentInboxEditor("nextInbox"), draft);
     }
 
     function collectReviewItems(status){
@@ -3215,6 +3282,8 @@
     }
 
     function renderWeekList(){
+      const draft = captureInlineInput(currentWeekEditor());
+      if(draft) weekEditingItem.draft = draft.value;
       updateHeaderDate();
       weekList.innerHTML = "";
 
@@ -3291,11 +3360,11 @@
               <span class="carriedMark" aria-hidden="true">→</span>
             </button>
             ${isEditing
-              ? `<input class="inlineEdit" data-week-edit-input="${escapeHtml(it.id)}" data-week-edit-day="${i}" value="${escapeHtml(it.text)}" maxlength="80" aria-label="일정 제목 수정" />`
+              ? `<input class="inlineEdit" data-week-edit-input="${escapeHtml(it.id)}" data-week-edit-day="${i}" value="${escapeHtml(weekEditingItem.draft)}" maxlength="80" aria-label="일정 제목 수정" />`
               : `<div class="text detailTrigger" role="button" tabindex="0"
                   data-detail-id="${escapeHtml(it.id)}" data-detail-day="${i}"
                   title="${escapeHtml(it.text)}"><span class="textLabel">${escapeHtml(it.text)}</span>${String(it.details || "").trim() ? '<span class="weekNoteDot" aria-label="메모 있음" title="메모 있음"></span>' : ""}</div>`}
-            <button class="editBtn" type="button" aria-label="제목 수정" data-week-edit="${escapeHtml(it.id)}" data-week-edit-day="${i}">✎</button>
+            <button class="editBtn" type="button" aria-label="제목 수정" data-week-edit="${escapeHtml(it.id)}" data-week-edit-day="${i}">${pencilIcon}</button>
             <button class="del" type="button" aria-label="삭제" data-del="${it.id}" data-day="${i}">✕</button>
           `;
           itemsBox.appendChild(row);
@@ -3320,14 +3389,7 @@
       updateStatusReviewCounts();
       if(statusReviewPopover.classList.contains("open")) renderStatusReviewList();
 
-      if(weekEditingItem){
-        requestAnimationFrame(() => {
-          const input = weekList.querySelector(
-            `[data-week-edit-input="${CSS.escape(String(weekEditingItem.id))}"][data-week-edit-day="${weekEditingItem.dayIndex}"]`
-          );
-          if(input){ input.focus(); input.select(); }
-        });
-      }
+      restoreInlineCaret(currentWeekEditor(), draft);
     }
 
     function updateHeaderDate(){
@@ -3612,6 +3674,7 @@
     weekList.addEventListener("keydown", (e) => {
       const editInput = e.target.closest("[data-week-edit-input]");
       if(editInput){
+        if(e.isComposing || e.keyCode === 229) return;
         if(e.key === "Enter"){
           e.preventDefault();
           saveWeekInlineEdit(
@@ -3634,6 +3697,7 @@
     });
 
     addBtn.addEventListener("click", () => {
+      refreshDefaultWeekday();
       addItemToDay(selectedDayIndex, taskInput.value);
       taskInput.value = "";
       taskInput.focus();
@@ -3642,7 +3706,7 @@
     });
 
     taskInput.addEventListener("keydown", (e) => {
-      if(e.key === "Enter"){
+      if(e.key === "Enter" && !e.isComposing && e.keyCode !== 229){
         e.preventDefault();
         if(!addBtn.disabled) addBtn.click();
       }
@@ -3651,8 +3715,9 @@
     fromTodayBtn.addEventListener("click", () => {
       persistCurrentWeek();
       const today = new Date();
+      lastLocalDate = today;
       viewMonday = mondayOfWeek(today);
-      selectedDayIndex = (today.getDay() + 6) % 7;
+      selectedDayIndex = weekdayIndex(today);
       loadCurrentViewWeek();
       showToast("이번 주 오늘로 이동했어.");
     });
@@ -3790,7 +3855,7 @@
 
     thisInboxList.addEventListener("keydown", (e) => {
       const input = e.target.closest("[data-inbox-edit-input]");
-      if(!input) return;
+      if(!input || e.isComposing || e.keyCode === 229) return;
       if(e.key === "Enter"){
         e.preventDefault();
         saveInboxInlineEdit(input.dataset.inboxEditInput, input.dataset.inboxEditId, input.value);
@@ -3833,7 +3898,7 @@
 
     nextPopList.addEventListener("keydown", (e) => {
       const input = e.target.closest("[data-inbox-edit-input]");
-      if(!input) return;
+      if(!input || e.isComposing || e.keyCode === 229) return;
       if(e.key === "Enter"){
         e.preventDefault();
         saveInboxInlineEdit(input.dataset.inboxEditInput, input.dataset.inboxEditId, input.value);
@@ -3973,6 +4038,8 @@
     clearDoneBtn.addEventListener("click", clearDone);
 
     function loadCurrentViewWeek(){
+      weekEditingItem = null;
+      inboxEditingItem = null;
       weekArchive = autoArchivePastWeeks();
       weekState = loadWeek(getWeekKey());
       expanded.clear();
@@ -4017,9 +4084,39 @@
       const key = WEEK_PREFIX + weekId;
       return loadWeek(key);
     }
-    function saveWeekStateById(weekId, data){
+    function saveWeekStateById(weekId, data, sync = true){
       const key = WEEK_PREFIX + weekId;
-      saveWeek(key, data);
+      saveWeek(key, data, sync);
+      if(weekId === getWeekId()){
+        weekState = data;
+        renderWeekList();
+        if(nextPopover.classList.contains("open")) renderNextPopover();
+      }
+    }
+
+    function reorderWeekItems(weekId, section, from, to, after){
+      const isCurrent = weekId === getWeekId();
+      const data = isCurrent ? weekState : loadWeekStateById(weekId);
+      const inbox = section === "tx" ? "thisInbox" : section === "nx" ? "nextInbox" : null;
+      const items = (inbox ? data[inbox] : data.days[section]) || [];
+      const moved = moveItem(items, from, to, after);
+      if(moved === items) return;
+
+      if(inbox){
+        data[inbox] = moved;
+        localMutationVersion += 1;
+        inboxOrder.set(weekId, inbox, moved);
+        saveWeekStateById(weekId, data, false);
+        syncInboxOrders(true);
+      }else{
+        const updatedAt = new Date().toISOString();
+        data.days[section] = rankDayItems(moved);
+        for(const item of data.days[section]) setLocalUpdatedAt("item", item.id, updatedAt);
+        saveSyncMeta();
+        saveWeekStateById(weekId, data);
+      }
+
+      if(pickedWeekId === weekId) renderWeekPreview(weekId);
     }
 
     function openModal(){
@@ -4437,7 +4534,8 @@
           const badgeText = statusLabel(status).toLowerCase();
           const textHtml = highlight(it.text || "", q);
           rows.push(`
-            <div class="pItem">
+            <div class="pItem" data-order-id="${escapeHtml(it.id)}" data-order-group="${i}">
+              ${dragHandle}
               <span class="${badgeCls}">${badgeText}</span>
               <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}
@@ -4462,7 +4560,8 @@
           const badgeText = statusLabel(status).toLowerCase();
           const textHtml = highlight(it.text || "", q);
           rows.push(`
-            <div class="pItem">
+            <div class="pItem" data-order-id="${escapeHtml(it.id)}" data-order-group="tx">
+              ${dragHandle}
               <span class="${badgeCls}">${badgeText}</span>
               <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}
@@ -4487,7 +4586,8 @@
           const badgeText = statusLabel(status).toLowerCase();
           const textHtml = highlight(it.text || "", q);
           rows.push(`
-            <div class="pItem">
+            <div class="pItem" data-order-id="${escapeHtml(it.id)}" data-order-group="nx">
+              ${dragHandle}
               <span class="${badgeCls}">${badgeText}</span>
               <span class="pText" style="${it.done ? "text-decoration:line-through; color:rgba(30,30,30,0.55);" : ""}">
                 ${textHtml}

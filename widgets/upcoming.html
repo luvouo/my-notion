@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Upcoming — Soft Schedule</title>
 
+  <link rel="stylesheet" href="../core/widget-list.css?v=1" />
   <style>
     :root{
       /* Pastel Skyblue (slightly desaturated) */
@@ -262,7 +263,7 @@
       padding: 10px;
 
       transform-origin: top left;
-      transform: translateY(6px) scale(0.67); /* ✅ 1/3 줄이기(≈0.67) */
+      transform: translateY(6px) scale(var(--dp-scale, 0.67));
 
       opacity: 0;
       pointer-events: none;
@@ -271,7 +272,7 @@
     .dpPop.open{
       opacity: 1;
       pointer-events: auto;
-      transform: translateY(0) scale(0.67);
+      transform: translateY(0) scale(var(--dp-scale, 0.67));
     }
 
     .dpHeader{
@@ -485,6 +486,11 @@
       background: rgba(165,210,235,0.16);
       border-color: rgba(150,190,220,0.35);
     }
+    button.badgeDate{ cursor: pointer; white-space: nowrap; }
+    button.badgeDate:hover, button.badgeDate:focus-visible{
+      border-color: rgba(150,190,220,0.85);
+      box-shadow: 0 0 0 3px rgba(165,210,235,0.20);
+    }
 
     .text{
       flex: 1 1 auto;
@@ -494,6 +500,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transition: color .16s ease;
     }
 
     .text[data-edit]{ cursor: pointer; }
@@ -545,6 +552,7 @@
       border-color: rgba(150,190,220,1);
     }
     .item.done .check svg{ opacity: 1; transform: scale(1); }
+    .item:hover .text{ color: #92c1e5; }
 
         /* ===== Footer (match Today exactly) ===== */
     .footer{
@@ -660,7 +668,7 @@
         <div class="inputRow">
           <input id="upcomingInput" class="input" type="text" placeholder="미래 할 일…" maxlength="80" />
 
-          <button type="button" class="dpTrigger" id="dpTrigger" aria-haspopup="dialog" aria-expanded="false">
+          <button type="button" class="dpTrigger" id="dpTrigger" aria-haspopup="dialog" aria-controls="dpPop" aria-expanded="false">
             <span class="dpText" id="dpText">날짜 선택</span>
             <span class="dpIcon" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="16" height="16">
@@ -694,7 +702,7 @@
       </div>
 
       <!-- ✅ Date Picker Popover (now INSIDE card) -->
-      <div class="dpPop" id="dpPop" role="dialog" aria-label="Date Picker">
+      <div class="dpPop" id="dpPop" role="dialog" aria-label="Date Picker" inert>
         <div class="dpHeader">
           <button type="button" class="dpNav" id="dpPrev" aria-label="Previous month">‹</button>
           <div class="dpTitle" id="dpTitle">2026.01</div>
@@ -717,6 +725,7 @@
 
   <script src="../env.js"></script>
   <script type="module">
+  import { pencilIcon, dragHandle, enableListReordering, moveItem, captureInlineInput, restoreInlineCaret } from "../core/widget-list.js?v=1";
   (async function main(){
     let workspace_id = "local";
     let sbFetch = null;
@@ -754,7 +763,7 @@
       document.getElementById("retryConnection").addEventListener("click", () => location.reload());
       return;
     }
-    const { createUpcomingStore } = await import("../core/upcoming-sync.js?v=20261101-1");
+    const { createUpcomingStore } = await import("../core/upcoming-sync.js?v=20261120-1");
 
     // ===== Helpers =====
     function pad2(n){ return String(n).padStart(2,"0"); }
@@ -812,6 +821,12 @@
     let showArchive = false;
     let editingId = null;
     let editingDraft = "";
+    const draggingItems = enableListReordering(listEl, (from, to, after) => {
+      if(showArchive) return;
+      const items = listedItems();
+      const reordered = moveItem(items, from, to, after);
+      if(reordered !== items) store.reorder(reordered.map(item => item.id));
+    });
 
     // Add button icon
     addBtn.innerHTML = `
@@ -832,7 +847,10 @@
     const store = createUpcomingStore({
       workspaceId: workspace_id,
       sbFetch,
-      onChange: items => { state = items; render(); },
+      onChange: (items, fromRemote) => {
+        state = items;
+        if(!fromRemote || (!editingId && !dpAnchor && !draggingItems())) render();
+      },
       onStatus: status => {
         metaText.textContent = status.connected ? `서버 · ${workspace_id.slice(0, 8)}` : "로컬 · 연결 대기";
         metaText.title = status.error ? "서버 연결에 실패했습니다. 기록을 보관하고 다시 연결합니다." : "같은 패스코드로 기기 간 기록을 동기화합니다.";
@@ -852,40 +870,62 @@
     const dpBack = document.getElementById("dpBack");
     const dpToday = document.getElementById("dpToday");
 
-    // selectedDate: "YYYY-MM-DD" or null
+    // The form and item dates share the picker but have separate values.
     let selectedDate = null;
+    let dpItemId = null;
+    let dpAnchor = null;
     let view = new Date();
     view.setDate(1);
 
-    // ✅ popover scale (CSS와 동일)
     const DP_SCALE = 0.67;
 
-    function openDP(){
-      dpTrigger.setAttribute("aria-expanded","true");
+    function openDP(anchor, item = null){
+      if(dpAnchor === anchor){ closeDP(); return; }
+      closeDP();
+      dpAnchor = anchor;
+      dpItemId = item?.id ?? null;
+      const date = currentPickerDate();
+      const parsed = date && new Date(`${date}T00:00:00`);
+      const base = parsed && !Number.isNaN(parsed.getTime()) ? parsed : new Date();
+      view = new Date(base.getFullYear(), base.getMonth(), 1);
+      dpBack.textContent = item ? "Someday" : "Back";
+      anchor.setAttribute("aria-expanded","true");
+      dpPop.inert = false;
       dpPop.classList.add("open");
       renderDP();
-      requestAnimationFrame(()=>{
-        placeDP();
-        dpPrev.focus();
-      });
+      placeDP();
+      dpPrev.focus({preventScroll: true});
     }
     function closeDP(){
-      dpTrigger.setAttribute("aria-expanded","false");
+      dpAnchor?.setAttribute("aria-expanded","false");
+      dpAnchor = null;
+      dpItemId = null;
+      dpPop.inert = true;
       dpPop.classList.remove("open");
+      cardEl.style.minHeight = "";
     }
 
-    function setSelected(dateObjOrNull, {close=true} = {}){
-      if(!dateObjOrNull){
-        selectedDate = null;
-        dpText.textContent = "날짜 선택";
-        dpTrigger.classList.remove("filled");
-      }else{
-        selectedDate = dashFromDate(dateObjOrNull);
-        dpText.textContent = ymdDotFromDash(selectedDate);
-        dpTrigger.classList.add("filled");
+    function setSelected(date){
+      selectedDate = date;
+      dpText.textContent = date ? ymdDotFromDash(date) : "날짜 선택";
+      dpTrigger.classList.toggle("filled", Boolean(date));
+    }
+
+    function currentPickerDate(){
+      return dpItemId === null ? selectedDate : state.find(item => item.id === dpItemId)?.date;
+    }
+
+    function choosePickerDate(date){
+      const itemId = dpItemId;
+      closeDP();
+      if(itemId === null){
+        setSelected(date);
+        dpTrigger.focus({preventScroll: true});
+        return;
       }
-      renderDP();
-      if(close) closeDP();
+      if(!store.updateDate(itemId, date)) render();
+      const button = listEl.querySelector(`[data-date-id="${CSS.escape(itemId)}"]`);
+      button?.focus({preventScroll: true});
     }
 
     function renderDP(){
@@ -897,6 +937,7 @@
       const last  = new Date(view.getFullYear(), view.getMonth()+1, 0);
       const daysInMonth = last.getDate();
       const startDow = first.getDay(); // Sunday=0
+      const pickerDate = currentPickerDate();
 
       for(let i=0;i<startDow;i++){
         const blank = document.createElement("button");
@@ -917,27 +958,28 @@
         btn.setAttribute("role","gridcell");
 
         if(isSameDay(d, today)) btn.classList.add("today");
-        if(selectedDate && selectedDate === dashFromDate(d)) btn.classList.add("selected");
+        if(pickerDate === dashFromDate(d)) btn.classList.add("selected");
 
-        btn.addEventListener("click", ()=> setSelected(d, {close:true}));
+        btn.addEventListener("click", ()=> choosePickerDate(dashFromDate(d)));
         dpGrid.appendChild(btn);
       }
     }
 
     function placeDP(){
-      const r = dpTrigger.getBoundingClientRect();
-      const cardR = cardEl.getBoundingClientRect();
-
-      // dpPop의 "논리 크기"(스케일 전)
-      const popW = dpPop.offsetWidth;
-      const popH = dpPop.offsetHeight;
-
-      // ✅ 실제 화면에서 차지하는 크기(스케일 반영)
-      const scaledW = popW * DP_SCALE;
-      const scaledH = popH * DP_SCALE;
-
+      if(!dpAnchor) return;
+      if(!dpAnchor.isConnected){ closeDP(); return; }
       const gap = 8;
       const pad = 10;
+      const popW = dpPop.offsetWidth;
+      const popH = dpPop.offsetHeight;
+      const scale = Math.min(DP_SCALE, Math.max(1, cardEl.clientWidth - pad * 2) / popW);
+      const scaledW = popW * scale;
+      const scaledH = popH * scale;
+      dpPop.style.setProperty("--dp-scale", scale);
+      // An empty list can make the card shorter than the calendar.
+      cardEl.style.minHeight = `${Math.ceil(scaledH) + pad * 2}px`;
+      const r = dpAnchor.getBoundingClientRect();
+      const cardR = cardEl.getBoundingClientRect();
 
       // 카드 내부 좌표로 변환
       const relLeft0 = r.left - cardR.left;
@@ -962,8 +1004,7 @@
 
     dpTrigger.addEventListener("click", (e)=>{
       e.stopPropagation();
-      if(dpPop.classList.contains("open")) closeDP();
-      else openDP();
+      openDP(dpTrigger);
     });
 
     dpPrev.addEventListener("click", ()=>{
@@ -977,19 +1018,17 @@
       placeDP();
     });
 
-    dpBack.addEventListener("click", ()=> setSelected(null, {close:true}));
-    dpToday.addEventListener("click", ()=>{
-      const t = new Date();
-      view = new Date(t.getFullYear(), t.getMonth(), 1);
-      setSelected(t, {close:true});
-    });
+    dpBack.addEventListener("click", ()=> choosePickerDate(null));
+    dpToday.addEventListener("click", ()=> choosePickerDate(dashFromDate(new Date())));
 
     dpPop.addEventListener("click", (e)=> e.stopPropagation());
     document.addEventListener("click", ()=> { if(dpPop.classList.contains("open")) closeDP(); });
     document.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape" && dpPop.classList.contains("open")){
+      if(e.key === "Escape" && !e.defaultPrevented && dpAnchor){
+        const anchor = dpAnchor;
+        e.preventDefault();
         closeDP();
-        dpTrigger.focus();
+        anchor.focus({preventScroll: true});
       }
     });
 
@@ -1017,35 +1056,47 @@
       return [...dated, ...undated];
     }
 
+    function listedItems(){
+      const items = sortUpcoming(state.filter(item => item.done === showArchive));
+      if(showArchive) return items;
+      return items.sort((a, b) => (a.sortOrder ?? Number.MAX_SAFE_INTEGER) - (b.sortOrder ?? Number.MAX_SAFE_INTEGER));
+    }
+
     function render(){
-      state = sortUpcoming(state);
-      const focusedInput = listEl.querySelector(".editInput");
-      const restoreFocus = focusedInput && document.activeElement === focusedInput;
-      const selection = restoreFocus ? [focusedInput.selectionStart, focusedInput.selectionEnd] : null;
-      const visible = state.filter(it => Boolean(it.done) === showArchive);
+      if(dpItemId !== null) closeDP();
+      const visible = listedItems();
       if(editingId && !visible.some(it => it.id === editingId)) editingId = null;
+      const previousInput = listEl.querySelector(".editInput");
+      const draft = previousInput?.dataset.editInputId === editingId ? captureInlineInput(previousInput) : null;
       listEl.innerHTML = "";
       for(const it of visible){
         const li = document.createElement("li");
         li.className = "item" + (it.done ? " done" : "");
+        if(!showArchive) li.dataset.orderId = it.id;
 
         const badgeText = it.date ? (ymdDotFromDash(it.date) || it.date) : "Someday";
         const badgeCls = "badgeDate" + (it.date ? "" : " someday");
 
         li.innerHTML = `
+          ${!showArchive && editingId !== it.id ? dragHandle : ""}
           <div class="check" role="checkbox" aria-checked="${it.done}" tabindex="0" aria-label="${it.done ? "예정 목록으로 복원" : "완료하고 Archive에 보관"}">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M20 7L10 17l-5-5" stroke="rgba(30,30,30,0.85)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <span class="${badgeCls}" title="${badgeText}">${badgeText}</span>
+          <button class="${badgeCls}" type="button" aria-haspopup="dialog" aria-controls="dpPop" aria-expanded="false"></button>
           <div class="text"></div>
           <button class="del editBtn" type="button" aria-label="일정 텍스트 수정" title="일정 텍스트 수정">
-            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            ${pencilIcon}
           </button>
           <button class="del" type="button" aria-label="삭제">✕</button>
         `;
         li.querySelector(".check").dataset.id = it.id;
+        const dateButton = li.querySelector(".badgeDate");
+        dateButton.dataset.dateId = it.id;
+        dateButton.textContent = badgeText;
+        dateButton.title = "일정 날짜 변경";
+        dateButton.setAttribute("aria-label", `${it.text}: ${badgeText}, 일정 날짜 변경`);
         li.querySelector(".editBtn").dataset.edit = it.id;
         li.querySelector("button[aria-label='삭제']").dataset.del = it.id;
         li.querySelector(".text").textContent = String(it.text || "");
@@ -1060,7 +1111,9 @@
             <input class="input editInput" type="text" maxlength="80" aria-label="일정 텍스트 수정" />
             <button class="btn editAction" type="button" data-save>저장</button>
             <button class="btn editAction" type="button" data-cancel>취소</button>`;
-          editor.querySelector("input").value = editingDraft;
+          const editInput = editor.querySelector("input");
+          editInput.dataset.editInputId = it.id;
+          editInput.value = editingDraft;
           editor.querySelector("[data-save]").disabled = !editingDraft.trim();
           li.appendChild(editor);
         }
@@ -1080,11 +1133,7 @@
       archiveHint.hidden = !showArchive;
       inputRow.hidden = showArchive;
       listEl.setAttribute("aria-label", showArchive ? "보관된 완료 일정" : "예정 일정");
-      if(restoreFocus && editingId){
-        const editor = listEl.querySelector(".editInput");
-        editor.focus({preventScroll: true});
-        editor.setSelectionRange(...selection);
-      }
+      if(editingId) restoreInlineCaret(listEl.querySelector(".editInput"), draft);
     }
 
     function startEditing(id){
@@ -1103,8 +1152,7 @@
       const text = editingDraft.trim();
       if(save && !text) return;
       editingId = null;
-      if(save) store.updateText(id, text);
-      render();
+      if(!save || !store.updateText(id, text)) render();
       const editButton = [...listEl.querySelectorAll(".editBtn")].find(btn => btn.dataset.edit === id);
       (editButton || archiveBtn).focus({preventScroll: true});
     }
@@ -1127,7 +1175,7 @@
       syncAddButtonState();
 
       // 추가 후 날짜는 다시 옵션 상태로
-      setSelected(null, {close:false});
+      setSelected(null);
 
       showToast(dated ? "날짜 포함으로 추가했어." : "Someday로 추가했어.");
     }
@@ -1146,7 +1194,7 @@
     addBtn.addEventListener("click", addItem);
 
     inputEl.addEventListener("keydown", (e)=>{
-      if(e.key === "Enter" && !e.isComposing){
+      if(e.key === "Enter" && !e.isComposing && e.keyCode !== 229){
         e.preventDefault();
         if(!addBtn.disabled) addBtn.click();
       }
@@ -1156,6 +1204,15 @@
       const check = e.target.closest(".check");
       const del = e.target.closest("[data-del]");
       const edit = e.target.closest("[data-edit]");
+      const date = e.target.closest("[data-date-id]");
+      if(date){
+        const item = state.find(it => it.id === date.dataset.dateId);
+        if(item){
+          e.stopPropagation();
+          openDP(date, item);
+        }
+        return;
+      }
       if(e.target.closest("[data-save]")) finishEditing(true);
       else if(e.target.closest("[data-cancel]")) finishEditing(false);
       else if(check) toggleItem(check.dataset.id);
@@ -1170,7 +1227,7 @@
     });
 
     listEl.addEventListener("keydown", (e)=>{
-      if(e.isComposing) return;
+      if(e.isComposing || e.keyCode === 229) return;
       if(e.target.matches(".editInput")){
         if(e.key === "Enter" || e.key === "Escape"){
           e.preventDefault();
@@ -1196,7 +1253,7 @@
     copyBtn.addEventListener("click", async ()=>{
       const lines = [];
       lines.push(showArchive ? "[Upcoming Archive]" : "[Upcoming]");
-      for(const it of state.filter(it => Boolean(it.done) === showArchive)){
+      for(const it of listedItems()){
         const dateLabel = it.date ? (ymdDotFromDash(it.date) || it.date) : "Someday";
         lines.push(`- [${it.done ? "x" : " "}] (${dateLabel}) ${it.text}`);
       }

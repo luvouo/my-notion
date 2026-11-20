@@ -339,6 +339,7 @@
 
     const RICH_STORAGE_KEY = USE_SUPABASE ? `soft_schedule_notes_rich_${workspace_id}_v1` : "soft_schedule_notes_rich_v1";
     const STORAGE_KEY = USE_SUPABASE ? `soft_schedule_notes_${workspace_id}_v1` : "soft_schedule_notes_v1";
+    const PENDING_REMOTE_KEY = `${RICH_STORAGE_KEY}_pending_remote_base`;
     const NOTES_WIDGET_KEY = "notes_v1";
     const editor = document.getElementById("notes");
     const toolbar = document.getElementById("richToolbar");
@@ -352,6 +353,10 @@
     let pendingSave = false;
     let remoteSaveInFlight = 0;
     let remoteRefreshInFlight = false;
+    let pendingRemoteBase = null;
+    try{
+      if(USE_SUPABASE) pendingRemoteBase = localStorage.getItem(PENDING_REMOTE_KEY);
+    }catch(e){}
 
     const RICH_FONTS = {
       system: "inherit",
@@ -557,16 +562,25 @@
       localStorage.setItem(RICH_STORAGE_KEY, payload.html);
       localStorage.setItem(STORAGE_KEY, payload.text);
     }
-    async function saveRemote(payload, version){
+    async function saveRemote(payload, version, retryBase){
       if(!USE_SUPABASE || !sbFetch) return false;
       remoteSaveInFlight += 1;
       try{
         const updatedAt = new Date().toISOString();
-        const rows = await sbFetch("widget_state?on_conflict=workspace_id,widget_key", {
-          method:"POST",
-          body:[{ workspace_id, widget_key:NOTES_WIDGET_KEY, payload, updated_at:updatedAt }],
-          prefer:"return=representation,resolution=merge-duplicates"
-        });
+        const body = { payload, updated_at:updatedAt };
+        // A retry of an offline save must still match the server version we read.
+        const rows = retryBase
+          ? await sbFetch("widget_state", {
+            method:"PATCH",
+            query:{ workspace_id:`eq.${workspace_id}`, widget_key:`eq.${NOTES_WIDGET_KEY}`, updated_at:`eq.${retryBase}` },
+            body
+          })
+          : await sbFetch("widget_state?on_conflict=workspace_id,widget_key", {
+            method:"POST",
+            body:[{ workspace_id, widget_key:NOTES_WIDGET_KEY, ...body }],
+            prefer:retryBase === "" ? "return=representation,resolution=ignore-duplicates" : "return=representation,resolution=merge-duplicates"
+          });
+        if(!rows?.length) throw new Error("서버에 메모를 저장하지 못했습니다.");
         lastRemoteUpdatedAt = (rows && rows[0] && rows[0].updated_at) || updatedAt;
         syncedMutationVersion = Math.max(syncedMutationVersion, version);
         syncError = false;
@@ -580,12 +594,16 @@
         updateMeta();
       }
     }
-    async function save(){
+    async function save(retryBase){
       pendingSave = false;
       status.textContent = "저장 중…";
       const payload = currentPayload();
       try{
         persistLocal(payload);
+        if(USE_SUPABASE && pendingRemoteBase === null){
+          localStorage.setItem(PENDING_REMOTE_KEY, lastRemoteUpdatedAt);
+          pendingRemoteBase = lastRemoteUpdatedAt;
+        }
       }catch(e){
         status.textContent = "저장 실패";
         return;
@@ -595,7 +613,18 @@
       while(remoteSaveInFlight){
         await new Promise(resolve => setTimeout(resolve, 50));
       }
-      const saved = USE_SUPABASE ? await saveRemote(payload, version) : true;
+      if(version !== localMutationVersion) return;
+      const saved = USE_SUPABASE ? await saveRemote(payload, version, retryBase) : true;
+      if(saved && USE_SUPABASE){
+        if(version === localMutationVersion){
+          localStorage.removeItem(PENDING_REMOTE_KEY);
+          pendingRemoteBase = null;
+        }else{
+          localStorage.setItem(PENDING_REMOTE_KEY, lastRemoteUpdatedAt);
+          pendingRemoteBase = lastRemoteUpdatedAt;
+        }
+      }
+      if(version !== localMutationVersion || pendingSave) return;
       status.textContent = saved ? "저장됨" : "서버 저장 실패 · 로컬 저장됨";
       clearTimeout(save._t);
       save._t = setTimeout(() => status.textContent = saved ? "자동 저장" : "서버 저장 실패 · 로컬 저장됨", 900);
@@ -621,19 +650,33 @@
       savedRange = null;
       return true;
     }
-    function canApplyRemote(){
-      return document.activeElement !== editor && !pendingSave && !remoteSaveInFlight && localMutationVersion === syncedMutationVersion;
+    function canRefreshRemote(){
+      return document.activeElement !== editor && !pendingSave && !remoteSaveInFlight
+        && (pendingRemoteBase !== null || localMutationVersion === syncedMutationVersion);
+    }
+    async function resumeLocalSave(row){
+      const remoteVersion = row?.updated_at || "";
+      if(remoteVersion === pendingRemoteBase || Date.parse(remoteVersion) === Date.parse(pendingRemoteBase)){
+        await save(remoteVersion);
+      }else{
+        status.textContent = "서버에 새 메모가 있습니다. 이 기기의 메모를 올리려면 Save를 눌러 주세요.";
+      }
     }
     async function bootstrapSync(){
       if(!USE_SUPABASE || !sbFetch) return;
+      const expectedVersion = localMutationVersion;
       try{
         const rows = await loadRemoteState();
-        if(rows && rows.length){
-          applyRemoteRow(rows[0]);
+        if(expectedVersion !== localMutationVersion || pendingSave || remoteSaveInFlight) return;
+        const row = rows && rows[0];
+        if(pendingRemoteBase !== null){
+          await resumeLocalSave(row);
+        }else if(row){
+          applyRemoteRow(row);
           syncedMutationVersion = localMutationVersion;
           syncError = false;
         }else{
-          await saveRemote(currentPayload(), localMutationVersion);
+          await saveRemote(currentPayload(), localMutationVersion, "");
         }
       }catch(err){
         syncError = true;
@@ -642,12 +685,18 @@
       updateMeta();
     }
     async function refreshFromRemote(){
-      if(!USE_SUPABASE || !sbFetch || remoteRefreshInFlight || !canApplyRemote()) return;
+      if(!USE_SUPABASE || !sbFetch || remoteRefreshInFlight || !canRefreshRemote()) return;
       remoteRefreshInFlight = true;
+      const expectedVersion = localMutationVersion;
       try{
         const rows = await loadRemoteState();
+        if(expectedVersion !== localMutationVersion || !canRefreshRemote()) return;
         const row = rows && rows[0];
-        if(row && (!lastRemoteUpdatedAt || row.updated_at > lastRemoteUpdatedAt)) applyRemoteRow(row);
+        if(pendingRemoteBase !== null){
+          await resumeLocalSave(row);
+        }else if(row && (!lastRemoteUpdatedAt || Date.parse(row.updated_at) > Date.parse(lastRemoteUpdatedAt))){
+          applyRemoteRow(row);
+        }
         syncError = false;
       }catch(err){
         syncError = true;
@@ -695,10 +744,10 @@
     });
 
     loadLocal();
+    sizeSelect.value = "12px";
+    status.textContent = pendingRemoteBase === null ? "자동 저장" : "동기화 대기 · 로컬 저장됨";
     await bootstrapSync();
     updateMeta();
-    status.textContent = "자동 저장";
-    sizeSelect.value = "12px";
 
     const REMOTE_REFRESH_INTERVAL_MS = 15000;
     setInterval(() => {
